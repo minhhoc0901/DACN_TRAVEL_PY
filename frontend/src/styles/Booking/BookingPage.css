@@ -1,0 +1,299 @@
+.v2-booking-page {
+    background-color: #f4f7f9;
+    padding: 40px 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.v2-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.v2-booking-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 30px;
+}
+
+/* --- Cột chính (bên trái) --- */
+.v2-booking-main {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.v2-form-section {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.v2-section-title {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.v2-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.v2-form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.v2-form-group.v2-full-width {
+    grid-column: 1 / -1;
+}
+
+.v2-form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.v2-form-group input,
+.v2-form-section textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+}
+
+.v2-form-group input:focus,
+.v2-form-section textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+.v2-form-section textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Passenger Selection */
+.v2-passenger-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.v2-passenger-row:last-child {
+    border-bottom: none;
+}
+
+.v2-passenger-label {
+    display: flex;
+    flex-direction: column;
+}
+.v2-passenger-label span {
+    font-size: 16px;
+    font-weight: 500;
+}
+.v2-passenger-label small {
+    color: #777;
+}
+
+.v2-quantity-input {
+    display: flex;
+    align-items: center;
+}
+
+.v2-quantity-input button {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    font-size: 20px;
+    cursor: pointer;
+    color: #555;
+}
+.v2-quantity-input button:first-child {
+    border-radius: 6px 0 0 6px;
+}
+.v2-quantity-input button:last-child {
+    border-radius: 0 6px 6px 0;
+}
+
+.v2-quantity-input input {
+    width: 50px;
+    height: 36px;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-left: none;
+    border-right: none;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 0;
+}
+.v2-quantity-input input:focus {
+    outline: none;
+}
+
+
+/* --- Sidebar (bên phải) --- */
+.v2-booking-sidebar {
+    position: sticky;
+    top: 20px;
+    align-self: start;
+}
+
+.v2-summary-card {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+.v2-tour-summary {
+    padding: 20px;
+}
+.v2-tour-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+.v2-tour-info h3 {
+    font-size: 18px;
+    margin: 0 0 10px;
+}
+.v2-tour-info p {
+    margin: 5px 0;
+    color: #666;
+    font-size: 14px;
+}
+.v2-tour-info p i {
+    margin-right: 8px;
+    color: #007bff;
+}
+
+.v2-promo-section {
+    display: flex;
+    padding: 0 20px 20px;
+}
+.v2-promo-section input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 6px 0 0 6px;
+}
+.v2-promo-section button {
+    border: none;
+    background-color: #28a745;
+    color: white;
+    padding: 0 15px;
+    border-radius: 0 6px 6px 0;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.v2-price-details {
+    padding: 20px;
+    background-color: #f8f9fa;
+}
+.v2-price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+.v2-price-row span:first-child {
+    color: #555;
+}
+.v2-price-row span:last-child {
+    font-weight: 600;
+}
+.v2-price-row.v2-total span {
+    font-size: 20px;
+    color: #333;
+}
+.v2-discount {
+    color: #28a745;
+}
+
+.v2-summary-card hr {
+    border: none;
+    border-top: 1px dashed #ccc;
+    margin: 15px 0;
+}
+
+.v2-submit-btn {
+    width: 100%;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: 700;
+    background-color: #ff5722;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.v2-submit-btn:hover {
+    background-color: #e64a19;
+}
+.v2-submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.v2-form-error {
+    color: #dc3545;
+    text-align: center;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+
+/* Trạng thái loading/error */
+.v2-page-status {
+    text-align: center;
+    padding: 50px;
+    font-size: 18px;
+    color: #555;
+}
+.v2-page-status.v2-error {
+    color: #dc3545;
+}
+.v2-promo-message {
+    padding: 5px 20px 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+.v2-promo-message.success {
+    color: #28a745;
+}
+.v2-promo-message.error {
+    color: #dc3545;
+}
+.v2-promo-message.info {
+    color: #17a2b8;
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+    .v2-booking-layout {
+        grid-template-columns: 1fr;
+    }
+    .v2-booking-sidebar {
+        position: static;
+        top: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .v2-form-grid {
+        grid-template-columns: 1fr;
+    }
+}

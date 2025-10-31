@@ -1,0 +1,307 @@
+/* --- Tour Card V2 - Refactored Styles --- */
+
+/* Added CSS variables for a consistent and easily customizable theme.
+  This makes it simple to change colors, fonts, or spacing across all cards.
+*/
+:root {
+    --v2-primary-color: #3498db;
+    --v2-primary-hover: #2980b9;
+    --v2-accent-color: #e74c3c;
+    --v2-text-dark: #2c3e50;
+    --v2-text-light: #7f8c8d;
+    --v2-text-subtle: #95a5a6;
+    --v2-bg-light: #ffffff;
+    --v2-border-color: #ecf0f1;
+    --v2-warning-color: #f1c40f;
+    --v2-card-border-radius: 16px;
+    --v2-card-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    --v2-card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.v2-tour-card {
+    background: var(--v2-bg-light);
+    border-radius: var(--v2-card-border-radius);
+    overflow: hidden;
+    /* Using a softer, more modern shadow from variables */
+    box-shadow: var(--v2-card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--v2-border-color);
+}
+
+.v2-tour-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--v2-card-shadow-hover);
+}
+
+/* --- Image Section --- */
+/* Added a wrapper for better control over the image */
+.v2-tour-card-image-wrapper {
+    position: relative;
+    height: 220px;
+    overflow: hidden;
+}
+
+.v2-tour-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease, filter 0.4s ease;
+}
+
+.v2-tour-card:hover .v2-tour-card-image {
+    transform: scale(1.08);
+    filter: brightness(1.05); /* Added a subtle brightness effect on hover */
+}
+
+.v2-sale-badge {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    /* Using accent color variable for the badge */
+    background: var(--v2-accent-color);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+.v2-sale-badge i { /* REMOVED: Hide icon in sale badge */
+    display: none;
+}
+
+.v2-tour-duration {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px); /* Frosted glass effect for modern browsers */
+    color: white;
+    padding: 6px 12px;
+    border-radius: 50px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+}
+.v2-tour-duration i { /* REMOVED: Hide icon in duration */
+    display: none;
+}
+
+/* --- Content Section --- */
+.v2-tour-card-content {
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.v2-tour-header {
+    margin-bottom: 12px;
+}
+
+.v2-tour-title {
+    font-size: 20px; /* Slightly larger for better hierarchy */
+    font-weight: 700;
+    color: var(--v2-text-dark);
+    line-height: 1.4;
+    margin: 0 0 8px 0; /* Adjusted margin */
+    /* Text truncation for clean multiline titles */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 56px; /* 20px * 1.4 * 2 */
+}
+
+/* Renamed from .tour-link to .v2-tour-link for consistency */
+.v2-tour-link {
+    color: inherit; /* Inherits color from parent h3 */
+    text-decoration: none; /* MODIFIED: Removed underline */
+    transition: color 0.2s ease;
+}
+
+.v2-tour-link:hover {
+    color: var(--v2-primary-hover);
+}
+
+.v2-tour-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--v2-text-light);
+    font-size: 14px;
+}
+
+.v2-tour-location i { /* REMOVED: Hide icon in location */
+    display: none;
+}
+
+.v2-tour-rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.v2-stars {
+    color: var(--v2-warning-color);
+}
+.v2-stars i { /* REMOVED: Hide star icons */
+    display: none;
+}
+
+
+.v2-rating-text {
+    font-size: 14px;
+    color: var(--v2-text-light);
+}
+
+.v2-tour-description {
+    color: var(--v2-text-light);
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+.v2-tour-description p {
+    margin: 0;
+}
+
+/* --- Refactored Footer Section --- */
+/* The new single footer container */
+.v2-tour-card-footer {
+    margin-top: auto; /* Pushes the footer to the bottom */
+    padding-top: 16px;
+    border-top: 1px solid var(--v2-border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Space between price, actions, and creator */
+}
+
+.v2-tour-price {
+    /* No margin-bottom needed as parent flex has gap */
+}
+
+.v2-price-label {
+    color: var(--v2-text-light);
+    font-size: 14px;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.v2-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.v2-current-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--v2-accent-color);
+}
+
+.v2-original-price {
+    font-size: 16px;
+    color: var(--v2-text-subtle);
+    text-decoration: line-through;
+}
+
+.v2-price-contact {
+    color: var(--v2-primary-color);
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.v2-tour-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* --- New Custom Button System --- */
+/* Base button style */
+.v2-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    white-space: nowrap;
+    text-decoration: none; /* MODIFIED: Ensure no underline for buttons */
+}
+
+.v2-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Primary button style (e.g., Book Now) */
+.v2-btn--primary {
+    background-color: var(--v2-primary-color);
+    color: white;
+}
+.v2-btn--primary i { /* REMOVED: Hide icon in primary button */
+    display: none;
+}
+
+.v2-btn--primary:hover:not(:disabled) {
+    background-color: var(--v2-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+}
+
+/* Outline button style (e.g., View Details) */
+.v2-btn--outline {
+    background-color: transparent;
+    color: var(--v2-primary-color);
+    border-color: var(--v2-primary-color);
+}
+.v2-btn--outline i { /* REMOVED: Hide icon in outline button */
+    display: none;
+}
+
+.v2-btn--outline:hover:not(:disabled) {
+    background-color: var(--v2-primary-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.v2-tour-creator { /* REMOVED: Hide the creator section */
+    display: none;
+}
+.v2-sale-badge i { /* REMOVED: Hide icon in sale badge */
+    display: none;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .v2-tour-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .v2-tour-title {
+        font-size: 18px;
+        min-height: 50px; /* 18px * 1.4 * 2 */
+    }
+    
+    .v2-current-price {
+        font-size: 22px;
+    }
+}

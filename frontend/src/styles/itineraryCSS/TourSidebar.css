@@ -1,0 +1,251 @@
+.tour-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tour-sidebar h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2C3E50;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tour-sidebar h3 i {
+  color: #3498DB;
+}
+
+.map-box {
+  width: 100%;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tour-map-container {
+  border: 2px solid #f0f0f0;
+  border-radius: 12px;
+}
+
+/* Custom Map Marker */
+.custom-map-marker {
+  background: none;
+  border: none;
+}
+
+.marker-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #3498DB, #2980B9);
+  color: white;
+  border-radius: 50%;
+  font-size: 16px;
+  font-weight: 700;
+  box-shadow: 0 3px 10px rgba(41, 128, 185, 0.6);
+  border: 3px solid white;
+  transform-origin: center bottom;
+  animation: marker-bounce 1s ease-in-out infinite alternate;
+}
+
+@keyframes marker-bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Custom Popup */
+.custom-popup .leaflet-popup-content-wrapper {
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+}
+
+.custom-popup .leaflet-popup-content {
+  margin: 0;
+  padding: 0;
+  min-width: 250px;
+}
+
+.popup-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.popup-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.popup-info {
+  padding: 15px;
+}
+
+.popup-info h4 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2C3E50;
+  margin: 0 0 8px;
+}
+
+.popup-info .location-type {
+  display: inline-block;
+  font-size: 12px;
+  background-color: #F1F5F9;
+  color: #64748B;
+  padding: 3px 8px;
+  border-radius: 20px;
+  margin-bottom: 8px;
+}
+
+.popup-info p {
+  font-size: 14px;
+  color: #4A5568;
+  margin: 8px 0 0;
+}
+
+/* Location list */
+.location-list {
+  background-color: #F8FAFC;
+  border-radius: 10px;
+  padding: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.location-list-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2C3E50;
+  margin: 0 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.location-list-title i {
+  color: #3498DB;
+}
+
+.locations-summary {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.location-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.location-item:last-child {
+  border-bottom: none;
+}
+
+.location-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #3498DB, #2980B9);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.location-details {
+  flex-grow: 1;
+}
+
+.location-details h5 {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2D3748;
+  margin: 0 0 5px;
+}
+
+.location-type-badge {
+  display: inline-block;
+  font-size: 12px;
+  background-color: #EBF5FF;
+  color: #3498DB;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+
+/* Empty state */
+.sidebar-no-locations {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.empty-map-message {
+  flex-grow: 1;
+  background-color: #F8FAFC;
+  border-radius: 10px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-map-message i {
+  font-size: 40px;
+  color: #A0AEC0;
+  margin-bottom: 15px;
+}
+
+.empty-map-message p {
+  color: #64748B;
+  font-size: 15px;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .tour-sidebar {
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .tour-map-container {
+    height: 300px !important;
+  }
+  
+  .location-list {
+    padding: 15px;
+  }
+}
+
+@media (max-width: 576px) {
+  .tour-map-container {
+    height: 250px !important;
+  }
+  
+  .popup-image {
+    height: 100px;
+  }
+}

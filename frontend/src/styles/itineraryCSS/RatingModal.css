@@ -1,0 +1,175 @@
+
+.rating-modal-overlay {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100; /* Cao hơn header */
+}
+
+.rating-modal {
+  background: #fff;
+  padding: 25px;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 550px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.rating-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 15px;
+}
+
+.rating-modal-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+  color: #333;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  color: #777;
+}
+.close-modal:hover {
+    color: #333;
+}
+
+.rating-modal .star-rating p,
+.rating-modal .review-input label,
+.rating-modal .review-image-upload label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #555;
+}
+.rating-modal .star-rating .required {
+    color: red;
+}
+
+
+.rating-modal .stars i {
+  font-size: 1.8rem !important; /* Ghi đè nếu cần */
+  margin-right: 5px !important;
+  color: #e0e0e0; /* Màu sao mặc định */
+  cursor: pointer;
+}
+.rating-modal .stars i.bi-star-fill {
+  color: #ffc107; /* Màu sao đã chọn */
+}
+
+
+.rating-modal textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  min-height: 100px;
+  margin-bottom: 15px;
+}
+
+.rating-modal .form-control-file {
+    display: block;
+    width: 100%;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: .25rem;
+    transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+    margin-bottom: 10px;
+}
+
+
+.image-previews-modal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.image-preview-item-modal {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.image-preview-item-modal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.remove-image-btn-modal {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.remove-image-btn-modal i {
+    line-height: 1;
+}
+
+
+.image-limit-note {
+    font-size: 0.85rem;
+    color: #777;
+    margin-top: 5px;
+}
+
+.submit-rating {
+  background-color: #007bff; /* Hoặc màu chủ đạo của bạn */
+  color: white;
+  border: none;
+padding: 12px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: background-color 0.3s;
+  width: 100%;
+}
+
+.submit-rating:hover {
+  background-color: #0056b3;
+}
+.submit-rating:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
