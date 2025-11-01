@@ -12,6 +12,7 @@ const dbConfig = {
     connectionLimit: 10,
     queueLimit: 0,
     // charset: 'utf8mb4'
+    timezone: '+07:00' // Cấu hình múi giờ GMT+7
 };
 
 // Tạo pool kết nối

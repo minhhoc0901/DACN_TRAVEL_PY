@@ -86,4 +86,16 @@ export const bookingService = {
         }
         return result;
     },
+    async downloadInvoice(bookingId) {
+        const token = getAuthToken();
+        const response = await fetch(`${API_BASE_URL}/bookings/${bookingId}/invoice/pdf`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Không thể tải hóa đơn.');
+        }
+        return await response.arrayBuffer(); // Trả về dữ liệu PDF dạng arrayBuffer
+    },
 };

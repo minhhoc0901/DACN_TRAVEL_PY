@@ -9,7 +9,7 @@ const fileUpload = require('express-fileupload');
 const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
-
+const cron = require('node-cron');
 // Cấu hình dotenv
 dotenv.config();
 
@@ -110,6 +110,16 @@ setupChatSocket(io);
 
 const setupChatSocketWithAdmin = require('./socket/chatSocketWithAdmin');
 setupChatSocketWithAdmin(io);
+
+// --- Cấu hình Cron Job ---
+const Booking = require('./models/Booking');
+// Cron job để tự động hủy booking quá 15 phút
+// Chạy mỗi phút ('* * * * *')
+cron.schedule('* * * * *', async () => {
+    console.log('[CRON] Running job to cancel expired bookings...');
+    await Booking.cancelExpiredBookings();
+});
+
 
 // --- Khởi động Server ---
 const PORT = process.env.PORT || 5000;

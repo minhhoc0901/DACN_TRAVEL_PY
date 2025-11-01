@@ -1,8 +1,7 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { bookingService } from '../services/bookingService';
+import CountdownTimer from '../components/CountdownTimer';
 import '../styles/MyBookingsPage.css';
 
 // Component Modal xác nhận (có thể tách ra file riêng nếu muốn)
@@ -137,6 +136,39 @@ const MyBookingsPage = () => {
         );
     };
 
+    const handleViewInvoice = (bookingId) => {
+        // Chuyển hướng sang trang hóa đơn hoặc mở modal (tùy bạn muốn UI thế nào)
+        // Ví dụ chuyển hướng:
+        navigate(`/bookings/invoice/${bookingId}`);
+    };
+
+    const handleDownloadInvoice = async (bookingId) => {
+        try {
+            // Gọi API backend trả về file PDF
+            const response = await bookingService.downloadInvoice(bookingId);
+            // Tạo link download file PDF
+            const url = window.URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `invoice_${bookingId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            alert('Không thể tải hóa đơn.');
+        }
+    };
+
+    // Hàm xử lý khi hết giờ
+    const handleExpire = (bookingId) => {
+        console.log(`[EXPIRE] handleExpire được gọi cho booking ID: ${bookingId}. Cập nhật UI thành 'cancelled'.`);
+        setBookings(current =>
+            current.map(b =>
+                b.id === bookingId ? { ...b, status: 'cancelled' } : b
+            )
+        );
+    };
+
     if (loading) return <div className="v2-my-bookings-container"><div className="v2-loader"></div></div>;
     if (error) return <div className="v2-my-bookings-container"><p className="v2-error-message">{error}</p></div>;
 
@@ -157,56 +189,81 @@ const MyBookingsPage = () => {
                     </div>
                 ) : (
                     <div className="v2-bookings-list">
-                        {bookings.map(booking => (
-                            <div key={booking.id} className={`v2-booking-card status-${booking.status}`}>
-                                <img src={`http://localhost:5000${booking.tour_image}`} alt={booking.tour_name} className="v2-booking-card-img" />
-                                <div className="v2-booking-card-body">
-                                    <span className={`v2-booking-status status-text-${booking.status} payment-status-${booking.payment_status}`}>
-                                        {getStatusText(booking.status, booking.payment_status)}
-                                    </span>
-                                    <h3 className="v2-booking-tour-name">{booking.tour_name}</h3>
-                                    
-                                    <div className="v2-booking-details-section">
-                                        {Array.isArray(booking.details) && booking.details.map((detail, index) => (
-                                            <p key={index} className="v2-booking-detail-item">
-                                                {translatePriceType(detail.price_type)}: {detail.quantity} x {new Intl.NumberFormat('vi-VN').format(detail.unit_price)} VNĐ
-                                            </p>
-                                        ))}
-                                        {booking.discount_amount > 0 && (
-                                            <p className="v2-booking-detail-discount">
-                                                Giảm giá: -{new Intl.NumberFormat('vi-VN').format(booking.discount_amount)} VNĐ
-                                            </p>
-                                        )}
-                                    </div>
+                        {bookings.map(booking => {
+                            // 1. Tạo đối tượng Date từ chuỗi backend. Trình duyệt sẽ tự hiểu đây là giờ địa phương.
+                            const localDate = new Date(booking.created_at.replace(' ', 'T'));
 
-                                    <p className="v2-booking-total">
-                                        <strong>Tổng tiền:</strong> {new Intl.NumberFormat('vi-VN').format(booking.final_amount)} VNĐ
-                                    </p>
+                            // 2. Lấy timestamp UTC từ đối tượng Date vừa tạo.
+                            const utcTimestamp = localDate.getTime();
 
-                                    <div className="v2-booking-card-actions">
-                                        {booking.status === 'pending_payment' && (
-                                            <>
-                                                <Link to={`/payment/${booking.id}`} className="v2-btn v2-btn--primary">Thanh toán</Link>
-                                                <button onClick={() => handleEditBooking(booking)} className="v2-btn v2-btn--warning">Sửa</button>
-                                                <button onClick={() => handleCancelBooking(booking.id)} className="v2-btn v2-btn--danger">Hủy</button>
-                                            </>
+                            // 3. Tính thời gian hết hạn.
+                            const expiryTimestamp = utcTimestamp + 15 * 60 * 1000;
+                            const isExpired = Date.now() > expiryTimestamp;
+                            return (
+                                <div key={booking.id} className={`v2-booking-card status-${booking.status}`}>
+                                    <img src={`http://localhost:5000${booking.tour_image}`} alt={booking.tour_name} className="v2-booking-card-img" />
+                                    <div className="v2-booking-card-body">
+                                        <span className={`v2-booking-status status-text-${booking.status} payment-status-${booking.payment_status}`}>
+                                            {booking.status === 'pending_payment' && isExpired 
+                                                ? 'Đã hết hạn' 
+                                                : getStatusText(booking.status, booking.payment_status)}
+                                        </span>
+                                        <h3 className="v2-booking-tour-name">{booking.tour_name}</h3>
+
+                                        {/* HIỂN THỊ ĐỒNG HỒ ĐẾM NGƯỢC */}
+                                        {booking.status === 'pending_payment' && !isExpired && (
+                                            <CountdownTimer
+                                                expiryTimestamp={expiryTimestamp}
+                                                onExpire={() => handleExpire(booking.id)}
+                                            />
                                         )}
-                                        {booking.payment_status === 'success' && booking.status !== 'cancelled' && (
-                                            <Link to={`/tours/${booking.tour_id}`} className="v2-btn v2-btn--secondary">Xem chi tiết</Link>
-                                        )}
-                                        {booking.status === 'cancelled' && (
-                                            <>
-                                                <Link to={`/booking/${booking.tour_id}`} state={{ prefillData: booking.details  }} className="v2-btn v2-btn--secondary">Đặt lại</Link>
+                                        
+                                        <div className="v2-booking-details-section">
+                                            {Array.isArray(booking.details) && booking.details.map((detail, index) => (
+                                                <p key={index} className="v2-booking-detail-item">
+                                                    {translatePriceType(detail.price_type)}: {detail.quantity} x {new Intl.NumberFormat('vi-VN').format(detail.unit_price)} VNĐ
+                                                </p>
+                                            ))}
+                                            {booking.discount_amount > 0 && (
+                                                <p className="v2-booking-detail-discount">
+                                                    Giảm giá: -{new Intl.NumberFormat('vi-VN').format(booking.discount_amount)} VNĐ
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <p className="v2-booking-total">
+                                            <strong>Tổng tiền:</strong> {new Intl.NumberFormat('vi-VN').format(booking.final_amount)} VNĐ
+                                        </p>
+                                            
+                                        <div className="v2-booking-card-actions">
+                                            {booking.status === 'pending_payment' && (
+                                                <>
+                                                    <Link to={`/payment/${booking.id}`} className="v2-btn v2-btn--primary">Thanh toán</Link>
+                                                    <button onClick={() => handleEditBooking(booking)} className="v2-btn v2-btn--warning">Sửa</button>
+                                                    <button onClick={() => handleCancelBooking(booking.id)} className="v2-btn v2-btn--danger">Hủy</button>
+                                                </>
+                                            )}
+                                            {booking.payment_status === 'success' && booking.status !== 'cancelled' && (
+                                                <>
+                                                    <Link to={`/tours/${booking.tour_id}`} className="v2-btn v2-btn--secondary">Xem chi tiết</Link>
+                                                    <button onClick={() => handleViewInvoice(booking.id)} className="v2-btn v2-btn--info">Xem hóa đơn</button>
+                                                    <button onClick={() => handleDownloadInvoice(booking.id)} className="v2-btn v2-btn--primary">Tải hóa đơn (PDF)</button>
+                                                </>
+                                            )}
+                                            {booking.status === 'cancelled' && (
+                                                <>
+                                                    <Link to={`/booking/${booking.tour_id}`} state={{ prefillData: booking.details  }} className="v2-btn v2-btn--secondary">Đặt lại</Link>
+                                                    <button onClick={() => handleDeleteBooking(booking.id)} className="v2-btn v2-btn--danger">Xóa</button>
+                                                </>
+                                            )}
+                                            {booking.payment_status === 'failed' && booking.status !== 'cancelled' && (
                                                 <button onClick={() => handleDeleteBooking(booking.id)} className="v2-btn v2-btn--danger">Xóa</button>
-                                            </>
-                                        )}
-                                        {booking.payment_status === 'failed' && booking.status !== 'cancelled' && (
-                                            <button onClick={() => handleDeleteBooking(booking.id)} className="v2-btn v2-btn--danger">Xóa</button>
-                                        )}
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

@@ -20,7 +20,22 @@
     --v2-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
     --v2-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
+.v2-countdown-timer {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #dc3545; /* Màu đỏ */
+    margin-bottom: 10px;
+    background-color: #f8d7da;
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
 
+.v2-countdown-expired {
+    font-size: 0.9rem;
+    font-weight: bold;
+    color: #6c757d; /* Màu xám */
+}
 .v2-my-bookings-container {
     max-width: 1140px;
     margin: 2rem auto;

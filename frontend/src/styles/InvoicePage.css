@@ -1,0 +1,76 @@
+/* Container chính của trang hóa đơn */
+.invoice-page-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    /* Căn giữa và tạo khoảng cách */
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+}
+
+/* Tiêu đề "Hóa đơn đặt tour" */
+.invoice-page-container h2 {
+    text-align: center;
+    color: #333;
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 1rem;
+}
+
+/* Khung chứa PDF */
+.invoice-iframe-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    overflow: hidden;
+    /* Giữ bo góc cho iframe */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.invoice-iframe {
+    display: block;
+    /* Bỏ khoảng trắng thừa bên dưới */
+    border: none;
+    /* Bỏ viền mặc định của iframe */
+}
+
+/* Khu vực chứa nút bấm */
+.invoice-actions {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+/* Nút "In hóa đơn" */
+.invoice-print-btn {
+    background-color: #007bff;
+    /* Màu xanh dương (có thể đổi theo màu chủ đạo của bạn) */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.invoice-print-btn:hover {
+    background-color: #0056b3;
+    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3);
+}
+
+/* Trạng thái tải và lỗi */
+.invoice-status-message {
+    text-align: center;
+    font-size: 1.2rem;
+    color: #555;
+    padding: 3rem 1rem;
+}
+
+.invoice-status-message.error {
+    color: #d9534f;
+    /* Màu đỏ cho lỗi */
+    font-weight: 600;
+}

@@ -27,6 +27,7 @@ import BookingPage from './pages/BookingPage';
 import PaymentPage from './pages/PaymentPage';
 import PaymentResultPage from './pages/PaymentResultPage';
 import MyBookingsPage from './pages/MyBookingsPage';
+import InvoicePage from './pages/InvoicePage';
 const AppRouter = () => {
     return (
         <Routes>
@@ -41,7 +42,8 @@ const AppRouter = () => {
             <Route path="/tours" element={<TourListPage />} />
             <Route path="/tours/:id" element={<ItineraryDetail />} />
             <Route path="/booking/:tourId" element={<BookingPage />} /> 
-            <Route path="/payment/:bookingId" element={<PaymentPage />} />   
+            <Route path="/payment/:bookingId" element={<PaymentPage />} />  
+            <Route path="/bookings/invoice/:bookingId" element={<InvoicePage/>} /> 
             <Route path="/payment/result" element={<PaymentResultPage />} />
             <Route
                 path="/profile"

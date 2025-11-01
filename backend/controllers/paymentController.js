@@ -1,130 +1,3 @@
-// const VNPAYService = require('../utils/VNPAY');
-// const Payment = require('../models/Payment');
-// const Booking = require('../models/Booking');
-
-// /**
-//  * Khởi tạo thanh toán VNPAY
-//  */
-// exports.initVnpay = async (req, res) => {
-//   try {
-//     const { bookingId } = req.body;
-
-//     console.log('[VNPAY][init] bookingId:', bookingId);
-
-//     const booking = await Booking.findById(bookingId);
-//     if (!booking) {
-//       return res.status(404).json({ success: false, message: 'Không tìm thấy booking' });
-//     }
-
-//     console.log('[VNPAY][init] amount:', booking.final_amount);
-
-//     const ipAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
-//     const txnRef = `${bookingId}${Date.now()}`.replace(/\D/g, '').slice(0, 20);
-//     const orderInfo = `Thanh toan booking ${bookingId}`;
-
-//     console.log('[VNPAY][init] txnRef:', txnRef);
-
-//     await Payment.createPending(bookingId, txnRef, booking.final_amount);
-
-//     // Sử dụng VNPAYService với thư viện
-//     const paymentUrl = VNPAYService.createPaymentUrl(ipAddr, {
-//       amount: booking.final_amount,
-//       txnRef: txnRef,
-//       orderInfo: orderInfo,
-//       bankCode: req.body.bankCode || '' // Optional bank code
-//     });
-
-//     res.json({ success: true, paymentUrl, txnRef });
-//   } catch (error) {
-//     console.error('[VNPAY][init] Error:', error);
-//     res.status(500).json({ success: false, message: error.message });
-//   }
-// };
-
-// /**
-//  * Xử lý callback từ VNPAY (Return URL)
-//  */
-// exports.vnpReturn = async (req, res) => {
-//   try {
-//     console.log('[VNPAY][return] Query params:', req.query);
-
-//     // Sử dụng VNPAYService để verify
-//     const isValid = VNPAYService.verifySignature(req.query);
-//     if (!isValid) {
-//       console.error('[VNPAY][return] Invalid signature');
-//       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=error&message=Invalid_signature`);
-//     }
-
-//     const { vnp_TxnRef, vnp_ResponseCode, vnp_TransactionNo } = req.query;
-//     const payment = await Payment.findByTxnRef(vnp_TxnRef);
-
-//     if (!payment) {
-//       console.error('[VNPAY][return] Payment not found:', vnp_TxnRef);
-//       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=error&message=Payment_not_found`);
-//     }
-
-//     if (vnp_ResponseCode === '00') {
-//       await Payment.markSuccess(vnp_TxnRef, vnp_TransactionNo, vnp_ResponseCode);
-//       await Booking.updateStatus(payment.booking_id, 'confirmed');
-      
-//       console.log('[VNPAY][return] Payment success:', vnp_TxnRef);
-//       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=success&bookingId=${payment.booking_id}`);
-//     } else {
-//       await Payment.markFailed(vnp_TxnRef, vnp_ResponseCode);
-//       await Booking.updateStatus(payment.booking_id, 'cancelled');
-      
-//       console.log('[VNPAY][return] Payment failed:', vnp_TxnRef, vnp_ResponseCode);
-//       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=failed&code=${vnp_ResponseCode}`);
-//     }
-
-//   } catch (error) {
-//     console.error('[VNPAY][return] Error:', error);
-//     res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=error&message=${error.message}`);
-//   }
-// };
-
-// /**
-//  * Xử lý IPN callback từ VNPAY (server-to-server)
-//  */
-// exports.vnpIpn = async (req, res) => {
-//     try {
-//         console.log('[VNPAY][IPN] Query params:', req.query);
-
-//         // Sử dụng VNPAYService để verify
-//         const isValid = VNPAYService.verifySignature(req.query);
-//         if (!isValid) {
-//             console.error('[VNPAY][IPN] Invalid signature');
-//             return res.status(200).json({ RspCode: '97', Message: 'Invalid Signature' });
-//         }
-
-//         const { vnp_TxnRef, vnp_ResponseCode, vnp_TransactionNo } = req.query;
-//         const payment = await Payment.findByTxnRef(vnp_TxnRef);
-
-//         if (!payment) {
-//             console.error('[VNPAY][IPN] Order not found:', vnp_TxnRef);
-//             return res.status(200).json({ RspCode: '01', Message: 'Order not found' });
-//         }
-
-//         if (payment.payment_status !== 'pending') {
-//             console.log('[VNPAY][IPN] Order already confirmed/failed:', vnp_TxnRef);
-//             return res.status(200).json({ RspCode: '02', Message: 'Order already confirmed' });
-//         }
-
-//         if (vnp_ResponseCode === '00') {
-//             await Payment.markSuccess(vnp_TxnRef, vnp_TransactionNo, vnp_ResponseCode);
-//             await Booking.updateStatus(payment.booking_id, 'confirmed');
-//             return res.status(200).json({ RspCode: '00', Message: 'Success' });
-//         } else {
-//             await Payment.markFailed(vnp_TxnRef, vnp_ResponseCode);
-//             await Booking.updateStatus(payment.booking_id, 'cancelled');
-//             return res.status(200).json({ RspCode: '00', Message: 'Confirm fail transaction' });
-//         }
-//     } catch (error) {
-//         console.error('[VNPAY][IPN] Error:', error);
-//         return res.status(200).json({ RspCode: '99', Message: 'Unknown error' });
-//     }
-// };
-
 
 const VNPAYService = require('../utils/VNPAY');
 const Payment = require('../models/Payment');
@@ -181,24 +54,30 @@ exports.initVnpay = async (req, res) => {
     // Kiểm tra có payment pending không
     const pendingPayment = await Payment.findPendingByBookingId(bookingId);
     if (pendingPayment) {
-      const now = new Date();
-      const paymentTime = new Date(pendingPayment.payment_date);
-      const diffMinutes = (now - paymentTime) / (1000 * 60);
+      // const now = new Date();
+      // const paymentTime = new Date(pendingPayment.payment_date);
+      // const diffMinutes = (now - paymentTime) / (1000 * 60);
       
-      if (diffMinutes < 15) {
-        return res.status(400).json({
-          success: false,
-          message: 'Đã có giao dịch đang chờ xử lý. Vui lòng chờ hoặc hoàn thành giao dịch trước đó.',
-          data: {
-            pendingTxnRef: pendingPayment.vnp_TxnRef,
-            remainingMinutes: Math.ceil(15 - diffMinutes)
-          }
-        });
-      } else {
-        // Hủy payment cũ đã quá hạn
-        await Payment.markExpired(pendingPayment.vnp_TxnRef);
-        console.log('[VNPAY][init] Expired old pending payment:', pendingPayment.vnp_TxnRef);
-      }
+      // if (diffMinutes < 15) {
+      //   return res.status(400).json({
+      //     success: false,
+      //     message: 'Đã có giao dịch đang chờ xử lý. Vui lòng chờ hoặc hoàn thành giao dịch trước đó.',
+      //     data: {
+      //       pendingTxnRef: pendingPayment.vnp_TxnRef,
+      //       remainingMinutes: Math.ceil(15 - diffMinutes)
+      //     }
+      //   });
+      // } else {
+      //   // Hủy payment cũ đã quá hạn
+      //   await Payment.markExpired(pendingPayment.vnp_TxnRef);
+      //   console.log('[VNPAY][init] Expired old pending payment:', pendingPayment.vnp_TxnRef);
+      // }
+      if (pendingPayment) {
+      // Thay vì chặn người dùng, chúng ta sẽ hủy giao dịch cũ để tạo một giao dịch mới.
+      // Điều này cải thiện trải nghiệm khi người dùng lỡ đóng tab thanh toán.
+      await Payment.markCancelled(pendingPayment.vnp_TxnRef);
+      console.log(`[VNPAY][init] Cancelled old pending payment: ${pendingPayment.vnp_TxnRef} to create a new one.`);
+    }
     }
 
     console.log('[VNPAY][init] amount:', booking.final_amount);
