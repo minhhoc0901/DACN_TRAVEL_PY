@@ -28,6 +28,7 @@ import PaymentPage from './pages/PaymentPage';
 import PaymentResultPage from './pages/PaymentResultPage';
 import MyBookingsPage from './pages/MyBookingsPage';
 import InvoicePage from './pages/InvoicePage';
+import ItineraryPlanner from './pages/ItineraryPlanner';
 const AppRouter = () => {
     return (
         <Routes>
@@ -45,6 +46,7 @@ const AppRouter = () => {
             <Route path="/payment/:bookingId" element={<PaymentPage />} />  
             <Route path="/bookings/invoice/:bookingId" element={<InvoicePage/>} /> 
             <Route path="/payment/result" element={<PaymentResultPage />} />
+            <Route path="/itinerary-planner" element={<ItineraryPlanner />} />
             <Route
                 path="/profile"
                 element={

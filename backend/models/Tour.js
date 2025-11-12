@@ -1042,6 +1042,126 @@ async function getFeaturedTours(limit = 8) {
         throw error;
     }
 }
+/**
+ * Lấy danh sách tour dựa trên một danh sách các ID địa điểm
+ * @param {Array<number>} locationIds - Mảng các ID của địa điểm
+ * @param {number} limit - Số lượng tour tối đa cần lấy
+ * @returns {Promise<Array>} - Danh sách các tour tìm thấy
+ */
+async function getToursByLocationIds(locationIds, limit = 5) {
+    if (!locationIds || locationIds.length === 0) {
+        console.log('[Tour][getToursByLocationIds] No location IDs provided');
+        return [];
+    }
+
+    try {
+        // Validate và clean location IDs
+        const validLocationIds = locationIds
+            .filter(id => id != null && !isNaN(id))
+            .map(id => parseInt(id));
+
+        if (validLocationIds.length === 0) {
+            console.log('[Tour][getToursByLocationIds] No valid location IDs');
+            return [];
+        }
+
+        const placeholders = validLocationIds.map(() => '?').join(',');
+        
+        const query = `
+            SELECT 
+                t.id,
+                t.destination as title,
+                t.destination,
+                t.departure_from,
+                t.duration,
+                t.description,
+                t.image,
+                t.created_at,
+                t.updated_at,
+                GREATEST(t.created_at, IFNULL(t.updated_at, t.created_at)) as latest_update,
+                
+                -- Price information từ Tour_Prices
+                COALESCE(MIN(CASE 
+                    WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 
+                    THEN tp.sale_price 
+                    ELSE tp.price 
+                END), 0) as min_price,
+                
+                COALESCE(MAX(CASE 
+                    WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 
+                    THEN tp.sale_price 
+                    ELSE tp.price 
+                END), 0) as max_price,
+                
+                -- Check if has sale
+                COUNT(CASE WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 THEN 1 END) > 0 as has_sale,
+                
+                -- Review statistics
+                COALESCE(r.avg_rating, 0) as avg_rating,
+                COALESCE(r.review_count, 0) as review_count,
+                
+                -- User info
+                u.full_name as creator_name,
+                u.username as creator_username
+                
+            FROM Tours t
+            INNER JOIN Tour_Locations tl ON t.id = tl.tour_id
+            LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
+            LEFT JOIN (
+                SELECT 
+                    tour_id,
+                    AVG(rating) as avg_rating,
+                    COUNT(*) as review_count
+                FROM Reviews 
+                GROUP BY tour_id
+            ) r ON t.id = r.tour_id
+            LEFT JOIN Users u ON t.user_id = u.id
+            WHERE tl.location_id IN (${placeholders})
+              AND t.status = 'approved'
+              AND u.role = 'admin'
+            GROUP BY t.id, t.destination, t.description, t.image, t.departure_from, 
+                     t.duration, t.created_at, t.updated_at, u.full_name, u.username
+            ORDER BY avg_rating DESC, review_count DESC
+            LIMIT ?
+        `;
+
+        console.log('[Tour][getToursByLocationIds] Location IDs:', validLocationIds);
+        console.log('[Tour][getToursByLocationIds] Limit:', limit);
+        
+        const params = [...validLocationIds, parseInt(limit)];
+        const [tours] = await pool.query(query, params);
+        
+        console.log('[Tour][getToursByLocationIds] Found tours:', tours.length);
+        
+        // Format giống hệt getApprovedToursForSale
+        return tours.map(tour => ({
+            id: tour.id,
+            title: tour.title,
+            destination: tour.destination,
+            departure_from: tour.departure_from,
+            duration: tour.duration,
+            description: tour.description,
+            image: tour.image,
+            created_at: tour.created_at,
+            updated_at: tour.updated_at,
+            latest_update: tour.latest_update,
+            min_price: parseFloat(tour.min_price || 0),
+            max_price: parseFloat(tour.max_price || 0),
+            has_sale: tour.has_sale ? 1 : 0,
+            avg_rating: parseFloat(tour.avg_rating || 0),
+            review_count: parseInt(tour.review_count || 0),
+            creator_name: tour.creator_name || 'Không rõ',
+            creator_username: tour.creator_username,
+            has_promotion: false // Giống như getApprovedToursForSale
+        }));
+
+    } catch (error) {
+        console.error('[Tour][getToursByLocationIds] Error:', error);
+        console.error('[Tour][getToursByLocationIds] Stack:', error.stack);
+        throw error;
+    }
+}
+
 
 module.exports = { 
   createTour, 
@@ -1058,4 +1178,5 @@ module.exports = {
   getTourDetailForSale,
   getTourPrices,
   getFeaturedTours,
+  getToursByLocationIds
 };

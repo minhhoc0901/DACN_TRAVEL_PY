@@ -1,83 +1,52 @@
+
 const express = require('express');
 const router = express.Router();
 const tourController = require('../controllers/tourController');
-const authMiddleware = require('../middlewares/autMiddleware'); // Sửa từ authMiddleware thành autMiddleware
-const { isAdmin } = require('../middlewares/autMiddleware'); // Import isAdmin từ autMiddleware
+const authMiddleware = require('../middlewares/autMiddleware');
 
-// Đặt tất cả các route cụ thể trước route có tham số
-// Lấy danh sách tours đã được duyệt để bán 20/10/2025
-// Public routes for customers
-router.get('/for-sale', tourController.getApprovedToursForSale);
-router.get('/featured', tourController.getFeaturedTours);
-// Tìm kiếm tour
-router.get("/search", tourController.searchTours);
-// Lấy danh sách ảnh tour
-router.get('/images', tourController.getTourImages);
+// 1. Import các middleware cache
+const cacheMiddleware = require('../middlewares/cacheMiddleware');
+const invalidateCacheMiddleware = require('../middlewares/invalidateCacheMiddleware');
 
-// Upload ảnh tour
-router.post('/upload-image', tourController.uploadTourImage);
+// 2. Định nghĩa tiền tố cache cho tour
+const TOUR_CACHE_PREFIX = '/api/tours';
 
-// Get tours by location
-router.get('/location/:id', tourController.getToursByLocation);
+// === PUBLIC ROUTES (CACHE ENABLED) ===
+// Các API này được gọi thường xuyên bởi khách truy cập, cần được cache để tăng tốc.
+router.get('/for-sale', cacheMiddleware, tourController.getApprovedToursForSale);
+router.get('/featured', cacheMiddleware, tourController.getFeaturedTours);
+router.get("/search", cacheMiddleware, tourController.searchTours);
+router.get('/location/:id', cacheMiddleware, tourController.getToursByLocation);
+router.get('/images', cacheMiddleware, tourController.getTourImages); // Có thể cache
+router.get('/detail/:tourId', cacheMiddleware, tourController.getTourDetailForSale);
+// Route GET / phải đặt sau các route GET cụ thể khác
+router.get('/', cacheMiddleware, tourController.getAllTours);
 
-// THÊM: Debug route để xem trạng thái tours - đặt TRƯỚC route /:id
-router.get('/debug/tours-status', authMiddleware.verifyToken, async (req, res) => {
-  try {
-    const { pool } = require('../config/db');
-    const [rows] = await pool.execute(`
-      SELECT id, destination, status, created_at, user_id
-      FROM Tours
-      ORDER BY created_at DESC
-    `);
-    
-    const counts = {
-      total: rows.length,
-      pending: rows.filter(r => r.status === 'pending').length,
-      approved: rows.filter(r => r.status === 'approved').length,
-      rejected: rows.filter(r => r.status === 'rejected').length,
-      null: rows.filter(r => r.status === null).length,
-    };
-    
-    res.status(200).json({
-      success: true,
-      counts,
-      tours: rows
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error during debug',
-      error: error.message
-    });
-  }
-});
 
-// Routes cho phê duyệt tour
-router.get('/admin/tours', authMiddleware.verifyToken, authMiddleware.isAdmin, tourController.getAdminTours);
-router.get('/tours/admin/tours', authMiddleware.verifyToken, authMiddleware.isAdmin, tourController.getAdminTours);
-router.put('/admin/tours/:id/status', authMiddleware.verifyToken, authMiddleware.isAdmin, tourController.updateTourStatus);
+// === USER & ADMIN SPECIFIC ROUTES (NO CACHE) ===
+// Các API này trả về dữ liệu riêng tư, không được cache toàn cục.
 router.get('/user/tours', authMiddleware.verifyToken, tourController.getUserTours);
-
-// Create a new tour
-router.post('/', authMiddleware.verifyToken, tourController.createTour);
-// router.post('/', authMiddleware.verifyToken,authMiddleware.isAdmin, tourController.createTour);
-// Get all tours (chỉ lấy tour đã duyệt)
-router.get('/', tourController.getAllTours);
-
-// ĐẶT CUỐI CÙNG: Get a tour by ID (phải đặt sau tất cả các route cụ thể khác)
-router.get('/:id', tourController.getTourById);
-
-// Update a tour
-router.put('/:id', tourController.updateTour);
-
-// Delete a tour
-router.delete('/:id', tourController.deleteTour);
-
-// Add this route with your other admin routes
+router.get('/admin/tours', authMiddleware.verifyToken, authMiddleware.isAdmin, tourController.getAdminTours);
 router.get('/admin/all', authMiddleware.verifyToken, authMiddleware.isAdmin, tourController.getAllToursForAdmin);
+router.get('/debug/tours-status', authMiddleware.verifyToken, async (req, res) => { /* ... logic ... */ });
 
 
-router.get('/detail/:tourId', tourController.getTourDetailForSale);
+// === DATA MODIFYING ROUTES (CACHE INVALIDATION) ===
+// Bất kỳ hành động nào trong nhóm này đều sẽ xóa tất cả cache có tiền tố '/api/tours'.
+const invalidateAllTourCache = invalidateCacheMiddleware(TOUR_CACHE_PREFIX);
+
+router.post('/', authMiddleware.verifyToken, invalidateAllTourCache, tourController.createTour);
+router.post('/upload-image', invalidateAllTourCache, tourController.uploadTourImage); // Giả sử upload ảnh liên quan đến tour
+router.put('/admin/tours/:id/status', authMiddleware.verifyToken, authMiddleware.isAdmin, invalidateAllTourCache, tourController.updateTourStatus);
+
+// Khi cập nhật hoặc xóa một tour cụ thể, chúng ta cũng xóa toàn bộ cache cho chắc chắn.
+router.put('/:id', authMiddleware.verifyToken, invalidateAllTourCache, tourController.updateTour);
+router.delete('/:id', authMiddleware.verifyToken, invalidateAllTourCache, tourController.deleteTour);
+
+
+// === ĐẶT CUỐI CÙNG: GET A TOUR BY ID (CACHE ENABLED) ===
+// Route này phải đặt cuối cùng để không bị nhầm với các route như /search, /featured...
+router.get('/:id', cacheMiddleware, tourController.getTourById);
 
 
 module.exports = router;

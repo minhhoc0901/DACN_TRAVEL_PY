@@ -1,29 +1,7 @@
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 export const tourService = {
-    // Lấy danh sách tours để bán
-    // async getToursForSale(filters = {}) {
-    //     try {
-    //         const queryParams = new URLSearchParams();
-            
-    //         Object.keys(filters).forEach(key => {
-    //             if (filters[key] !== null && filters[key] !== undefined && filters[key] !== '') {
-    //                 queryParams.append(key, filters[key]);
-    //             }
-    //         });
-            
-    //         const response = await fetch(`${API_BASE_URL}/tours/for-sale`);
-            
-    //         if (!response.ok) {
-    //             throw new Error('Failed to fetch tours');
-    //         }
-            
-    //         return await response.json();
-    //     } catch (error) {
-    //         console.error('Error fetching tours:', error);
-    //         throw error;
-    //     }
-    // },
+    
     async getToursForSale(filters = {}) {
         try {
             const queryParams = new URLSearchParams();

@@ -1,11 +1,13 @@
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/Tour/TourCard.css';
 
-const TourCard = ({ tour, onBookTour }) => {
+const TourCard = ({ tour }) => {
     const {
         id,
         title,
+        destination,
         departure_from,
         duration,
         description,
@@ -18,21 +20,22 @@ const TourCard = ({ tour, onBookTour }) => {
         creator_name
     } = tour;
 
-    // --- Tính toán phần trăm giảm giá ---
+    // Tính toán phần trăm giảm giá
     let discount_percent = 0;
     if (has_sale === 1 && max_price > 0 && max_price > min_price) {
         discount_percent = Math.round(((max_price - min_price) / max_price) * 100);
     }
 
-    // Helper function to format price to VND
+    // Format price
     const formatPrice = (price) => {
+        if (!price || price === 0) return 'Liên hệ';
         return new Intl.NumberFormat('vi-VN', {
             style: 'currency',
             currency: 'VND'
         }).format(price);
     };
 
-    // Helper function to render star ratings
+    // Render stars
     const renderStars = (rating) => {
         const stars = [];
         const fullStars = Math.floor(rating);
@@ -51,58 +54,75 @@ const TourCard = ({ tour, onBookTour }) => {
         return stars;
     };
 
-    const handleBookTour = () => {
-        if (onBookTour) {
-            onBookTour(tour);
-        }
+    // Format image URL
+    const getImageUrl = () => {
+        if (!image) return '/default-tour-image.jpg';
+        if (image.startsWith('http')) return image;
+        return `http://localhost:5000${image}`;
     };
 
     return (
         <div className="v2-tour-card">
             <div className="v2-tour-card-image-wrapper">
                 <img 
-                    src={image ? `http://localhost:5000${image}` : '/default-tour-image.jpg'} 
-                    alt={title}
+                    src={getImageUrl()} 
+                    alt={title || destination}
                     onError={(e) => { e.target.src = '/default-tour-image.jpg'; }}
                     className="v2-tour-card-image"
                 />
-                {has_sale === 1 && (
+                {has_sale === 1 && discount_percent > 0 && (
                     <div className="v2-sale-badge">
-                        KHUYẾN MÃI
-                        {discount_percent > 0 && ` ${discount_percent}%`}
+                        KHUYẾN MÃI {discount_percent}%
                     </div>
                 )}
-                <div className="v2-tour-duration">
-                    <i className="far fa-clock"></i> {duration}
-                </div>
+                {duration && (
+                    <div className="v2-tour-duration">
+                        <i className="far fa-clock"></i> {duration}
+                    </div>
+                )}
             </div>
 
             <div className="v2-tour-card-content">
                 <div className="v2-tour-header">
                     <h3 className="v2-tour-title">
                         <Link to={`/tours/${id}`} className="v2-tour-link">
-                            {title}
+                            {title || destination}
                         </Link>
                     </h3>
-                    <div className="v2-tour-location">
-                        <i className="fas fa-map-marker-alt"></i>
-                        <span>Khởi hành từ: {departure_from}</span>
-                    </div>
+                    {departure_from && (
+                        <div className="v2-tour-location">
+                            <i className="fas fa-map-marker-alt"></i>
+                            <span>Khởi hành từ: {departure_from}</span>
+                        </div>
+                    )}
                 </div>
 
                 <div className="v2-tour-rating">
                     <div className="v2-stars">
-                        {renderStars(avg_rating)}
+                        {renderStars(avg_rating || 0)}
                     </div>
                     <span className="v2-rating-text">
-                        {avg_rating > 0 ? avg_rating.toFixed(1) : 'Chưa có đánh giá'} 
-                        {review_count > 0 && ` (${review_count} đánh giá)`}
+                        {avg_rating > 0 ? (
+                            <>
+                                {avg_rating.toFixed(1)}
+                                {review_count > 0 && ` (${review_count} đánh giá)`}
+                            </>
+                        ) : (
+                            'Chưa có đánh giá'
+                        )}
                     </span>
                 </div>
 
-                <div className="v2-tour-description">
-                    <p>{description && description.length > 100 ? `${description.substring(0, 100)}...` : description}</p>
-                </div>
+                {description && (
+                    <div className="v2-tour-description">
+                        <p>
+                            {description.length > 100 
+                                ? `${description.substring(0, 100)}...` 
+                                : description
+                            }
+                        </p>
+                    </div>
+                )}
 
                 <div className="v2-tour-card-footer">
                     <div className="v2-tour-price">
@@ -132,19 +152,23 @@ const TourCard = ({ tour, onBookTour }) => {
                         >
                             <i className="fas fa-eye"></i> Xem chi tiết
                         </Link>
-                        <button 
+                        
+                        {/* CHUYỂN BUTTON THÀNH LINK */}
+                        <Link 
+                            to={`/booking/${id}`}
                             className="v2-btn v2-btn--primary"
-                            onClick={handleBookTour}
-                            disabled={min_price === 0}
+                            style={{ textDecoration: 'none' }}
                         >
                             <i className="fas fa-calendar-check"></i> Đặt ngay
-                        </button>
+                        </Link>
                     </div>
                     
-                    <div className="v2-tour-creator">
-                        <i className="fas fa-user-check"></i>
-                        <span>Tổ chức bởi: {creator_name}</span>
-                    </div>
+                    {creator_name && creator_name !== 'Không rõ' && (
+                        <div className="v2-tour-creator">
+                            <i className="fas fa-user-check"></i>
+                            <span>Tổ chức bởi: {creator_name}</span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

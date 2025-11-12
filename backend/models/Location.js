@@ -1458,6 +1458,27 @@ async function getImage(locationId, imageType, referenceId = null) {
   const [rows] = await pool.execute(query, params);
   return rows[0]?.image_url || null;
 }
+async function getLocationsByTypes(types, limit = 10) {
+    if (!types || types.length === 0) {
+        return [];
+    }
+
+    try {
+        // Dấu ? trong IN (?) sẽ được thư viện mysql2 tự động mở rộng cho mảng
+        const query = `
+            SELECT * 
+            FROM Locations 
+            WHERE type IN (?)
+            LIMIT ?
+        `;
+        
+        const [locations] = await pool.query(query, [types, limit]);
+        return locations;
+    } catch (error) {
+        console.error('[Location][getLocationsByTypes] Error:', error);
+        throw error;
+    }
+}
 
 module.exports = {
   createLocation,
@@ -1484,4 +1505,5 @@ module.exports = {
   getLocationByName,
   searchLocations,
   getImage,
+  getLocationsByTypes,
 };

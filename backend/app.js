@@ -1,5 +1,4 @@
 
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -29,6 +28,7 @@ const promotionRoutes = require('./routes/promotionRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const tourPriceRoutes = require('./routes/tourPriceRoutes');
+const itineraryRoutes = require('./routes/itineraryRoutes');
 
 
 const { checkConnection } = require('./config/db');
@@ -59,6 +59,7 @@ app.use(fileUpload({
     createParentPath: true,
     limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }));
+
 
 // --- Serve Static Files (như hình ảnh uploads) ---
 // Tạo thư mục uploads nếu chưa tồn tại
@@ -98,6 +99,7 @@ app.use('/api/promotions', promotionRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tour-prices', tourPriceRoutes);
+app.use('/api/itineraries', itineraryRoutes);
 
 // --- Cấu hình Socket.IO ---
 const io = socketIo(server, {
