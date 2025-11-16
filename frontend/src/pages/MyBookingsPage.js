@@ -53,6 +53,7 @@ const MyBookingsPage = () => {
         if (bookingStatus === 'cancelled') return 'Đã hủy';
         if (paymentStatus === 'success') return 'Đã thanh toán';
         if (paymentStatus === 'failed') return 'Thanh toán thất bại';
+        if (bookingStatus === 'completed') return 'Hoàn thành';
         return 'Chờ thanh toán';
     };
 
@@ -60,14 +61,14 @@ const MyBookingsPage = () => {
         const typeMap = { 'adult': 'Người lớn', 'child': 'Trẻ em' };
         return typeMap[type] || type;
     };
-    
+
     // Mở modal với nội dung và hành động cụ thể
     const openConfirmationModal = (title, message, confirmText, action) => {
         setModalContent({ title, message, confirmText });
         setOnConfirmAction(() => action); // Bọc action trong một hàm để lưu trữ
         setIsModalOpen(true);
     };
-    
+
     // Xử lý khi người dùng xác nhận
     const handleConfirm = () => {
         if (onConfirmAction) {
@@ -100,16 +101,22 @@ const MyBookingsPage = () => {
     };
 
     const handleEditBooking = (booking) => {
-        const action = () => {
-            bookingService.cancelBooking(booking.id)
-                .then(() => {
-                    navigate(`/booking/${booking.tour_id}`, { 
-                        state: { 
-                            prefillData: booking.details  
-                        } 
-                    });
-                })
-                .catch(err => alert(err.message));
+        const action = async () => {
+            try {
+                await bookingService.cancelBooking(booking.id);
+                setBookings(current =>
+                    current.map(b =>
+                        b.id === booking.id ? { ...b, status: 'cancelled' } : b
+                    )
+                );
+                navigate(`/booking/${booking.tour_id}`, {
+                    state: {
+                        prefillData: booking.details
+                    }
+                });
+            } catch (err) {
+                alert(err.message);
+            }
         };
         openConfirmationModal(
             'Xác nhận Chỉnh sửa',
@@ -122,7 +129,7 @@ const MyBookingsPage = () => {
     const handleDeleteBooking = (bookingId) => {
         const action = async () => {
             try {
-                await bookingService.deleteBooking(bookingId);
+                await bookingService.hideBooking(bookingId);
                 setBookings(current => current.filter(b => b.id !== bookingId));
             } catch (err) {
                 alert(err.message);
@@ -162,11 +169,10 @@ const MyBookingsPage = () => {
     // Hàm xử lý khi hết giờ
     const handleExpire = (bookingId) => {
         console.log(`[EXPIRE] handleExpire được gọi cho booking ID: ${bookingId}. Cập nhật UI thành 'cancelled'.`);
-        setBookings(current =>
-            current.map(b =>
-                b.id === bookingId ? { ...b, status: 'cancelled' } : b
-            )
-        );
+
+        bookingService.getMyBookings()
+            .then(response => setBookings(response))
+            .catch(err => setError(err.message || 'Không thể cập nhật danh sách đơn hàng.'));
     };
 
     if (loading) return <div className="v2-my-bookings-container"><div className="v2-loader"></div></div>;
@@ -204,8 +210,8 @@ const MyBookingsPage = () => {
                                     <img src={`http://localhost:5000${booking.tour_image}`} alt={booking.tour_name} className="v2-booking-card-img" />
                                     <div className="v2-booking-card-body">
                                         <span className={`v2-booking-status status-text-${booking.status} payment-status-${booking.payment_status}`}>
-                                            {booking.status === 'pending_payment' && isExpired 
-                                                ? 'Đã hết hạn' 
+                                            {booking.status === 'pending_payment' && isExpired
+                                                ? 'Đã hết hạn'
                                                 : getStatusText(booking.status, booking.payment_status)}
                                         </span>
                                         <h3 className="v2-booking-tour-name">{booking.tour_name}</h3>
@@ -217,7 +223,7 @@ const MyBookingsPage = () => {
                                                 onExpire={() => handleExpire(booking.id)}
                                             />
                                         )}
-                                        
+
                                         <div className="v2-booking-details-section">
                                             {Array.isArray(booking.details) && booking.details.map((detail, index) => (
                                                 <p key={index} className="v2-booking-detail-item">
@@ -234,7 +240,7 @@ const MyBookingsPage = () => {
                                         <p className="v2-booking-total">
                                             <strong>Tổng tiền:</strong> {new Intl.NumberFormat('vi-VN').format(booking.final_amount)} VNĐ
                                         </p>
-                                            
+
                                         <div className="v2-booking-card-actions">
                                             {booking.status === 'pending_payment' && (
                                                 <>
@@ -252,7 +258,7 @@ const MyBookingsPage = () => {
                                             )}
                                             {booking.status === 'cancelled' && (
                                                 <>
-                                                    <Link to={`/booking/${booking.tour_id}`} state={{ prefillData: booking.details  }} className="v2-btn v2-btn--secondary">Đặt lại</Link>
+                                                    <Link to={`/booking/${booking.tour_id}`} state={{ prefillData: booking.details }} className="v2-btn v2-btn--secondary">Đặt lại</Link>
                                                     <button onClick={() => handleDeleteBooking(booking.id)} className="v2-btn v2-btn--danger">Xóa</button>
                                                 </>
                                             )}

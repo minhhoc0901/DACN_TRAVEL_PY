@@ -54,27 +54,7 @@ exports.initVnpay = async (req, res) => {
     // Kiểm tra có payment pending không
     const pendingPayment = await Payment.findPendingByBookingId(bookingId);
     if (pendingPayment) {
-      // const now = new Date();
-      // const paymentTime = new Date(pendingPayment.payment_date);
-      // const diffMinutes = (now - paymentTime) / (1000 * 60);
-      
-      // if (diffMinutes < 15) {
-      //   return res.status(400).json({
-      //     success: false,
-      //     message: 'Đã có giao dịch đang chờ xử lý. Vui lòng chờ hoặc hoàn thành giao dịch trước đó.',
-      //     data: {
-      //       pendingTxnRef: pendingPayment.vnp_TxnRef,
-      //       remainingMinutes: Math.ceil(15 - diffMinutes)
-      //     }
-      //   });
-      // } else {
-      //   // Hủy payment cũ đã quá hạn
-      //   await Payment.markExpired(pendingPayment.vnp_TxnRef);
-      //   console.log('[VNPAY][init] Expired old pending payment:', pendingPayment.vnp_TxnRef);
-      // }
       if (pendingPayment) {
-      // Thay vì chặn người dùng, chúng ta sẽ hủy giao dịch cũ để tạo một giao dịch mới.
-      // Điều này cải thiện trải nghiệm khi người dùng lỡ đóng tab thanh toán.
       await Payment.markCancelled(pendingPayment.vnp_TxnRef);
       console.log(`[VNPAY][init] Cancelled old pending payment: ${pendingPayment.vnp_TxnRef} to create a new one.`);
     }

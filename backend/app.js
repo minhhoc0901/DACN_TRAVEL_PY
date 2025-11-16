@@ -29,7 +29,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const tourPriceRoutes = require('./routes/tourPriceRoutes');
 const itineraryRoutes = require('./routes/itineraryRoutes');
-
+const tourDepartureRoutes = require('./routes/tourDepartureRoutes');
 
 const { checkConnection } = require('./config/db');
 
@@ -100,6 +100,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/tour-prices', tourPriceRoutes);
 app.use('/api/itineraries', itineraryRoutes);
+app.use('/api/tour-departures', tourDepartureRoutes);
 
 // --- Cấu hình Socket.IO ---
 const io = socketIo(server, {

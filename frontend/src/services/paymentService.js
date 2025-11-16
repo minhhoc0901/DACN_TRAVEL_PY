@@ -1,7 +1,7 @@
 // filepath: d:\DACN\DACS_Travel_PY-Tnam\frontend\src\services\paymentService.js
 import { getAuthToken } from '../contexts/AuthContext';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
 async function createPaymentUrl(payload) {
     const token = getAuthToken();

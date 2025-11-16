@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
 export const tourService = {
     
@@ -58,6 +58,24 @@ export const tourService = {
             return await response.json();
         } catch (error) {
             console.error(`Error fetching details for tour ${tourId}:`, error);
+            throw error;
+        }
+    },
+    async getTourDepartures(tourId) {
+        try {
+            // Sửa lại endpoint cho đúng với backend và sử dụng API_BASE_URL
+            const response = await fetch(`${API_BASE_URL}/tour-departures/${tourId}/available`);
+            
+            if (!response.ok) {
+                // Thêm logic xử lý lỗi chi tiết hơn
+                const errorData = await response.text(); // Dùng .text() để xem server trả về gì
+                console.error("Server response (not JSON):", errorData);
+                throw new Error('Không thể tải lịch khởi hành.');
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error(`Error fetching departures for tour ${tourId}:`, error);
             throw error;
         }
     },

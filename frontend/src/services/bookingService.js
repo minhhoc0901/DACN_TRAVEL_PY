@@ -1,6 +1,7 @@
 import { getAuthToken } from '../contexts/AuthContext'; // Giả sử bạn có hàm này để lấy token
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
 
 export const bookingService = {
     /**
@@ -59,7 +60,7 @@ export const bookingService = {
     async cancelBooking(bookingId) {
         const token = getAuthToken();
         const response = await fetch(`${API_BASE_URL}/bookings/my-bookings/${bookingId}`, {
-            method: 'DELETE',
+            method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -71,6 +72,21 @@ export const bookingService = {
         }
         return result;
     },
+    async hideBooking(bookingId) {
+        const token = getAuthToken();
+        const response = await fetch(`${API_BASE_URL}/bookings/my-booking/hide/${bookingId}`, {
+            method: 'PUT',
+            headers: {  
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        if (!response.ok) {
+            throw new Error(result.message || 'Không thể xóa đơn đặt tour.');
+        }
+        return result;
+    }
+    ,
     async deleteBooking(bookingId) {
         const token = getAuthToken();
         const response = await fetch(`${API_BASE_URL}/bookings/my-bookings/delete/${bookingId}`, {
@@ -98,4 +114,26 @@ export const bookingService = {
         }
         return await response.arrayBuffer(); // Trả về dữ liệu PDF dạng arrayBuffer
     },
+    async verifyByToken(token) {
+        try {
+            const response = await fetch(`${API_BASE_URL}/bookings/verify/${token}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Xác thực hóa đơn thất bại.');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error verifying booking by token:', error);
+            throw error;
+        }
+    }
+
 };

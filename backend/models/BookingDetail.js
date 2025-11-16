@@ -31,6 +31,15 @@ class BookingDetail {
         }
         return { original, details };
     }
+    static async findByBooking(bookingId, connection = pool) {
+        const sql = `
+            SELECT price_type, quantity, unit_price 
+            FROM booking_details 
+            WHERE booking_id = ?
+        `;
+        const [rows] = await connection.execute(sql, [bookingId]);
+        return rows;
+    }
 }
 
 module.exports = BookingDetail;

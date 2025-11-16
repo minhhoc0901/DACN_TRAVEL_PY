@@ -5,6 +5,8 @@ const TourPrice = require("../models/TourPrice");
 const BookingDetail = require("../models/BookingDetail");
 const Promotion = require("../models/Promotions");
 const Booking = require("../models/Booking");
+const TourDeparture = require("../models/TourDeparture");
+const { generateQrCodeDataUrl } = require('../utils/qrCodeGenerator');
 const PDFDocument = require("pdfkit");
 exports.quote = async (req, res) => {
     try {
@@ -20,16 +22,35 @@ exports.quote = async (req, res) => {
 exports.createBooking = async (req, res) => {
     const conn = await pool.getConnection();
     try {
-        const { tourId, startDate, items, promotionCode, contact } = req.body;
+        
+        const { tourId, tour_departure_id, items, promotionCode, contact } = req.body;
         const userId = req.user.id;
+
+        // Tính tổng số vé người dùng yêu cầu
+        const totalTicketsRequested = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+        if (totalTicketsRequested <= 0) {
+            throw new Error("Vui lòng chọn ít nhất một vé để đặt.");
+        }
 
         await conn.beginTransaction();
 
+        // BƯỚC 1: KIỂM TRA VÀ KHÓA TỒN KHO
+        // Dùng `FOR UPDATE` để khóa dòng này, ngăn người khác đặt cùng lúc
+         const departure = await TourDeparture.findAndLockForUpdate(tour_departure_id, conn);
+
+        if (!departure) {
+            throw new Error("Lịch khởi hành này không hợp lệ hoặc đã đóng.");
+        }
+
+        const slots_available = departure.capacity - departure.slots_booked;
+
+        if (totalTicketsRequested > slots_available) {
+            throw new Error(`Rất tiếc, chỉ còn ${slots_available} chỗ trống cho ngày khởi hành này.`);
+        }
+
+        // BƯỚC 2: TÍNH TOÁN GIÁ VÀ KHUYẾN MÃI 
         const prices = await TourPrice.listByTour(tourId);
-        const { original, details } = BookingDetail.calcFromSelection(
-            items,
-            prices
-        );
+        const { original, details } = BookingDetail.calcFromSelection(items, prices);
 
         let discount = 0;
         let promoId = null;
@@ -39,22 +60,21 @@ exports.createBooking = async (req, res) => {
             if (promo.max_usage && promo.usage_count >= promo.max_usage)
                 throw new Error("Mã đã hết lượt");
 
-            discount =
-                promo.discount_type === "percentage"
-                    ? (original * promo.discount_value) / 100
-                    : promo.discount_value;
-
+            discount = promo.discount_type === "percentage" ? (original * promo.discount_value) / 100 : promo.discount_value;
             if (discount > original) discount = original;
             promoId = promo.id;
             await Promotion.incrementUsage(promo.id, conn);
         }
-
         const finalAmount = original - discount;
 
+        // BƯỚC 3: CẬP NHẬT TỒN KHO
+        await TourDeparture.increaseSlotsBooked(tour_departure_id, totalTicketsRequested, conn);
+
+        // BƯỚC 4: TẠO BOOKING VỚI SCHEMA MỚI
         const bookingId = await Booking.create(conn, {
             userId,
             tourId,
-            startDate,
+            tour_departure_id, 
             originalAmount: original,
             finalAmount,
             discountAmount: discount,
@@ -73,9 +93,7 @@ exports.createBooking = async (req, res) => {
             discountAmount: discount,
         });
     } catch (e) {
-        try {
-            await conn.rollback();
-        } catch { }
+        await conn.rollback(); // Đảm bảo rollback khi có lỗi
         res.status(400).json({ success: false, message: e.message });
     } finally {
         conn.release();
@@ -99,27 +117,71 @@ exports.getMyBookings = async (req, res) => {
             });
     }
 };
+
 exports.cancelMyBooking = async (req, res) => {
+    const bookingId = req.params.id;
+    const userId = req.user.id;
+    const connection = await pool.getConnection();
+
+    // LOG: Bắt đầu tiến trình hủy
+    console.log(`[CANCEL MY BOOKING] User ${userId} initiated cancellation for booking #${bookingId}.`);
+
     try {
-        const { id: bookingId } = req.params;
-        const userId = req.user.id;
+        await connection.beginTransaction();
 
-        const affectedRows = await Booking.cancelByUser(bookingId, userId);
+        const booking = await Booking.findByIdForUpdate(bookingId, userId, connection);
 
-        if (affectedRows === 0) {
-            return res.status(404).json({
-                success: false,
-                message:
-                    "Không tìm thấy đơn đặt tour hoặc đơn đã được xử lý và không thể hủy.",
-            });
+        if (!booking) {
+            throw new Error('Đơn hàng không tồn tại hoặc bạn không có quyền hủy.');
+        }
+        if (booking.status !== 'pending_payment') {
+            throw new Error('Chỉ có thể hủy các đơn hàng đang chờ thanh toán.');
         }
 
-        res.json({ success: true, message: "Đã hủy đơn đặt tour thành công." });
-    } catch (e) {
-        console.error("[CANCEL MY BOOKING] Error:", e);
-        res
-            .status(500)
-            .json({ success: false, message: "Lỗi hệ thống khi hủy đơn đặt tour." });
+        const slotsToRestore = booking.BookingDetails.reduce((total, detail) => total + detail.quantity, 0);
+
+        // LOG: Ghi lại số vé sắp được hoàn trả và ID của chuyến đi
+        console.log(`[CANCEL MY BOOKING] Calculated ${slotsToRestore} slots to restore for departure ID ${booking.tour_departure_id}.`);
+
+        await TourDeparture.restoreSlots(booking.tour_departure_id, slotsToRestore, connection);
+
+        // LOG: Xác nhận đã gọi hàm hoàn trả vé
+        console.log(`[CANCEL MY BOOKING] Called TourDeparture.restoreSlots successfully.`);
+
+        await Booking.updateStatus(bookingId, 'cancelled', connection);
+
+        // LOG: Xác nhận đã cập nhật trạng thái đơn hàng
+        console.log(`[CANCEL MY BOOKING] Updated booking status to 'cancelled'.`);
+
+        await connection.commit();
+
+        // LOG: Giao dịch thành công
+        console.log(`[CANCEL MY BOOKING] Transaction committed successfully for booking #${bookingId}.`);
+
+        res.status(200).json({ success: true, message: 'Đã hủy đơn hàng thành công.' });
+
+    } catch (error) {
+        await connection.rollback();
+        // Log lỗi đã có sẵn, rất tốt
+        console.error(`[CANCEL MY BOOKING] Error for booking #${bookingId}:`, error);
+        res.status(500).json({ success: false, message: error.message || 'Lỗi khi hủy đơn hàng.' });
+    } finally {
+        connection.release();
+    }
+};
+/**
+ * Người dùng xóa ( Ẩn )  booking của mình.
+ */
+
+exports.hideMyBooking = async (req, res) => {
+    try {
+        const affectedRows = await Booking.hideCancelledBooking(req.params.id, req.user.id);
+        if (affectedRows === 0) {
+            return res.status(404).json({ success: false, message: 'Không tìm thấy đơn hàng hoặc không thể xóa.' });
+        }
+        res.status(200).json({ success: true, message: 'Đã xóa đơn hàng khỏi danh sách.' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message || 'Lỗi khi xóa đơn hàng.' });
     }
 };
 /**
@@ -186,6 +248,8 @@ exports.getInvoicePdf = async (req, res) => {
         const booking = await Booking.findByPk(bookingId);
         if (!booking) return res.status(404).json({ message: "Booking not found" });
 
+       
+
         const doc = new PDFDocument({ margin: 50, size: "A4" });
         const pageRightMargin = 545; // Lề A4 (595) - lề 50
 
@@ -203,11 +267,15 @@ exports.getInvoicePdf = async (req, res) => {
         } else {
             console.warn("Font file not found at:", fontPath);
         }
-
+        // Tạo mã QR từ verification_token
+        const qrCodeDataUrl = await generateQrCodeDataUrl(booking.verification_token);
+        
+        
         // === PHẦN HEADER ===
         if (fs.existsSync(logoPath)) {
             doc.image(logoPath, 50, 40, { width: 60 });
         }
+        doc.image(qrCodeDataUrl, 470, 40, { fit: [70, 70] });
         doc.fontSize(20).text("HÓA ĐƠN ĐẶT TOUR", { align: "center" });
         doc.fontSize(10).text("PHÚ YÊN TOURIST", { align: "center" });
         doc.moveDown(2);
@@ -253,7 +321,7 @@ exports.getInvoicePdf = async (req, res) => {
         doc.fillColor("#333").text(booking.tour_name, col1X + 100, currentY, { width: 400 }); // Tăng width
         currentY += 18;
         doc.fillColor("#000").text("Ngày khởi hành:", col1X, currentY, { bold: true });
-        doc.fillColor("#333").text(formatDate(booking.start_date), col1X + 100, currentY);
+        doc.fillColor("#333").text(formatDate(booking.departure_date), col1X + 100, currentY);
         currentY += 18;
         doc.fillColor("#000").text("Thanh toán:", col1X, currentY, { bold: true });
         doc.fillColor("#333").text(paymentStatusText, col1X + 100, currentY, { width: 400 });
@@ -354,5 +422,21 @@ exports.getInvoicePdf = async (req, res) => {
         } else {
             console.error("[PDF STREAM ERROR]", err);
         }
+    }
+};
+
+exports.verifyBookingByToken = async (req, res) => {
+    try {
+        const { token } = req.params;
+        const booking = await Booking.findByVerificationToken(token); // Cần tạo hàm này trong Model
+
+        if (!booking) {
+            return res.status(404).json({ success: false, message: 'Hóa đơn không hợp lệ hoặc không tồn tại.' });
+        }
+
+        res.json({ success: true, booking });
+    } catch (error) {
+        console.error('[VERIFY BOOKING] Error:', error);
+        res.status(500).json({ success: false, message: 'Lỗi máy chủ nội bộ.' });
     }
 };
