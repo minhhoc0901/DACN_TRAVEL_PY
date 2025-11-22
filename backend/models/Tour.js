@@ -207,7 +207,7 @@ async function getBasicTourById(tourId) {
       t.user_id,
       t.created_at,
       u.full_name,
-      u.username, /* Added username field */
+      u.username,
       (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM Tour_Highlights WHERE tour_id = t.id) AS highlights,
       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Includes WHERE tour_id = t.id) AS includes,
       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Excludes WHERE tour_id = t.id) AS excludes,
@@ -354,6 +354,38 @@ async function updateTourStatus(tourId, status) {
     return result.affectedRows > 0;
   } catch (error) {
     console.error('Lỗi khi cập nhật trạng thái tour:', error);
+    throw error;
+  }
+}
+
+/**
+ * Duyệt tour (chuyển status thành 'approved')
+ * @param {Number} tourId - ID của tour
+ * @returns {Boolean} - True nếu thành công
+ */
+async function approveTour(tourId) {
+  try {
+    const query = `UPDATE Tours SET status = 'approved' WHERE id = ?`;
+    const [result] = await pool.execute(query, [tourId]);
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Lỗi khi duyệt tour:', error);
+    throw error;
+  }
+}
+
+/**
+ * Từ chối tour (chuyển status thành 'rejected')
+ * @param {Number} tourId - ID của tour
+ * @returns {Boolean} - True nếu thành công
+ */
+async function rejectTour(tourId) {
+  try {
+    const query = `UPDATE Tours SET status = 'rejected' WHERE id = ?`;
+    const [result] = await pool.execute(query, [tourId]);
+    return result.affectedRows > 0;
+  } catch (error) {
+    console.error('Lỗi khi từ chối tour:', error);
     throw error;
   }
 }
@@ -705,7 +737,7 @@ async function getTourById(tourId) {
 }
 
 // 🔹 Tìm kiếm tour theo từ khóa (destination, description)
-  async function searchTours(keyword) {
+async function searchTours(keyword) {
   const q = `%${keyword}%`;
   
   // Truy vấn chỉ để tìm kiếm và JOIN lấy thông tin user
@@ -737,7 +769,6 @@ async function getTourById(tourId) {
 /**
  * Lấy danh sách tours đã được duyệt để bán
  */
-
 async function getApprovedToursForSale(options = {}) {
     try {
         const { 
@@ -891,6 +922,7 @@ async function getApprovedToursForSale(options = {}) {
         throw error;
     }
 }
+
 /**
  * Lấy chi tiết tour để hiển thị cho khách hàng
  */
@@ -984,7 +1016,6 @@ async function getTourPrices(tourId) {
     }
 }
 
-
 /**
  * Lấy tours nổi bật (rating cao, nhiều review)
  */
@@ -1042,6 +1073,7 @@ async function getFeaturedTours(limit = 8) {
         throw error;
     }
 }
+
 /**
  * Lấy danh sách tour dựa trên một danh sách các ID địa điểm
  * @param {Array<number>} locationIds - Mảng các ID của địa điểm
@@ -1171,6 +1203,8 @@ module.exports = {
   deleteTour,
   getToursByLocation,
   updateTourStatus,
+  approveTour, 
+  rejectTour, 
   getToursByStatus,
   getToursByUser,
   searchTours,

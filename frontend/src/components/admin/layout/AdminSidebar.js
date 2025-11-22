@@ -46,6 +46,12 @@ const AdminSidebar = ({ isCollapsed }) => {
                 <span>Quản lý chat</span>
               </NavLink>
             </li>
+            <li className="nav-item">
+              <NavLink to="/admin/notifications" className="nav-link">
+                <i className="bi bi-bell"></i>
+                <span>Quản lý thông báo</span>
+              </NavLink>
+            </li>
           </ul>
         </div>
       </div>

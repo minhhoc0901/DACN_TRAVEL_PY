@@ -12,6 +12,7 @@ router.post('/login', authController.login);
 // Lấy thông tin profile của người dùng đã đăng nhập
 router.get('/profile', authMiddleware.verifyToken, authController.getProfile);
 
+// Gửi OTP
 router.post('/send-otp', authController.sendOTP);
 router.post('/forgot-password', authController.sendOTP);
 router.post('/verify-reset-otp', authController.verifyResetOTP);

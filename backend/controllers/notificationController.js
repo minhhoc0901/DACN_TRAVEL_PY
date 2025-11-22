@@ -74,3 +74,33 @@ exports.deleteNotification = async (req, res) => {
     res.status(500).json({ success: false, message: 'Lỗi khi xóa thông báo' });
   }
 };
+
+// REJECT TOUR
+exports.rejectTour = async (req, res) => {
+  try {
+    const { tourId } = req.params;
+    const tour = await Tour.findOne({ _id: tourId });
+
+    if (!tour) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+    }
+
+    // 1. Xóa tour
+    await Tour.deleteOne({ _id: tourId });
+
+    // 2. Tạo notification với action_url
+    const notificationMessage = `Tour "${tour.destination}" của bạn đã bị từ chối. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.`;
+    const actionUrl = `/user/my-tours`; // Sửa URL trỏ về trang quản lý tour của người dùng
+    
+    const notification = await Notification.createNotificationWithType(
+      tour.user_id,
+      notificationMessage,
+      actionUrl
+    );
+
+    res.status(200).json({ success: true, message: 'Tour đã bị từ chối' });
+  } catch (error) {
+    console.error('Error rejecting tour:', error);
+    res.status(500).json({ success: false, message: 'Lỗi khi từ chối tour' });
+  }
+};

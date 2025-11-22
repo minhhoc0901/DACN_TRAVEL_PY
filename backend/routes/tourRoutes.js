@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const tourController = require('../controllers/tourController');
@@ -38,6 +37,10 @@ const invalidateAllTourCache = invalidateCacheMiddleware(TOUR_CACHE_PREFIX);
 router.post('/', authMiddleware.verifyToken, invalidateAllTourCache, tourController.createTour);
 router.post('/upload-image', invalidateAllTourCache, tourController.uploadTourImage); // Giả sử upload ảnh liên quan đến tour
 router.put('/admin/tours/:id/status', authMiddleware.verifyToken, authMiddleware.isAdmin, invalidateAllTourCache, tourController.updateTourStatus);
+
+// 
+router.put('/admin/tours/:id/approve', authMiddleware.verifyToken, authMiddleware.isAdmin, invalidateAllTourCache, tourController.approveTour);
+router.put('/admin/tours/:id/reject', authMiddleware.verifyToken, authMiddleware.isAdmin, invalidateAllTourCache, tourController.rejectTour);
 
 // Khi cập nhật hoặc xóa một tour cụ thể, chúng ta cũng xóa toàn bộ cache cho chắc chắn.
 router.put('/:id', authMiddleware.verifyToken, invalidateAllTourCache, tourController.updateTour);

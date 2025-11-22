@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+// import { useNotification } from '../../contexts/NotificationContext'; // XÓA DÒNG NÀY
+import NotificationBell from '../Notifications/NotificationBell';
 import '../../styles/show/header.css';
 
-const Header = () => {
+const Header = ({ setMenuOpen, menuOpen }) => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const { user, isAuthenticated, logout } = useAuth();
+    // XÓA CÁC DÒNG DƯỚI ĐÂY
+    // const {
+    //     handleNotificationClick,
+    //     markAllAsRead,
+    //     deleteNotification
+    // } = useNotification();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -103,6 +111,8 @@ const Header = () => {
                             <button className="search-btn" aria-label="Search">
                                 <i className="bi bi-search"></i>
                             </button>
+
+                            {isAuthenticated && <NotificationBell />}
 
                             {isAuthenticated ? (
                                 <div className="dropdown user-menu">

@@ -14,6 +14,7 @@ import FoodSection from "../components/LocationDetail/FoodSection";
 import TipsSection from "../components/LocationDetail/TipsSection";
 // import PhotoUploadSection from "../components/LocationDetail/PhotoUploadSection";
 import Sidebar from "../components/LocationDetail/Sidebar";
+import CommentSection from '../components/LocationDetail/CommentSection';
 
 const LocationDetailPage = () => {
   const { id } = useParams();
@@ -209,8 +210,12 @@ const LocationDetailPage = () => {
               tips: location.tips || [],
             }}
           />
-           {/* Thêm nút quay lại danh sách */}
-           <Link to="/locations" className="text-blue-500 hover:underline mb-4 inline-block">
+
+          {/* ✅ THÊM COMMENT SECTION */}
+          <CommentSection locationId={id} />
+
+          {/* Thêm nút quay lại danh sách */}
+          <Link to="/locations" className="text-blue-500 hover:underline mb-4 inline-block">
             Quay lại danh sách
           </Link>
           {/* Photo Upload Section

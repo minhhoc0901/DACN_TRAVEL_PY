@@ -474,6 +474,88 @@ const resetFormData = () => {
     return user?.role === 'admin';
   }, [user]);
 
+  // Hàm approve tour
+  const handleApproveTour = async (tourId) => {
+    try {
+      console.log('[TourManagement] Approve tour:', tourId);
+      setProcessingTourId(tourId);
+      
+      const currentToken = getToken();
+      if (!currentToken) {
+        handleTokenExpired();
+        return;
+      }
+      
+      const response = await axios.put(
+        `http://localhost:5000/api/tours/admin/tours/${tourId}/approve`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${currentToken}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success('Đã duyệt tour thành công!');
+        await fetchTours();
+      } else {
+        throw new Error(response.data.message || 'Lỗi khi duyệt tour');
+      }
+    } catch (error) {
+      console.error('[TourManagement] Error approving tour:', error);
+      
+      if (error.response?.status === 401) {
+        handleTokenExpired();
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Lỗi khi duyệt tour');
+      }
+    } finally {
+      setProcessingTourId(null);
+    }
+  };
+
+  // Hàm reject tour
+  const handleRejectTour = async (tourId) => {
+    try {
+      console.log('[TourManagement] Reject tour:', tourId);
+      setProcessingTourId(tourId);
+      
+      const currentToken = getToken();
+      if (!currentToken) {
+        handleTokenExpired();
+        return;
+      }
+      
+      const response = await axios.put(
+        `http://localhost:5000/api/tours/admin/tours/${tourId}/reject`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${currentToken}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        toast.success('Đã từ chối tour thành công!');
+        await fetchTours();
+      } else {
+        throw new Error(response.data.message || 'Lỗi khi từ chối tour');
+      }
+    } catch (error) {
+      console.error('[TourManagement] Error rejecting tour:', error);
+      
+      if (error.response?.status === 401) {
+        handleTokenExpired();
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Lỗi khi từ chối tour');
+      }
+    } finally {
+      setProcessingTourId(null);
+    }
+  };
+
   return (
     <div className="tour-management">
       <div className="tour-header-wrapper">
@@ -520,25 +602,17 @@ const resetFormData = () => {
       ) : filteredTours.length === 0 ? (
         <div className="empty-state">
           <p>Không có tour nào trong danh sách này</p>
-          {user?.role !== 'admin' && (
-            <button 
-              className="create-first-tour-btn"
-              onClick={() => navigate('/create-itinerary')}
-            >
-              Tạo tour đầu tiên
-            </button>
-          )}
         </div>
       ) : (
-        <TourList
+        <TourList 
           tours={filteredTours}
-          onDelete={handleDeleteTour}
+          onApprove={handleApproveTour}
+          onReject={handleRejectTour}
           onEdit={handleEditTour}
-          onApprove={(tourId) => handleUpdateTourStatus(tourId, 'approved')}
-          onReject={(tourId) => handleUpdateTourStatus(tourId, 'rejected')}
-          processingTourId={processingTourId}
-          canModerate={canModerateContent()}
+          onDelete={handleDeleteTour}
           currentUserId={user?.id}
+          canModerate={canModerateContent()}
+          processingTourId={processingTourId}
         />
       )}
 

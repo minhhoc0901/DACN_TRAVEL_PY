@@ -1,4 +1,3 @@
-
 const Chat = require('../models/chatWithAdmin');
 const Notification = require('../models/Notification');
 
@@ -64,8 +63,6 @@ module.exports = (io) => {
         }
 
         try {
-            console.log(`[Socket] Received message from ${senderId} to ${receiverId}`);
-            
             const messageId = await Chat.saveMessage(senderId, receiverId, message, imageUrls);
             
             const messageData = {
@@ -90,10 +87,8 @@ module.exports = (io) => {
                 'SELECT role FROM users WHERE id = ?',
                 [senderId]
             );
-            
+
             if (users.length > 0 && users[0].role === 'admin') {
-                console.log(`[Socket] Admin sent message, creating notification...`);
-                
                 const notificationMessage = imageUrls && imageUrls.length > 0
                     ? `Admin đã gửi ${imageUrls.length} ảnh cho bạn`
                     : `Admin: ${message.substring(0, 50)}${message.length > 50 ? '...' : ''}`;
@@ -103,15 +98,14 @@ module.exports = (io) => {
                     notificationMessage,
                     'new_message',
                     messageId,
-                    '/chat-with-admin'
+                    null
                 );
 
-                const notificationData = {
-                    ...notification,
-                    created_at: notification.created_at || new Date()
-                };
-                
-                io.to(`user_${receiverId}`).emit('new_notification', notificationData);
+                const fullNotification = await Notification.getNotificationById(notification.id);
+                if (fullNotification) {
+                    io.to(`user_${receiverId}`).emit('new_notification', fullNotification);
+                    console.log(`[Chat] ✅ Sent message notification to user_${receiverId}`);
+                }
             }
 
         } catch (error) {

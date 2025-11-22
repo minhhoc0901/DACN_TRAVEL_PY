@@ -105,7 +105,6 @@ exports.sendBulkNotification = async (req, res) => {
 exports.deleteNotification = async (req, res) => {
   try {
     const { id } = req.params;
-    
     const affectedRows = await Notification.deleteNotificationById(id);
     
     if (affectedRows > 0) {

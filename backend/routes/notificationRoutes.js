@@ -18,6 +18,7 @@ router.get('/unread-count', authMiddleware.verifyToken, notificationController.g
 // Đánh dấu tất cả là đã đọc
 router.put('/mark-all-read', authMiddleware.verifyToken, notificationController.markAllAsRead);
 
+// Xóa thông báo
 router.delete('/:notificationId', authMiddleware.verifyToken, notificationController.deleteNotification);
 
 module.exports = router;

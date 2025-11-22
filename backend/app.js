@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -30,6 +29,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const tourPriceRoutes = require('./routes/tourPriceRoutes');
 const itineraryRoutes = require('./routes/itineraryRoutes');
 const tourDepartureRoutes = require('./routes/tourDepartureRoutes');
+const locationCommentRoutes = require('./routes/locationCommentRoutes');
 
 const { checkConnection } = require('./config/db');
 
@@ -101,11 +101,17 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/tour-prices', tourPriceRoutes);
 app.use('/api/itineraries', itineraryRoutes);
 app.use('/api/tour-departures', tourDepartureRoutes);
+app.use('/api/location-comments', locationCommentRoutes);
 
 // --- Cấu hình Socket.IO ---
 const io = socketIo(server, {
     cors: corsOptions // Sử dụng lại cấu hình CORS đã định nghĩa ở trên
 });
+
+// ✅ LƯU SOCKET.IO INSTANCE VÀO APP ĐỂ CONTROLLERS CÓ THỂ TRUY CẬP
+// Lưu instance với tên 'io' để dùng trong tourController và reviewController
+app.set('io', io);
+console.log('[Socket.IO] Instance saved to app as "io"');
 
 // Gắn các handler cho Socket.IO
 const setupChatSocket = require('./socket/chatSocket');

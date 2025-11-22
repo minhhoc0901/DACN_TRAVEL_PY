@@ -1,6 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const Tour = require('../models/Tour');
+const Notification = require('../models/Notification');
+const NOTIFICATION_TYPES = require('../constants/notificationTypes');
 
 const { 
   createTour, 
@@ -10,9 +12,7 @@ const {
   deleteTour,
   getToursByLocation,
   updateTourStatus,
-  getToursByStatus,
   getToursByUser,
-  
 } = require('../models/Tour');
 
 /**
@@ -498,32 +498,28 @@ exports.getToursByLocation = async (req, res) => {
  */
 exports.getTourImages = async (req, res) => {
   try {
-    const uploadsDir = path.join(__dirname, '../uploads/tours'); // Đường dẫn tới thư mục uploads/tours
+    const uploadsDir = path.join(__dirname, '../uploads/tours');
     
-    // Đảm bảo thư mục tồn tại
     if (!fs.existsSync(uploadsDir)) {
       fs.mkdirSync(uploadsDir, { recursive: true });
     }
 
-    // Đọc tất cả file trong thư mục
     const files = fs.readdirSync(uploadsDir);
     
-    // Lọc chỉ lấy các file hình ảnh
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
     const imageFiles = files.filter(file => {
       const ext = path.extname(file).toLowerCase();
       return imageExtensions.includes(ext);
     });
     
-    // Tạo đường dẫn đầy đủ cho mỗi file
     const images = imageFiles.map(file => {
       try {
         const stats = fs.statSync(path.join(uploadsDir, file));
         return {
           name: file,
-          url: `/uploads/tours/${file}`, // Đường dẫn URL tới file
-          size: stats.size, // kích thước tính bằng byte
-          createdAt: stats.birthtime, // ngày tạo file
+          url: `/uploads/tours/${file}`,
+          size: stats.size,
+          createdAt: stats.birthtime,
         };
       } catch (err) {
         return {
@@ -554,7 +550,6 @@ exports.getTourImages = async (req, res) => {
  */
 exports.uploadTourImage = async (req, res) => {
   try {
-    // Kiểm tra xem có file nào được upload không
     if (!req.files || Object.keys(req.files).length === 0) {
       return res.status(400).json({
         success: false,
@@ -564,7 +559,6 @@ exports.uploadTourImage = async (req, res) => {
 
     const tourImage = req.files.image;
     
-    // Kiểm tra loại file
     const fileExt = tourImage.name.split('.').pop().toLowerCase();
     const allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     
@@ -575,8 +569,7 @@ exports.uploadTourImage = async (req, res) => {
       });
     }
     
-    // Giới hạn kích thước file (5MB)
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (tourImage.size > maxSize) {
       return res.status(400).json({
         success: false,
@@ -584,21 +577,17 @@ exports.uploadTourImage = async (req, res) => {
       });
     }
     
-    // Tạo thư mục nếu chưa tồn tại
     const uploadDir = path.join(__dirname, '../uploads/tours');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
     
-    // Tạo tên file duy nhất để tránh trùng lặp
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const fileName = `tour-${uniqueSuffix}.${fileExt}`;
     const uploadPath = path.join(uploadDir, fileName);
     
-    // Upload file
     await tourImage.mv(uploadPath);
     
-    // Trả về thông tin file đã upload
     res.status(200).json({
       success: true,
       message: 'Upload thành công',
@@ -661,6 +650,11 @@ exports.getAllToursForAdmin = async (req, res) => {
     });
   }
 };
+
+/**
+ * Tìm kiếm tour
+ * @route GET /api/tours/search
+ */
 exports.searchTours = async (req, res) => {
   try {
     const keyword = req.query.query?.trim();
@@ -669,8 +663,7 @@ exports.searchTours = async (req, res) => {
       return res.status(400).json({ message: "Thiếu từ khóa tìm kiếm." });
     }
 
-    // Gọi hàm tìm kiếm cơ bản
-    const tours = await Tour.searchTours(keyword); // Lưu ý: hàm trong Model là searchTour
+    const tours = await Tour.searchTours(keyword);
 
     res.status(200).json({
       success: true,
@@ -682,10 +675,10 @@ exports.searchTours = async (req, res) => {
     res.status(500).json({ success: false, message: "Lỗi server khi tìm kiếm tour." });
   }
 };
-// -------------------20/10/2025 update thêm lọc tour bán
 
 /**
  * Lấy danh sách tours đã được duyệt để hiển thị cho khách hàng
+ * @route GET /api/tours/sale
  */
 exports.getApprovedToursForSale = async (req, res) => {
     try {
@@ -737,6 +730,7 @@ exports.getApprovedToursForSale = async (req, res) => {
 
 /**
  * Lấy chi tiết tour để hiển thị cho khách hàng
+ * @route GET /api/tours/sale/:tourId
  */
 exports.getTourDetailForSale = async (req, res) => {
     try {
@@ -767,6 +761,7 @@ exports.getTourDetailForSale = async (req, res) => {
 
 /**
  * Lấy tours nổi bật
+ * @route GET /api/tours/featured
  */
 exports.getFeaturedTours = async (req, res) => {
     try {
@@ -787,127 +782,149 @@ exports.getFeaturedTours = async (req, res) => {
         });
     }
 };
-// ✅ APPROVE TOUR - TẠO NOTIFICATION VỚI ACTION_URL
+
+/**
+ * ✅ APPROVE TOUR - Phê duyệt tour và tạo thông báo
+ * @route PUT /api/admin/tours/:id/approve
+ */
 exports.approveTour = async (req, res) => {
   try {
     const { id } = req.params;
-
-    // 1. Lấy thông tin tour
+    
+    console.log('[Tour] ===== APPROVE TOUR REQUEST =====');
+    console.log('[Tour] Tour ID:', id);
+    
     const tour = await Tour.getTourById(id);
+    
     if (!tour) {
-      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
+      return res.status(404).json({ success: false, message: 'Tour không tồn tại' });
     }
 
-    // 2. Cập nhật trạng thái tour
-    await Tour.updateTourStatus(id, 'approved');
-    console.log(`[TourController] ✅ Tour ${id} approved for user ${tour.user_id}`);
+    console.log('[Tour] Tour owner ID:', tour.user_id);
+    console.log('[Tour] Tour destination:', tour.destination);
 
-    // 3. Tạo thông báo
-    const notificationMessage = `Tour "${tour.destination}" của bạn đã được duyệt và hiển thị công khai!`;
-    const actionUrl = `/itinerary/${tour.id}`;
+    // Cập nhật status thành 'approved'
+    await updateTourStatus(id, 'approved');
+    
+    console.log('[Tour] ✅ Tour status updated to approved');
+
+    const notificationMessage = `Tour "${tour.destination}" của bạn đã được duyệt và hiển thị công khai.`;
+    const actionUrl = `/itinerary/${id}`;
+    
+    console.log('[Tour] 📝 Creating notification...');
+    console.log('[Tour] Recipient user ID:', tour.user_id);
+    console.log('[Tour] Message:', notificationMessage);
+    console.log('[Tour] Action URL:', actionUrl);
+
     const notification = await Notification.createNotificationWithType(
       tour.user_id,
       notificationMessage,
       NOTIFICATION_TYPES.TOUR_APPROVED,
-      parseInt(tour.id),
+      parseInt(id),
       actionUrl
     );
-
-    console.log('[TourController] Notification created:', notification);
-
-    // 4. Emit notification qua Socket.IO
+    
+    console.log('[Tour] ✅ Notification created with ID:', notification.id);
+    
     const io = req.app.get('io');
+    console.log('[Tour] Socket.IO instance exists:', !!io);
+    
     if (io) {
-      const userRoom = `user_${tour.user_id}`;
-      io.to(userRoom).emit('new_notification', {
-        id: notification.id,
-        message: notification.message,
-        type: notification.type,
-        action_url: notification.action_url,
-        created_at: notification.created_at,
-      });
-      console.log(`[TourController] ✅ Notification emitted to ${userRoom}`);
+      const fullNotificationData = await Notification.getNotificationById(notification.id);
+      console.log('[Tour] Full notification data:', fullNotificationData);
+      
+      if (fullNotificationData) {
+        const roomName = `user_${tour.user_id}`;
+        
+        console.log('[Tour] 📡 EMITTING approval to room:', roomName);
+        console.log('[Tour] 📡 Notification payload:', JSON.stringify(fullNotificationData, null, 2));
+        
+        io.to(roomName).emit('new_notification', fullNotificationData);
+        
+        console.log('[Tour] ✅✅✅ APPROVAL NOTIFICATION EMITTED SUCCESSFULLY ✅✅✅');
+      }
     } else {
-      console.warn('[TourController] ❌ Socket.IO instance not found');
+      console.error('[Tour] ❌ Socket.IO instance NOT FOUND');
     }
+
+    console.log('[Tour] ===== APPROVE TOUR COMPLETED =====');
 
     res.json({ success: true, message: 'Đã duyệt tour thành công' });
   } catch (error) {
-    console.error('[TourController] ❌ Error approving tour:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi duyệt tour', error: error.message });
+    console.error('[Tour] ❌ Fatal error approving:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };
 
-// ✅ REJECT TOUR - TẠO NOTIFICATION VỚI ACTION_URL
+/**
+ * ✅ REJECT TOUR - Từ chối tour và tạo thông báo
+ * @route PUT /api/admin/tours/:id/reject
+ */
 exports.rejectTour = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // 1. Lấy thông tin tour
+    console.log('[Tour] ===== REJECT TOUR REQUEST =====');
+    console.log('[Tour] Tour ID:', id);
+    
     const tour = await Tour.getTourById(id);
+
     if (!tour) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Không tìm thấy tour' 
-      });
+      return res.status(404).json({ success: false, message: 'Tour không tồn tại' });
     }
 
-    if (!tour.user_id) {
-      console.error('[TourController] Tour không có user_id:', tour);
-      return res.status(400).json({
-        success: false,
-        message: 'Tour không có thông tin người tạo'
-      });
-    }
+    console.log('[Tour] Tour owner ID:', tour.user_id);
+    console.log('[Tour] Tour destination:', tour.destination);
 
-    // 2. Cập nhật status
-    await Tour.updateTourStatus(id, 'rejected');
-    console.log(`[TourController] ❌ Tour ${id} rejected for user ${tour.user_id}`);
+    // Cập nhật status thành 'rejected'
+    await updateTourStatus(id, 'rejected');
     
-    // 3. Tạo notification với action_url
+    console.log('[Tour] ✅ Tour status updated to rejected');
+
     const notificationMessage = `Tour "${tour.destination}" của bạn đã bị từ chối. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.`;
-    const actionUrl = `/admin/tours`; // Chuyển hướng đến trang quản trị tour
+    const actionUrl = `/user/my-tours`;
     
+    console.log('[Tour] 📝 Creating notification...');
+    console.log('[Tour] Recipient user ID:', tour.user_id);
+    console.log('[Tour] Message:', notificationMessage);
+    console.log('[Tour] Action URL:', actionUrl);
+
     const notification = await Notification.createNotificationWithType(
       tour.user_id,
       notificationMessage,
       NOTIFICATION_TYPES.TOUR_REJECTED,
-      parseInt(tour.id),
+      parseInt(id),
       actionUrl
     );
     
-    console.log('[TourController] Notification created:', notification);
+    console.log('[Tour] ✅ Notification created with ID:', notification.id);
 
-    // 4. Emit notification qua socket
     const io = req.app.get('io');
+    console.log('[Tour] Socket.IO instance exists:', !!io);
+    
     if (io) {
-      const notificationData = {
-        id: notification.id,
-        user_id: tour.user_id,
-        message: notification.message,
-        type: notification.type,
-        related_id: notification.related_id,
-        action_url: `/itinerary/${tour.id}`,
-        created_at: notification.created_at || new Date(),
-      };
-
-      const userRoom = `user_${tour.user_id}`; // Room của user
-      io.to(userRoom).emit('new_notification', notificationData); // Emit sự kiện
-      console.log(`[TourController] ✅ Notification emitted to ${userRoom}:`, notificationData);
+      const fullNotificationData = await Notification.getNotificationById(notification.id);
+      console.log('[Tour] Full notification data:', fullNotificationData);
+      
+      if (fullNotificationData) {
+        const roomName = `user_${tour.user_id}`;
+        
+        console.log('[Tour] 📡 EMITTING rejection to room:', roomName);
+        console.log('[Tour] 📡 Notification payload:', JSON.stringify(fullNotificationData, null, 2));
+        
+        io.to(roomName).emit('new_notification', fullNotificationData);
+        
+        console.log('[Tour] ✅✅✅ REJECTION NOTIFICATION EMITTED SUCCESSFULLY ✅✅✅');
+      }
     } else {
-      console.warn('[TourController] ❌ Socket.IO instance not found');
+      console.error('[Tour] ❌ Socket.IO instance NOT FOUND');
     }
 
-    res.json({ 
-      success: true, 
-      message: 'Đã từ chối tour thành công' 
-    });
+    console.log('[Tour] ===== REJECT TOUR COMPLETED =====');
+
+    res.json({ success: true, message: 'Đã từ chối tour thành công' });
   } catch (error) {
-    console.error('[TourController] ❌ Error rejecting tour:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi server khi từ chối tour',
-      error: error.message
-    });
+    console.error('[Tour] ❌ Fatal error rejecting:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server', error: error.message });
   }
 };

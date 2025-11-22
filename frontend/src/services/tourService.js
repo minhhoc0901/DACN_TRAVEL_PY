@@ -12,7 +12,6 @@ export const tourService = {
                 }
             });
 
-            // Thêm log để kiểm tra chuỗi query
             console.log('Fetching tours with filters:', queryParams.toString());
             
             const response = await fetch(`${API_BASE_URL}/tours/for-sale?${queryParams.toString()}`);
@@ -22,14 +21,16 @@ export const tourService = {
                 throw new Error(errorData.message || 'Failed to fetch tours');
             }
             
-            return await response.json();
+            const result = await response.json();
+            console.log('getToursForSale response:', result);
+            
+            return result;
         } catch (error) {
-            console.error('Error fetching tours:', error);
+            console.error('Error in getToursForSale:', error);
             throw error;
         }
     },
 
-    // Lấy tours nổi bật
     async getFeaturedTours(limit = 8) {
         try {
             const response = await fetch(`${API_BASE_URL}/tours/featured?limit=${limit}`);
@@ -45,38 +46,72 @@ export const tourService = {
         }
     },
 
-    // Lấy chi tiết tour
+    // ✅ SỬA: Đổi từ /tours/detail/:id sang /tours/:id (khớp với route backend)
     async getTourDetail(tourId) {
         try {
-            const response = await fetch(`${API_BASE_URL}/tours/detail/${tourId}`);
+            console.log('[tourService] Fetching tour detail for ID:', tourId);
+            console.log('[tourService] URL:', `${API_BASE_URL}/tours/${tourId}`);
+            
+            const response = await fetch(`${API_BASE_URL}/tours/${tourId}`);
+            
+            console.log('[tourService] Response status:', response.status);
+            console.log('[tourService] Response ok:', response.ok);
             
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to fetch tour details');
             }
             
-            return await response.json();
+            const result = await response.json();
+            console.log('[tourService] getTourDetail result:', result);
+            
+            return {
+                success: result.success !== false,
+                data: result.tour || result.data,
+                message: result.message
+            };
         } catch (error) {
-            console.error(`Error fetching details for tour ${tourId}:`, error);
+            console.error('[tourService] Error in getTourDetail:', error);
             throw error;
         }
     },
+
     async getTourDepartures(tourId) {
         try {
-            // Sửa lại endpoint cho đúng với backend và sử dụng API_BASE_URL
+            console.log('[tourService] Fetching departures for tour ID:', tourId);
+            console.log('[tourService] URL:', `${API_BASE_URL}/tour-departures/${tourId}/available`);
+            
             const response = await fetch(`${API_BASE_URL}/tour-departures/${tourId}/available`);
             
+            console.log('[tourService] Departures response status:', response.status);
+            
             if (!response.ok) {
-                // Thêm logic xử lý lỗi chi tiết hơn
-                const errorData = await response.text(); // Dùng .text() để xem server trả về gì
-                console.error("Server response (not JSON):", errorData);
-                throw new Error('Không thể tải lịch khởi hành.');
+                if (response.status === 404) {
+                    console.warn('[tourService] No departures found');
+                    return {
+                        success: true,
+                        data: []
+                    };
+                }
+                
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to fetch departures');
             }
             
-            return await response.json();
+            const result = await response.json();
+            console.log('[tourService] getTourDepartures result:', result);
+            
+            return {
+                success: result.success !== false,
+                data: result.data || result.departures || [],
+                message: result.message
+            };
         } catch (error) {
-            console.error(`Error fetching departures for tour ${tourId}:`, error);
-            throw error;
+            console.error('[tourService] Error in getTourDepartures:', error);
+            return {
+                success: true,
+                data: []
+            };
         }
-    },
+    }
 };

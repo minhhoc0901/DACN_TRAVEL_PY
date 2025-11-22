@@ -6,7 +6,7 @@ import AdminHeader from './AdminHeader';
 import '../../../styles/admin/AdminLayout.css';
 
 const AdminLayout = () => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth(); // ✅ Lấy loading từ context
   const location = useLocation();
   const [activePageName, setActivePageName] = useState('');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -15,27 +15,47 @@ const AdminLayout = () => {
 
   useEffect(() => {
     const path = location.pathname;
-    // Xóa hoặc bình luận đoạn if cho Dashboard
-    // if (path === '/admin') {
-    //   setActivePageName('Dashboard');
-    // } else 
+    
     if (path.startsWith('/admin/users')) {
       setActivePageName('Quản lý người dùng');
     } else if (path.startsWith('/admin/locations')) {
       setActivePageName('Quản lý địa điểm');
     } else if (path.startsWith('/admin/tours')) {
       setActivePageName('Quản lý tour');
+    } else if (path.startsWith('/admin/chat')) {
+      setActivePageName('Quản lý chat');
+    } else if (path.startsWith('/admin/notifications')) {
+      setActivePageName('Quản lý thông báo');
     } else {
-      // Nếu /admin được truy cập trực tiếp và đã redirect,
-      // activePageName sẽ được đặt bởi route con (ví dụ: /admin/users)
-      // Nếu bạn muốn một giá trị mặc định khi không có route con nào khớp, đặt ở đây.
-      // Ví dụ, nếu /admin/users là mặc định, bạn có thể không cần 'else' này
-      // hoặc đặt nó thành 'Quản lý người dùng' nếu path là '/admin' và chưa redirect.
-      // Tuy nhiên, với Navigate trong router.js, path sẽ nhanh chóng thành /admin/users.
       setActivePageName(''); 
     }
   }, [location.pathname]);
 
+  // ✅ Hiển thị loading khi đang kiểm tra auth
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100vh',
+        flexDirection: 'column',
+        gap: '1rem'
+      }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          border: '4px solid #f3f3f3',
+          borderTop: '4px solid #007bff',
+          borderRadius: '50%',
+          animation: 'spin 1s linear infinite'
+        }}></div>
+        <p>Đang tải...</p>
+      </div>
+    );
+  }
+
+  // ✅ Chỉ redirect khi đã load xong và không phải admin
   if (!user || user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }

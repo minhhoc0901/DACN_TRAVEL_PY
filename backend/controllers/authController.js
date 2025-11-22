@@ -198,13 +198,22 @@ exports.getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Không tìm thấy thông tin người dùng'
+        message: 'Không tìm thấy người dùng' 
       });
     }
 
+    // Trả về thông tin user (không trả password)
     res.status(200).json({
       success: true,
-      data: user
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.full_name,
+        phone: user.phone,
+        role: user.role,
+        avatar: user.avatar
+      }
     });
   } catch (error) {
     console.error('Get profile error:', error);

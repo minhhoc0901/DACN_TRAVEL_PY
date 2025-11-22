@@ -1,25 +1,20 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
 
 const ChatWithAdminContext = createContext();
 
-export const useChatWithAdmin = () => {
-    const context = useContext(ChatWithAdminContext);
-    if (!context) {
-        throw new Error('useChatWithAdmin must be used within a ChatWithAdminProvider');
-    }
-    return context;
-};
+export const useChatWithAdmin = () => useContext(ChatWithAdminContext);
 
 export const ChatWithAdminProvider = ({ children }) => {
     const { user, isAuthenticated, getToken } = useAuth();
-    const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
     const [loading, setLoading] = useState(false);
     const [adminId, setAdminId] = useState(null);
-
+    const [isChatOpen, setIsChatOpen] = useState(false);
+    
+    const socketRef = useRef(null); // Sử dụng useRef để lưu socket
     const userId = user?.id;
 
     // 1. Lấy ID của Admin
@@ -38,49 +33,8 @@ export const ChatWithAdminProvider = ({ children }) => {
         fetchAdminId();
     }, []);
 
-    // 2. Thiết lập kết nối Socket cho user
-    useEffect(() => {
-        if (!isAuthenticated || !userId || !adminId) {
-            if (socket) {
-                socket.close();
-                setSocket(null);
-            }
-            return;
-        }
-
-        const token = getToken();
-        const newSocket = io('http://localhost:5000', {
-            transports: ['websocket'],
-            auth: { token }
-        });
-
-        const handleConnect = () => {
-            setIsConnected(true);
-            newSocket.emit('join', `user_${userId}`);
-            getConversation(); // Tải lịch sử chat khi kết nối
-        };
-
-        const handleDisconnect = () => setIsConnected(false);
-
-        const handleNewMessage = (messageData) => {
-            setMessages(prev => {
-                const withoutOptimistic = prev.filter(msg => !msg.isOptimistic);
-                return [...withoutOptimistic, messageData];
-            });
-        };
-
-        newSocket.on('connect', handleConnect);
-        newSocket.on('disconnect', handleDisconnect);
-        newSocket.on('private_message', handleNewMessage);
-        setSocket(newSocket);
-
-        return () => {
-            newSocket.close();
-        };
-    }, [isAuthenticated, userId, adminId, getToken]);
-
-    // 3. Hàm tải lịch sử trò chuyện
-    const getConversation = async () => {
+    // 2. Hàm tải lịch sử trò chuyện
+    const getConversation = useCallback(async () => {
         const token = getToken();
         if (!token || !userId || !adminId) return;
         setLoading(true);
@@ -95,20 +49,91 @@ export const ChatWithAdminProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [getToken, userId, adminId]);
+
+    // 3. Thiết lập kết nối Socket
+    useEffect(() => {
+        if (!isAuthenticated || !userId || !adminId) {
+            if (socketRef.current) {
+                socketRef.current.close();
+                socketRef.current = null;
+            }
+            return;
+        }
+
+        const token = getToken();
+        const newSocket = io('http://localhost:5000', {
+            transports: ['websocket'],
+            auth: { token }
+        });
+
+        socketRef.current = newSocket;
+
+        const handleConnect = () => {
+            setIsConnected(true);
+            newSocket.emit('join', `user_${userId}`);
+            getConversation();
+        };
+
+        const handleDisconnect = () => setIsConnected(false);
+
+        const handleNewMessage = (messageData) => {
+            setMessages(prev => {
+                const withoutOptimistic = prev.filter(msg => !msg.isOptimistic);
+                return [...withoutOptimistic, messageData];
+            });
+        };
+
+        newSocket.on('connect', handleConnect);
+        newSocket.on('disconnect', handleDisconnect);
+        newSocket.on('private_message', handleNewMessage);
+
+        return () => {
+            newSocket.off('connect', handleConnect);
+            newSocket.off('disconnect', handleDisconnect);
+            newSocket.off('private_message', handleNewMessage);
+            newSocket.close();
+            socketRef.current = null;
+        };
+    }, [isAuthenticated, userId, adminId, getToken, getConversation]);
 
     // 4. Hàm gửi tin nhắn
     const sendMessage = (message, imageUrls = []) => {
-        if (!socket || (!message.trim() && imageUrls.length === 0)) return;
+        if (!socketRef.current || (!message.trim() && imageUrls.length === 0)) return;
 
-        const messageData = { senderId: userId, receiverId: adminId, message: message.trim(), imageUrls };
-        socket.emit('private_message', messageData);
+        const messageData = { 
+            senderId: userId, 
+            receiverId: adminId, 
+            message: message.trim(), 
+            imageUrls 
+        };
+        
+        socketRef.current.emit('private_message', messageData);
 
-        const optimisticMessage = { id: Date.now(), senderId: userId, receiverId: adminId, message: message.trim(), imageUrls, time: new Date(), isOptimistic: true };
+        const optimisticMessage = { 
+            id: Date.now(), 
+            senderId: userId, 
+            receiverId: adminId, 
+            message: message.trim(), 
+            imageUrls, 
+            time: new Date(), 
+            isOptimistic: true 
+        };
+        
         setMessages(prev => [...prev, optimisticMessage]);
     };
 
-    const value = { messages, isConnected, loading, sendMessage };
+    const openChat = () => setIsChatOpen(true);
+
+    const value = { 
+        messages, 
+        isConnected, 
+        loading, 
+        sendMessage, 
+        isChatOpen, 
+        setIsChatOpen, 
+        openChat 
+    };
 
     return (
         <ChatWithAdminContext.Provider value={value}>
