@@ -1,0 +1,163 @@
+.uwa-chat-box {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 350px;
+  max-width: 90vw;
+  height: 500px;
+  max-height: 80vh;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 5px 20px rgba(0,0,0,.2);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+  z-index:1000;
+}
+
+.uwa-header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  background:#007bff;
+  color:#fff;
+}
+
+.uwa-header h4 { margin:0; font-size:16px; }
+
+.uwa-close-btn {
+  background:none;
+  border:none;
+  color:#fff;
+  font-size:24px;
+  cursor:pointer;
+  line-height:1;
+}
+
+.uwa-messages {
+  flex-grow:1;
+  padding:16px;
+  overflow-y:auto;
+  background:#f5f5f5;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.uwa-msg-row {
+  display:flex;
+  max-width:80%;
+}
+
+.uwa-msg-row.uwa-admin { align-self:flex-start; }
+.uwa-msg-row.uwa-user { align-self:flex-end; }
+
+.uwa-msg-bubble {
+  padding:8px 12px;
+  border-radius:18px;
+  word-break:break-word;
+}
+
+.uwa-msg-row.uwa-user .uwa-msg-bubble {
+  background:#007bff;
+  color:#fff;
+}
+.uwa-msg-row.uwa-admin .uwa-msg-bubble {
+  background:#e4e6eb;
+  color:#050505;
+}
+
+.uwa-optimistic { opacity:.6; }
+
+.uwa-message-text { white-space:pre-wrap; }
+
+.uwa-message-images {
+  display:grid;
+  gap:4px;
+  margin-top:5px;
+}
+.uwa-message-images[data-count="1"] { grid-template-columns:1fr; }
+.uwa-message-images[data-count="2"],
+.uwa-message-images[data-count="4"] { grid-template-columns:repeat(2,1fr); }
+.uwa-message-images[data-count="3"] { grid-template-columns:repeat(3,1fr); }
+
+.uwa-message-image {
+  width:100%;
+  aspect-ratio:1/1;
+  object-fit:cover;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.uwa-form {
+  padding:8px;
+  border-top:1px solid #ddd;
+}
+
+.uwa-selected-images {
+  display:flex;
+  gap:8px;
+  padding-bottom:8px;
+  flex-wrap:wrap;
+}
+
+.uwa-preview-item { position:relative; }
+.uwa-preview-item img {
+  width:50px;
+  height:50px;
+  object-fit:cover;
+  border-radius:8px;
+}
+.uwa-remove-btn {
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  width:18px;
+  height:18px;
+  background:rgba(0,0,0,.7);
+  color:#fff;
+  border:none;
+  border-radius:50%;
+  cursor:pointer;
+  font-size:12px;
+  line-height:1;
+}
+
+.uwa-input-row {
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.uwa-text-input {
+  flex-grow:1;
+  padding:8px 12px;
+  border:1px solid #ccc;
+  border-radius:20px;
+  outline:none;
+}
+
+.uwa-image-btn,
+.uwa-send-btn {
+  background:none;
+  border:none;
+  font-size:22px;
+  cursor:pointer;
+  color:#007bff;
+  padding:5px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.uwa-send-btn { font-weight:bold; }
+
+.uwa-image-btn:disabled,
+.uwa-send-btn:disabled {
+  color:#ccc;
+  cursor:not-allowed;
+}
+
+.uwa-loading { font-size:13px; color:#666; }

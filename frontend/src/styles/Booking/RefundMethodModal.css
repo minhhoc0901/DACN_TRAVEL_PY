@@ -1,0 +1,148 @@
+.refund-method-selection {
+    padding: 20px 0;
+}
+
+.refund-method-selection h4 {
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 18px;
+}
+
+.refund-info {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.refund-info strong {
+    color: #28a745;
+    font-size: 20px;
+}
+
+.refund-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.refund-option {
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.refund-option:hover {
+    border-color: #0d6efd;
+    background: #f8f9fa;
+}
+
+.refund-option.selected {
+    border-color: #0d6efd;
+    background: #e7f3ff;
+}
+
+.refund-option input[type="radio"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.option-content {
+    flex: 1;
+}
+
+.option-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.option-header i {
+    font-size: 24px;
+    color: #0d6efd;
+}
+
+.option-header strong {
+    font-size: 16px;
+    color: #333;
+}
+
+.option-header .badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: auto;
+}
+
+.option-header .badge.instant {
+    background: #28a745;
+    color: white;
+}
+
+.option-header .badge.pending {
+    background: #ffc107;
+    color: #333;
+}
+
+.option-details {
+    padding-left: 34px;
+}
+
+.option-details p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.option-details strong {
+    color: #28a745;
+}
+
+.option-details .text-danger {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.option-details .text-muted {
+    font-size: 12px;
+    color: #999;
+    font-style: italic;
+}
+
+.refund-note {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.refund-note i {
+    font-size: 20px;
+    color: #ffc107;
+    flex-shrink: 0;
+}
+
+.refund-note p {
+    margin: 0;
+    font-size: 13px;
+    color: #333;
+    line-height: 1.6;
+}
+
+.refund-note strong {
+    color: #ff6b00;
+}
