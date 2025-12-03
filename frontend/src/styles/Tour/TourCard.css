@@ -1,0 +1,457 @@
+/* --- Tour Card V2 - Refactored Styles --- */
+
+/* Added CSS variables for a consistent and easily customizable theme.
+  This makes it simple to change colors, fonts, or spacing across all cards.
+*/
+:root {
+    --v2-primary-color: #3498db;
+    --v2-primary-hover: #2980b9;
+    --v2-accent-color: #e74c3c;
+    --v2-text-dark: #2c3e50;
+    --v2-text-light: #7f8c8d;
+    --v2-text-subtle: #95a5a6;
+    --v2-bg-light: #ffffff;
+    --v2-border-color: #ecf0f1;
+    --v2-warning-color: #f1c40f;
+    --v2-card-border-radius: 16px;
+    --v2-card-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    --v2-card-shadow-hover: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.v2-tour-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.v2-tour-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* --- Image Section --- */
+/* Added a wrapper for better control over the image */
+.v2-tour-card-image-wrapper {
+    position: relative;
+    width: 100%;
+    padding-top: 66.67%; /* 3:2 aspect ratio */
+    overflow: hidden;
+}
+
+.v2-tour-card-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.v2-tour-card:hover .v2-tour-card-image {
+    transform: scale(1.1);
+}
+
+.v2-sale-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+}
+
+.v2-sale-badge i { /* REMOVED: Hide icon in sale badge */
+    display: none;
+}
+
+.v2-tour-duration {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    z-index: 2;
+}
+
+.v2-tour-duration i {
+    font-size: 14px;
+}
+
+/* --- Content Section --- */
+.v2-tour-card-content {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+}
+
+.v2-tour-header {
+    margin-bottom: 12px;
+}
+
+.v2-tour-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* Renamed from .tour-link to .v2-tour-link for consistency */
+.v2-tour-link {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.v2-tour-link:hover {
+    color: #667eea;
+}
+
+.v2-tour-location {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--v2-text-light);
+    font-size: 14px;
+}
+
+.v2-tour-location i {
+    color: #dc3545;
+    font-size: 14px;
+    margin-right: 6px;
+}
+
+.v2-tour-rating {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.v2-stars {
+    display: flex;
+    gap: 3px;
+}
+
+
+.v2-stars i {
+    font-size: 14px;
+    
+}
+
+.v2-stars .fas.fa-star,
+.v2-stars .fas.fa-star-half-alt {
+    color: #ffc107; /* Màu vàng */
+}
+
+.v2-stars .far.fa-star {
+    color: #e0e0e0; /* Màu xám */
+}
+
+.v2-rating-text {
+    font-size: 13px;
+    color: #666;
+}
+
+.v2-rating-text strong {
+    color: #333;
+    font-weight: 700;
+}
+
+/* --- Refactored Footer Section --- */
+/* The new single footer container */
+.v2-tour-card-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f0f0f0;
+}
+
+/* PRICE */
+.v2-tour-price {
+    margin-bottom: 12px;
+}
+
+.v2-price-label {
+    font-size: 12px;
+    color: #666;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.v2-price-container {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.v2-current-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: #d9534f;
+}
+
+.v2-original-price {
+    font-size: 14px;
+    color: #999;
+    text-decoration: line-through;
+}
+
+.v2-price-contact {
+    font-size: 18px;
+    font-weight: 700;
+    color: #667eea;
+}
+
+/* ACTIONS */
+.v2-tour-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.v2-btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.v2-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Primary button style (e.g., Book Now) */
+.v2-btn--primary {
+    background: #667eea;
+    color: white;
+}
+
+.v2-btn--primary:hover:not(:disabled) {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Outline button style (e.g., View Details) */
+.v2-btn--outline {
+    background: white;
+    color: #667eea;
+    border: 2px solid #667eea;
+}
+
+.v2-btn--outline:hover {
+    background: #667eea;
+    color: white;
+}
+
+.v2-tour-creator { /* REMOVED: Hide the creator section */
+    display: none;
+}
+
+/* ===== NGÀY KHỞI HÀNH ===== */
+.v2-tour-departure-info {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e3eaf2 100%);
+    border-radius: 10px;
+    padding: 14px;
+    border: 2px solid #d1dce6;
+}
+
+.v2-departure-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.v2-departure-header i {
+    color: #667eea;
+    font-size: 14px;
+}
+
+.v2-departure-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.v2-departure-nav {
+    background: white;
+    border: 2px solid #667eea;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #667eea;
+    font-size: 12px;
+}
+
+.v2-departure-nav:hover {
+    background: #667eea;
+    color: white;
+    transform: scale(1.1);
+}
+
+.v2-departure-date {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+    border: 2px solid #667eea;
+}
+
+.v2-departure-date .date-text {
+    font-size: 15px;
+    font-weight: 700;
+    color: #667eea;
+    display: block;
+}
+
+.v2-departure-date .departure-count {
+    font-size: 11px;
+    color: #666;
+    display: block;
+    margin-top: 2px;
+}
+
+.v2-departure-slots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #28a745;
+    font-weight: 600;
+}
+
+.v2-departure-slots i {
+    font-size: 13px;
+}
+
+/* ===== CẢNH BÁO KHÔNG CÓ NGÀY ===== */
+.v2-tour-no-departure {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #856404;
+    font-weight: 500;
+}
+
+.v2-tour-no-departure i {
+    font-size: 14px;
+    color: #ffc107;
+}
+
+/* ===== DESCRIPTION ===== */
+.v2-tour-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.v2-tour-description p {
+    margin: 0;
+}
+
+/* ===== META ITEM (KHỞI HÀNH) ===== */
+.v2-tour-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* ĂNG KHOẢNG CÁCH */
+    font-size: 14px;
+    color: #666;
+    padding: 6px 0; /* THÊM PADDING */
+}
+
+.v2-tour-meta-item i {
+    color: #dc3545;
+    font-size: 16px; /* TĂNG SIZE ICON */
+    flex-shrink: 0; /* KHÔNG CHO ICON BỊ NÉN */
+}
+
+.v2-tour-meta-item span {
+    line-height: 1.4; /* CĂN GIỮA TEXT */
+}
+
+.v2-tour-meta-item strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .v2-tour-card-content {
+        padding: 16px;
+    }
+
+    .v2-tour-title {
+        font-size: 16px;
+    }
+
+    .v2-departure-nav {
+        width: 26px;
+        height: 26px;
+        font-size: 10px;
+    }
+
+    .v2-departure-date .date-text {
+        font-size: 13px;
+    }
+
+    .v2-current-price {
+        font-size: 18px;
+    }
+
+    .v2-tour-actions {
+        grid-template-columns: 1fr;
+    }
+
+    .v2-btn {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+}

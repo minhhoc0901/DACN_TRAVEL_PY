@@ -1,0 +1,422 @@
+/* ============================================
+    ADMIN CHAT INTERFACE - REFINED STYLES
+============================================ */
+
+/* === Biến màu và style cục bộ === */
+.admin-chat-container {
+  --primary-color: #007bff;
+  --light-bg: #f8f9fa;
+  --white-bg: #ffffff;
+  --border-color: #dee2e6;
+  --text-dark: #212529;
+  --text-light: #6c757d;
+  --text-white: #ffffff;
+  /* Đảm bảo màu trắng là #ffffff */
+  --admin-bubble-bg: var(--primary-color);
+  --user-bubble-bg: #e9ecef;
+  --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --border-radius-sm: 8px;
+  --border-radius-md: 18px;
+  --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  height: calc(100vh - 80px);
+  /* Điều chỉnh chiều cao cho phù hợp */
+  display: flex;
+  flex-direction: column;
+  background: var(--light-bg);
+  font-family: var(--font-family);
+  margin: 10px;
+  border-radius: 12px;
+  box-shadow: var(--box-shadow);
+  overflow: hidden;
+}
+
+/* === Các style chung (thanh cuộn, kết nối, layout) === */
+/* ... (Giữ nguyên các phần này từ phiên bản trước) ... */
+.admin-chat-container ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-chat-container ::-webkit-scrollbar-thumb {
+  background: #ced4da;
+  border-radius: 3px;
+}
+
+.connection-status {
+  position: absolute;
+  top: 25px;
+  right: 25px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 1000;
+}
+
+.connection-status.connected {
+  background: #d4edda;
+  color: #155724;
+}
+
+.connection-status.disconnected {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.admin-chat-wrapper {
+  display: flex;
+  height: 100%;
+}
+
+/* === Sidebar (Danh sách User) === */
+/* ... (Giữ nguyên toàn bộ phần sidebar từ phiên bản trước) ... */
+.admin-chat-sidebar {
+  width: 320px;
+  background: var(--white-bg);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.user-list {
+  list-style: none;
+  padding: 8px;
+  margin: 0;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.user-item {
+  padding: 12px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 0.2s;
+  border-radius: var(--border-radius-sm);
+}
+
+.user-item:hover {
+  background: var(--light-bg);
+}
+
+.user-item.active {
+  background: #e3f2fd;
+}
+
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e9ecef;
+  color: var(--text-light);
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.loading,
+.no-users {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-light);
+}
+
+/* === Khung Chat Chính === */
+.admin-chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f1f3f5;
+}
+
+.chat-header {
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--white-bg);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  z-index: 10;
+}
+
+.chat-header .user-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.admin-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.loading-messages,
+.admin-chat-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  color: var(--text-light);
+}
+
+/* === Bong Bóng Tin Nhắn === */
+.msg-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+  max-width: 75%;
+}
+
+.msg-row.admin {
+  align-self: flex-end;
+}
+
+.msg-row.user {
+  align-self: flex-start;
+}
+
+.msg-avatar {
+  flex-shrink: 0;
+  align-self: flex-end;
+}
+
+.msg-avatar img,
+.avatar-fallback {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+}
+
+.avatar-fallback {
+  background: #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.msg-bubble {
+  padding: 12px 16px;
+  border-radius: var(--border-radius-md);
+  word-wrap: break-word;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.msg-row.admin .msg-bubble {
+  background: var(--admin-bubble-bg);
+  color: var(--text-white);
+  /* Màu mặc định cho toàn bộ bubble */
+  border-bottom-right-radius: 4px;
+}
+
+.msg-row.user .msg-bubble {
+  background: var(--white-bg);
+  color: var(--text-dark);
+  border-bottom-left-radius: 4px;
+}
+
+.msg-time {
+  font-size: 11px;
+  color: var(--text-light);
+  margin-top: 6px;
+  padding-left: 44px;
+}
+
+.msg-row.admin .msg-time {
+  padding-left: 0;
+  padding-right: 8px;
+  text-align: right;
+}
+
+/* ✅ YÊU CẦU 1: Đảm bảo chữ của admin luôn là màu trắng */
+.msg-row.admin .message-text {
+  color: var(--text-white);
+}
+
+/* --- Hiển thị ảnh dạng lưới thông minh --- */
+.message-images {
+  display: grid;
+  gap: 5px;
+}
+
+.message-images[data-count="1"] {
+  grid-template-columns: minmax(150px, 250px);
+}
+
+.message-images[data-count="2"],
+.message-images[data-count="4"] {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 250px;
+}
+
+.message-images[data-count="3"] {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 250px;
+}
+
+.message-images img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.message-images img:hover {
+  transform: scale(1.05);
+}
+
+/* ✅ YÊU CẦU 2: Bỏ background cho tin nhắn chỉ có ảnh */
+/* Selector này sẽ tìm:
+  - Một .msg-bubble...
+  - ...bên trong có .message-images...
+  - ...VÀ KHÔNG có .message-text.
+*/
+.msg-bubble:has(.message-images):not(:has(.message-text)) {
+  background: transparent !important;
+  /* Ghi đè background mặc định */
+  padding: 0 !important;
+  /* Xóa padding */
+  box-shadow: none !important;
+  /* Xóa đổ bóng */
+}
+
+/* === Form Nhập Liệu === */
+/* ... (Giữ nguyên toàn bộ phần form nhập liệu từ phiên bản trước) ... */
+.admin-chat-form {
+  padding: 12px 24px;
+  border-top: 1px solid var(--border-color);
+  background: var(--white-bg);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.selected-images-preview {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 10px;
+  overflow-x: auto;
+}
+
+.image-preview-item {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.image-preview-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--danger-color);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.message-input {
+  flex: 1;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 24px;
+  outline: none;
+  font-size: 15px;
+  background: var(--light-bg);
+}
+
+.image-btn,
+.send-btn {
+  border: none;
+  background: transparent;
+  color: var(--primary-color);
+  width: 44px;
+  height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.image-btn:hover,
+.send-btn:hover {
+  background-color: #e9ecef;
+}
+
+.image-btn:disabled,
+.send-btn:disabled {
+  color: #adb5bd;
+  cursor: not-allowed;
+  background-color: transparent;
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .admin-chat-sidebar {
+    display: none;
+  }
+}

@@ -1,0 +1,96 @@
+.reviews-list-container {
+  margin-top: 20px;
+}
+
+.review-item {
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.review-author-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.reviewer-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.author-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.reviewer-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.review-date {
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.review-rating {
+  margin-bottom: 10px;
+}
+
+.review-rating i.bi-star-fill {
+  color: #ffc107; /* Màu sao vàng */
+}
+.review-rating i.bi-star {
+  color: #e0e0e0; /* Màu sao xám */
+}
+
+
+.review-comment-text {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 15px;
+  white-space: pre-wrap; /* Giữ lại các xuống dòng */
+}
+
+.review-images-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; /* Khoảng cách giữa các ảnh */
+  margin-top: 10px;
+}
+
+.review-image-item {
+  width: 100px; /* Kích thước thumbnail */
+  height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+  border: 1px solid #eee;
+}
+
+.review-gallery-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer; /* Cho phép mở ảnh lớn hơn nếu có lightbox */
+  transition: transform 0.2s ease-in-out;
+}
+.review-gallery-image:hover {
+    transform: scale(1.05);
+}
+
+.no-reviews {
+  text-align: center;
+  color: #777;
+  padding: 20px;
+  font-style: italic;
+}

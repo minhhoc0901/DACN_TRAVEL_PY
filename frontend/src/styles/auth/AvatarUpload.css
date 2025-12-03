@@ -1,0 +1,198 @@
+.avatar-upload-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.avatar-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: 3px solid #fff;
+  transition: all 0.3s ease;
+}
+
+.avatar-wrapper:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+}
+
+.avatar-wrapper:hover .avatar-overlay {
+  opacity: 1;
+}
+
+.avatar-overlay i {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.avatar-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.avatar-error {
+  color: #e53e3e;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.avatar-error-message {
+  color: var(--danger, #dc3545);
+  font-size: 0.875rem;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.btn-trigger-avatar-change {
+  display: block;
+  margin: 10px auto 0;
+  padding: 8px 15px;
+  background-color: var(--primary, #007bff);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s ease;
+}
+
+.btn-trigger-avatar-change:hover {
+  background-color: var(--primary-dark, #0056b3);
+}
+
+.btn-trigger-avatar-change i {
+  margin-right: 5px;
+}
+
+.avatar-preview-actions {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar-confirm-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+}
+
+.btn-avatar-confirm {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-avatar-confirm:active {
+    transform: scale(0.98);
+}
+
+.btn-avatar-update {
+  background-color: var(--success, #28a745);
+  color: white;
+}
+
+.btn-avatar-update:hover {
+  background-color: #1e7e34;
+}
+
+.btn-avatar-cancel {
+  background-color: var(--secondary, #6c757d);
+  color: white;
+}
+
+.btn-avatar-cancel:hover {
+  background-color: #545b62;
+}
+
+.btn-avatar-reselect {
+  background-color: transparent;
+  color: var(--primary, #007bff);
+  border: 1px solid var(--primary, #007bff);
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-avatar-reselect:hover {
+  background-color: var(--primary-light, #e6f3ff);
+  color: var(--primary-dark, #0056b3);
+}
+
+.btn-avatar-reselect i {
+  margin-right: 5px;
+}
+
+.avatar-loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5rem; /* Kích thước icon loading */
+    color: rgba(255, 255, 255, 0.9); /* Màu icon loading */
+    z-index: 3; /* Đảm bảo nó trên ảnh */
+}
+
+.avatar-wrapper.loading .profile-avatar {
+    filter: brightness(0.7); /* Làm mờ ảnh nền khi loading */
+}
