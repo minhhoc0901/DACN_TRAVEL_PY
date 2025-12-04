@@ -1,0 +1,48 @@
+.review-form {
+  margin-bottom: 20px;
+}
+
+.review-form h3 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.star-rating {
+  display: flex;
+  gap: 5px;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.star-rating i {
+  cursor: pointer;
+  color: #ddd;
+}
+
+.star-rating i.bi-star-fill {
+  color: #ff9e1b;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+  margin-bottom: 10px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}

@@ -1,0 +1,131 @@
+.filters-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+.filter-select,
+.filter-input {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background: white;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.filter-select:hover,
+.filter-input:hover {
+    border-color: #adb5bd;
+}
+
+/* Search input with icon */
+.filter-search {
+    grid-column: span 2;
+}
+
+.search-input-wrapper {
+    position: relative;
+}
+
+.search-input-wrapper i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.search-input-wrapper .filter-input {
+    padding-left: 2.5rem;
+}
+
+/* Filter actions */
+.filter-actions {
+    display: flex;
+    align-items: flex-end;
+}
+
+.filter-actions .btn {
+    width: 100%;
+    padding: 0.625rem 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.filter-actions .btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.filter-actions .btn-secondary:hover {
+    background: #dee2e6;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .filters-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .filter-search {
+        grid-column: span 3;
+    }
+}
+
+@media (max-width: 768px) {
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-search {
+        grid-column: span 1;
+    }
+}
+
+/* Placeholder styling */
+.filter-input::placeholder {
+    color: #adb5bd;
+}
+
+.filter-select option {
+    padding: 0.5rem;
+}

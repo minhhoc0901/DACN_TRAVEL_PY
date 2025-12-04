@@ -1,0 +1,398 @@
+/* Enhanced styles for TourList component */
+
+/* Tour list container */
+.mng-tour-hide-button:hover {
+  background-color: #e67e22;
+}
+
+/*  CSS CHO NÚT KHÔI PHỤC */
+.mng-tour-restore-button {
+  background-color: #27ae60; /* Màu xanh lá */
+  color: white;
+}
+
+.mng-tour-restore-button:hover {
+  background-color: #229954;
+}
+
+/* CSS CHO TOUR BỊ ẨN */
+.mng-hidden {
+  border-left-color: #7f8c8d; /* Màu xám */
+  opacity: 0.7;
+}
+.mng-hidden .mng-status-badge {
+  background-color: #7f8c8d;
+  color: white;
+}
+.mng-tour-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 40px;
+}
+
+.mng-tour-delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.mng-tour-delete-button:hover {
+  background-color: #c0392b;
+}
+
+/* CSS CHO NÚT ẨN */
+.mng-tour-hide-button {
+  background-color: #f39c12; /* Màu cam */
+  color: white;
+}
+
+.mng-tour-hide-button:hover {
+  background-color: #e67e22;
+}
+
+/* Tour item card with enhanced shadow and transitions */
+.mng-tour-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  position: relative;
+  border-top: 5px solid #e0e0e0;
+}
+
+.mng-tour-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Status-specific styling for top border */
+.mng-tour-item.mng-pending {
+  border-top-color: #FFC107;
+}
+
+.mng-tour-item.mng-approved {
+  border-top-color: #4CAF50;
+}
+
+.mng-tour-item.mng-rejected {
+  border-top-color: #F44336;
+}
+
+/* Content container to hold image and info in one row */
+.mng-tour-content {
+  display: flex;
+  flex-direction: row;
+}
+
+/* Tour image container */
+.mng-tour-image {
+  flex: 0 0 250px;
+  height: 220px;
+  position: relative;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+/* Zoom effect on hover */
+.mng-tour-image img {
+  width: 350px;
+  height: 250px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.mng-tour-item:hover .mng-tour-image img {
+  transform: scale(1.05);
+}
+
+/* Status badges with enhanced styling */
+.mng-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mng-status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.mng-status-badge.mng-approved {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2E7D32;
+  border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.mng-status-badge.mng-approved::before {
+  background-color: #4CAF50;
+}
+
+.mng-status-badge.mng-pending {
+  background-color: rgba(255, 193, 7, 0.1);
+  color: #F57F17;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.mng-status-badge.mng-pending::before {
+  background-color: #FFC107;
+}
+
+.mng-status-badge.mng-rejected {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #C62828;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.mng-status-badge.mng-rejected::before {
+  background-color: #F44336;
+}
+
+/* Tour info section */
+.mng-tour-info {
+  flex: 1;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tour header with title and badge */
+.mng-tour-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.mng-tour-header h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0;
+}
+
+/* Tour details */
+.mng-tour-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.mng-tour-details p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+}
+
+.mng-tour-details p strong {
+  margin-right: 5px;
+  color: #475569;
+}
+
+/* Tour description with line clamping */
+.mng-tour-description {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #64748b;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  margin-bottom: 15px;
+}
+
+/* Action buttons container - moved to separate row */
+.mng-tour-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 16px 20px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  justify-content: flex-end;
+}
+
+/* Styled buttons with icons */
+.mng-tour-actions button,
+.mng-tour-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  min-width: 100px;
+}
+
+/* Icon styling */
+.mng-tour-actions button i,
+.mng-tour-actions a i {
+  font-size: 1rem;
+}
+
+/* Edit button */
+.mng-tour-edit-button {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+}
+
+.mng-tour-edit-button:hover {
+  background-color: #bae6fd;
+}
+
+/* Delete button */
+.mng-tour-delete-button {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.mng-tour-delete-button:hover {
+  background-color: #fecaca;
+}
+
+/* Approve button */
+.mng-tour-approve-button {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.mng-tour-approve-button:hover {
+  background-color: #bbf7d0;
+}
+
+/* Reject button */
+.mng-tour-reject-button {
+  background-color: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.mng-tour-reject-button:hover {
+  background-color: #fed7aa;
+}
+
+/* View button */
+.mng-tour-view-button {
+  background-color: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.mng-tour-view-button:hover {
+  background-color: #e2e8f0;
+}
+
+/* Disabled state for buttons */
+.mng-tour-actions button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Empty state styling */
+.mng-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.mng-empty-state p {
+  color: #666;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+}
+
+/* Responsive design */
+@media (max-width: 992px) {
+  .mng-tour-content {
+    flex-direction: column;
+  }
+  
+  .mng-tour-image {
+    flex: none;
+    width: 100%;
+    height: 200px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mng-tour-actions {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 576px) {
+  .mng-tour-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .mng-tour-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .mng-tour-actions {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+  
+  .mng-tour-actions button,
+  .mng-tour-actions a {
+    flex: 1 1 auto;
+    text-align: center;
+    min-width: 120px;
+  }
+}
+.mng-tour-author-info {
+  padding: 8px 15px;
+  border-bottom: 1px solid #eee;
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  font-size: 0.9em;
+}
+
+.mng-tour-author-info p {
+  margin: 4px 0;
+}
+
+.mng-tour-dates {
+  display: flex;
+  gap: 15px;
+}
+
+.mng-tour-dates p {
+  margin: 4px 0;
+}

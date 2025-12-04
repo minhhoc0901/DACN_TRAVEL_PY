@@ -1,0 +1,183 @@
+/* Admin Sidebar - Thiết kế mới, sáng sủa và hiện đại */
+
+:root {
+  --admin-sidebar-bg: #ffffff; /* Nền trắng */
+  --admin-sidebar-text-color: #525f7f; /* Màu chữ chính - xám đậm */
+  --admin-sidebar-icon-color: #8898aa; /* Màu icon - xám nhạt hơn */
+  --admin-sidebar-active-bg: #f6f9fc; /* Nền cho mục active - xám rất nhạt */
+  --admin-sidebar-active-text: #32325d; /* Màu chữ cho mục active - xanh đậm/tím than */
+  --admin-sidebar-active-icon: var(--admin-sidebar-active-text);
+  --admin-sidebar-hover-bg: #f6f9fc;
+  --admin-sidebar-hover-text: #32325d;
+  --admin-sidebar-brand-color: #32325d;
+  --admin-sidebar-section-title-color: #8898aa;
+  --admin-sidebar-border-color: #e9ecef; /* Màu viền nhẹ */
+  --admin-sidebar-width: 260px;
+  --admin-sidebar-width-collapsed: 80px; /* Chiều rộng khi thu gọn */
+  --admin-sidebar-transition: all 0.3s ease-in-out;
+}
+
+.admin-sidebar {
+  width: var(--admin-sidebar-width);
+  min-height: 100vh;
+  background: var(--admin-sidebar-bg);
+  color: var(--admin-sidebar-text-color);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1030; /* Đảm bảo cao hơn các phần tử khác nhưng có thể dưới header nếu header có z-index cao hơn */
+  transition: var(--admin-sidebar-transition);
+  box-shadow: 0 0 2rem 0 rgba(136, 152, 170, .15); /* Đổ bóng nhẹ nhàng */
+  border-right: 1px solid var(--admin-sidebar-border-color);
+}
+
+.sidebar-header {
+  height: 70px; /* Chiều cao của header admin */
+  padding: 0 25px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--admin-sidebar-border-color);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--admin-sidebar-brand-color);
+  text-decoration: none;
+}
+
+.sidebar-brand i {
+  font-size: 26px; /* Kích thước icon lớn hơn một chút */
+  color: var(--admin-sidebar-brand-color); /* Màu icon thương hiệu */
+}
+
+.sidebar-brand .brand-text {
+  font-size: 1.25rem; /* Tăng kích thước chữ STAFF */
+  font-weight: 700; /* Đậm hơn */
+  letter-spacing: 0.5px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-menu {
+  padding: 20px 0;
+  overflow-y: auto; /* Cho phép cuộn nếu menu dài */
+  height: calc(100vh - 70px); /* Chiều cao còn lại sau header */
+}
+
+.menu-section {
+  margin-bottom: 20px;
+}
+
+.menu-section-title {
+  padding: 0 25px;
+  font-size: 0.75rem; /* Chữ nhỏ hơn cho tiêu đề section */
+  font-weight: 600;
+  color: var(--admin-sidebar-section-title-color);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-menu .nav-item {
+  margin: 0 15px; /* Tạo khoảng cách cho các mục menu */
+}
+
+.sidebar-menu .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px; /* Padding cho các mục menu */
+  color: var(--admin-sidebar-text-color);
+  text-decoration: none;
+  border-radius: 6px; /* Bo góc nhẹ cho các mục */
+  transition: var(--admin-sidebar-transition);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.sidebar-menu .nav-link i {
+  font-size: 1.1rem; /* Kích thước icon */
+  width: 20px; /* Đảm bảo icon thẳng hàng */
+  text-align: center;
+  color: var(--admin-sidebar-icon-color);
+  transition: color 0.3s ease;
+}
+
+.sidebar-menu .nav-link span {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  white-space: nowrap;
+}
+
+.sidebar-menu .nav-link:hover {
+  background-color: var(--admin-sidebar-hover-bg);
+  color: var(--admin-sidebar-hover-text);
+}
+.sidebar-menu .nav-link:hover i {
+  color: var(--admin-sidebar-hover-text);
+}
+
+.sidebar-menu .nav-link.active {
+  background-color: var(--admin-sidebar-active-bg);
+  color: var(--admin-sidebar-active-text);
+  font-weight: 600; /* Chữ đậm hơn cho mục active */
+}
+
+.sidebar-menu .nav-link.active i {
+  color: var(--admin-sidebar-active-icon);
+}
+
+/* Collapsed State */
+.admin-sidebar.collapsed {
+  width: var(--admin-sidebar-width-collapsed);
+}
+
+.admin-sidebar.collapsed .sidebar-brand .brand-text,
+.admin-sidebar.collapsed .menu-section-title,
+.admin-sidebar.collapsed .nav-link span {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  pointer-events: none; /* Không cho tương tác khi ẩn */
+}
+
+.admin-sidebar.collapsed .sidebar-header,
+.admin-sidebar.collapsed .nav-link {
+  justify-content: center; /* Căn giữa icon khi thu gọn */
+  padding: 12px 0;
+}
+.admin-sidebar.collapsed .sidebar-header {
+    padding: 0;
+}
+
+.admin-sidebar.collapsed .sidebar-brand i {
+  margin: 0 auto; /* Căn giữa icon brand */
+}
+
+.admin-sidebar.collapsed .nav-item {
+  margin: 0 10px; /* Giảm margin khi thu gọn */
+}
+
+/* Responsive - Ẩn sidebar trên mobile và hiện nút toggle (cần JS để xử lý) */
+@media (max-width: 991.98px) { /* Bootstrap lg breakpoint */
+  .admin-sidebar {
+    transform: translateX(-100%);
+    /* Thêm box-shadow rõ hơn khi nó là overlay trên mobile */
+    box-shadow: 0 0 2rem 0 rgba(0,0,0,0.2); 
+  }
+
+  .admin-sidebar.show { /* Class này sẽ được toggle bằng JS */
+    transform: translateX(0);
+  }
+}

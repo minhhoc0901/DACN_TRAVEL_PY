@@ -1,0 +1,531 @@
+
+/* ===== LAYOUT TỔNG THỂ ===== */
+.itinerary-planner {
+    display: flex;
+    min-height: 100vh;
+    background-color: #F8F9FA; /* Nền xám nhạt hơn, sạch hơn */
+}
+
+/* ===== SIDEBAR - ĐƯỢC THIẾT KẾ LẠI ===== */
+.planner-sidebar {
+    width: 380px;
+    padding: 2rem;
+    background-color: #b9e2ee; /* Nền trắng sạch sẽ */
+    color: #212529; /* Chữ màu tối dễ đọc */
+    border-right: 1px solid #dee2e6; /* Đường kẻ phân cách tinh tế */
+    overflow-y: auto;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.planner-sidebar h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: #3A86FF; /* Màu nhấn chính */
+}
+
+.planner-sidebar > p {
+    font-size: 0.95rem;
+    color: #6C757D; /* Màu chữ phụ */
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* ===== CONTENT AREA ===== */
+.planner-content {
+    flex: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ===== LOADER & ERROR ===== */
+.loader {
+    font-size: 1.5rem;
+    text-align: center;
+    margin-top: 50px;
+    color: #3A86FF;
+}
+
+.error-message,
+.v2-error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* ===== FORM STYLES - ĐƯỢC THIẾT KẾ LẠI ===== */
+.itinerary-form {
+    margin-top: 1.5rem;
+}
+
+.itinerary-form .form-group {
+    margin-bottom: 1.75rem;
+}
+
+.itinerary-form label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.location-options button, 
+.location-options select {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    background-color: #FFFFFF;
+    color: #495057;
+    cursor: pointer;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.location-options button:hover,
+.location-options select:hover {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(58, 134, 255, 0.25);
+}
+
+.location-options button {
+    background-color: #28A745; /* Màu xanh lá cây thành công */
+    color: white;
+    border: none;
+    font-weight: 600;
+}
+
+.location-options button:hover {
+    background-color: #218838;
+    box-shadow: none; /* Bỏ shadow cho nút này để đồng bộ */
+}
+
+.location-coords {
+    background-color: #e9ecef;
+    padding: 0.6rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    color: #495057;
+}
+
+/* Range Input */
+.itinerary-form input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #dee2e6;
+    outline: none;
+    -webkit-appearance: none;
+}
+
+.itinerary-form input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3A86FF; /* Màu nhấn chính */
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    transition: background-color 0.2s ease;
+}
+
+.itinerary-form input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #3A86FF;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+}
+
+/* Preferences Tags */
+.preferences-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.tag {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid #ced4da;
+    border-radius: 25px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: #FFFFFF;
+    color: #495057;
+    font-size: 0.9rem;
+    font-weight: 500;
+    user-select: none;
+}
+
+.tag:hover {
+    border-color: #3A86FF;
+    color: #3A86FF;
+}
+
+.tag.active {
+    background-color: #3A86FF;
+    color: white;
+    border-color: #3A86FF;
+    font-weight: 600;
+}
+
+/* Submit Button */
+.itinerary-form button[type="submit"] {
+    width: 100%;
+    padding: 1rem;
+    background-color: #FF8C42; /* Màu cam nhấn mạnh */
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+}
+
+.itinerary-form button[type="submit"]:hover:not(:disabled) {
+    background-color: #FF7A2E;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(255, 140, 66, 0.3);
+}
+
+.itinerary-form button[type="submit"]:disabled {
+    background-color: #FFC9A8;
+    cursor: not-allowed;
+}
+
+/* ===== V2 RESULTS CONTAINER - ĐỒNG BỘ HÓA ===== */
+.v2-results-container {
+    background-color: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+}
+
+.v2-results-title {
+    color: #3A86FF;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.v2-results-summary {
+    display: flex;
+    gap: 2rem;
+    padding: 1.5rem;
+    background-color: #e7f0ff; /* Nền xanh dương rất nhạt */
+    border: 1px solid #d0e1ff;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.v2-results-summary span {
+    font-size: 1rem;
+    color: #495057;
+}
+
+.v2-results-summary strong {
+    color: #3A86FF;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+/* ===== V2 MAP CONTAINER ===== */
+.v2-map-container {
+    margin: 2.5rem 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.leaflet-container {
+    height: 500px !important;
+    border-radius: 12px;
+}
+
+/* Custom Map Markers */
+.numbered-marker {
+    background-color: #3A86FF; /* Màu nhấn chính */
+    color: white;
+    border-radius: 50% 50% 50% 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    font-size: 1rem;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    transform: rotate(-45deg);
+    border: 2px solid white;
+}
+
+.numbered-marker span {
+    transform: rotate(45deg);
+}
+
+/* ===== V2 ROUTE STEPS ===== */
+.v2-section-title {
+    color: #212529;
+    font-size: 1.5rem;
+    margin: 2.5rem 0 1.5rem 0;
+    font-weight: 600;
+    border-bottom: 3px solid #3A86FF;
+    padding-bottom: 0.75rem;
+}
+
+.v2-route-steps {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0;
+}
+
+.v2-route-step {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.2s ease;
+    border-radius: 8px;
+}
+
+.v2-route-step:hover {
+    background-color: #f8f9fa;
+}
+
+.v2-step-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.v2-step-number {
+    background-color: #3A86FF;
+    color: white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 10px rgba(58, 134, 255, 0.3);
+}
+
+.v2-step-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.v2-step-link {
+    text-decoration: none;
+    color: #3A86FF;
+    transition: color 0.2s ease;
+}
+
+.v2-step-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+.v2-step-description {
+    margin: 0.75rem 0 0.75rem 56px;
+    color: #6C757D;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.v2-travel-info {
+    margin-left: 56px;
+    color: #6C757D;
+    font-size: 0.9rem;
+    display: flex;
+    gap: 1.5rem;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    margin-top: 1rem;
+}
+
+
+/* ===== V2 SUGGESTED TOURS ===== */
+
+.v2-suggested-tours-section {
+    margin-top: 3rem;
+}
+
+.v2-suggested-tours-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.v2-tours-loading,
+.v2-tours-error,
+.v2-no-tours-message {
+    padding: 2rem;
+    text-align: center;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.v2-tours-loading p {
+    color: #667eea;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.v2-tours-error {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+}
+
+.v2-tours-error p {
+    color: #856404;
+    margin: 0;
+}
+
+.v2-no-tours-message p {
+    color: #6c757d;
+    margin: 0;
+}
+/* ===== RESPONSIVE DESIGN ===== */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .planner-sidebar {
+        width: 320px;
+        padding: 1.5rem;
+    }
+    
+    .planner-sidebar h1 {
+        font-size: 1.5rem;
+    }
+    
+    .v2-results-container {
+        padding: 1.5rem;
+    }
+    
+    .leaflet-container {
+        height: 400px !important;
+    }
+    
+    .v2-suggested-tours-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+    .itinerary-planner {
+        flex-direction: column;
+    }
+    
+    .planner-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 1.5rem;
+    }
+    
+    .planner-sidebar h1 {
+        font-size: 1.5rem;
+    }
+    
+    .planner-content {
+        padding: 1rem;
+    }
+    
+    .v2-results-container {
+        padding: 1rem;
+        border-radius: 0;
+    }
+    
+    .v2-results-title {
+        font-size: 1.4rem;
+    }
+    
+    .v2-results-summary {
+        flex-direction: column;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .leaflet-container {
+        height: 350px !important;
+    }
+    
+    .v2-step-description,
+    .v2-travel-info {
+        margin-left: 0;
+        padding-left: 56px;
+    }
+    
+    .v2-suggested-tours-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .preferences-tags {
+        gap: 0.5rem;
+    }
+    
+    .tag {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+/* Small Mobile */
+@media (max-width: 480px) {
+    .planner-sidebar {
+        padding: 1rem;
+    }
+    
+    .planner-sidebar h1 {
+        font-size: 1.3rem;
+    }
+    
+    .v2-step-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .v2-step-number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.95rem;
+    }
+    
+    .v2-step-description,
+    .v2-travel-info {
+        padding-left: 0;
+    }
+    
+    .v2-results-summary strong {
+        font-size: 1rem;
+    }
+}
