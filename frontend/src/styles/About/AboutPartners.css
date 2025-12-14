@@ -1,0 +1,182 @@
+/* ==================== ABOUT PARTNERS - PREFIX: pyap- ==================== */
+
+.pyap-section {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+  position: relative;
+}
+
+/* Header */
+.pyap-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.pyap-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(0, 180, 216, 0.15);
+  color: #00b4d8;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.pyap-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 15px;
+}
+
+.pyap-subtitle {
+  font-size: 1.05rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Partners Grid */
+.pyap-partners-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 80px;
+}
+
+.pyap-partner-card {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.pyap-partner-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 180, 216, 0.15);
+  border-color: #00b4d8;
+}
+
+.pyap-partner-logo {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+}
+
+.pyap-partner-logo img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: grayscale(100%);
+  transition: filter 0.3s ease;
+}
+
+.pyap-partner-card:hover .pyap-partner-logo img {
+  filter: grayscale(0%);
+}
+
+.pyap-partner-info h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 10px;
+}
+
+.pyap-partner-info p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.pyap-partner-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #00b4d8;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.pyap-partner-link:hover {
+  color: #0072bb;
+  transform: translateX(5px);
+}
+
+/* CTA */
+.pyap-cta {
+  text-align: center;
+  background: white;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+}
+
+.pyap-cta h3 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 30px;
+}
+
+.pyap-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 40px;
+  background: linear-gradient(135deg, #00b4d8, #0072bb);
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  box-shadow: 0 8px 25px rgba(0, 180, 216, 0.3);
+  transition: all 0.3s ease;
+}
+
+.pyap-btn:hover {
+  background: linear-gradient(135deg, #0072bb, #005a94);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 35px rgba(0, 180, 216, 0.4);
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .pyap-section {
+    padding: 80px 0;
+  }
+
+  .pyap-title {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pyap-section {
+    padding: 60px 0;
+  }
+
+  .pyap-title {
+    font-size: 1.75rem;
+  }
+
+  .pyap-partners-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pyap-partner-card {
+    padding: 30px 20px;
+  }
+
+  .pyap-cta h3 {
+    font-size: 1.5rem;
+  }
+}

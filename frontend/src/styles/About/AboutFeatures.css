@@ -1,0 +1,207 @@
+/* ==================== ABOUT FEATURES - PREFIX: pyaf- ==================== */
+
+.pyaf-section {
+  padding: 100px 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.pyaf-section::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 180, 216, 0.1) 0%, transparent 70%);
+  top: -100px;
+  right: -100px;
+  z-index: 0;
+}
+
+/* Header */
+.pyaf-header {
+  text-align: center;
+  margin-bottom: 60px;
+  position: relative;
+  z-index: 1;
+}
+
+.pyaf-badge {
+  display: inline-block;
+  padding: 8px 20px;
+  background: rgba(0, 114, 187, 0.1);
+  color: #0072bb;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.pyaf-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 15px;
+}
+
+.pyaf-subtitle {
+  font-size: 1.05rem;
+  color: #666;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Features Grid */
+.pyaf-features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 1;
+}
+
+.pyaf-feature-card {
+  background: white;
+  padding: 40px 30px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.pyaf-feature-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 40px rgba(0, 114, 187, 0.15);
+  border-color: #0072bb;
+}
+
+.pyaf-feature-icon {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, #0072bb, #00b4d8);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.pyaf-feature-card:hover .pyaf-feature-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.pyaf-feature-card h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 15px;
+}
+
+.pyaf-feature-card p {
+  color: #666;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* Stats */
+.pyaf-stats-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  background: white;
+  padding: 60px 40px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.pyaf-stat-item {
+  text-align: center;
+  padding: 20px;
+  border-right: 2px solid #f0f0f0;
+}
+
+.pyaf-stat-item:last-child {
+  border-right: none;
+}
+
+.pyaf-stat-number {
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #0072bb, #00b4d8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 10px;
+}
+
+.pyaf-stat-label {
+  font-size: 1.1rem;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .pyaf-section {
+    padding: 80px 0;
+  }
+
+  .pyaf-title {
+    font-size: 2rem;
+  }
+
+  .pyaf-features-grid {
+    gap: 20px;
+  }
+
+  .pyaf-stats-wrapper {
+    padding: 40px 20px;
+  }
+
+  .pyaf-stat-item {
+    border-right: none;
+    border-bottom: 2px solid #f0f0f0;
+    padding: 15px;
+  }
+
+  .pyaf-stat-item:last-child {
+    border-bottom: none;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pyaf-section {
+    padding: 60px 0;
+  }
+
+  .pyaf-title {
+    font-size: 1.75rem;
+  }
+
+  .pyaf-features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pyaf-feature-card {
+    padding: 30px 20px;
+  }
+
+  .pyaf-feature-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .pyaf-stat-number {
+    font-size: 2.5rem;
+  }
+}

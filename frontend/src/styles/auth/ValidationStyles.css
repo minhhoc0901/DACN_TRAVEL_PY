@@ -1,0 +1,384 @@
+/* ========================================
+   VALIDATION STYLES
+   ======================================== */
+
+/* Input Error State */
+.form-control.error,
+.form-input.error,
+input.error,
+textarea.error,
+select.error {
+    border-color: #dc3545 !important;
+    background-color: #fff5f5;
+}
+
+.form-control.error:focus,
+.form-input.error:focus,
+input.error:focus {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Input Success State */
+.form-control.success,
+.form-input.success,
+input.success {
+    border-color: #28a745 !important;
+    background-color: #f0fff4;
+}
+
+.form-control.success:focus,
+.form-input.success:focus,
+input.success:focus {
+    border-color: #28a745 !important;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Error Message */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    animation: slideDown 0.3s ease;
+}
+
+.error-message i {
+    font-size: 1rem;
+}
+
+/* Success Message */
+.success-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #28a745;
+    font-size: 0.875rem;
+    margin-top: 6px;
+    animation: slideDown 0.3s ease;
+}
+
+.success-message i {
+    font-size: 1rem;
+}
+
+/* Password Strength Indicator */
+.password-strength-indicator {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+
+.password-strength-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.strength-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+}
+
+.strength-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+}
+
+.strength-value.weak {
+    color: #dc3545;
+}
+
+.strength-value.medium {
+    color: #ffc107;
+}
+
+.strength-value.strong {
+    color: #28a745;
+}
+
+/* Strength Progress Bar */
+.strength-progress {
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.strength-progress-bar {
+    height: 100%;
+    transition: width 0.3s ease, background-color 0.3s ease;
+    border-radius: 3px;
+}
+
+/* Strength Suggestions */
+.strength-suggestions {
+    margin-top: 8px;
+}
+
+.strength-suggestions ul {
+    margin: 0;
+    padding-left: 20px;
+    font-size: 0.8rem;
+    color: #666;
+}
+
+.strength-suggestions li {
+    margin: 4px 0;
+}
+
+/* Alert Messages */
+.alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.95rem;
+    animation: slideDown 0.3s ease;
+}
+
+.alert i {
+    font-size: 1.2rem;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.alert-warning {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.alert-info {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+/* Loading Spinner */
+.spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.spinning {
+    animation: spin 0.8s linear infinite;
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form Group with Validation */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #333;
+    font-size: 0.95rem;
+}
+
+.form-group .required {
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+/* Input Group with Icon */
+.input-group {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-group input {
+    flex: 1;
+    padding-right: 45px;
+}
+
+.btn-toggle-password {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #666;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1.1rem;
+    transition: color 0.3s;
+}
+
+.btn-toggle-password:hover {
+    color: #007bff;
+}
+
+/* Validation Icon in Input */
+.input-with-icon {
+    position: relative;
+}
+
+.input-with-icon input {
+    padding-right: 40px;
+}
+
+.input-validation-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+}
+
+.input-validation-icon.success {
+    color: #28a745;
+}
+
+.input-validation-icon.error {
+    color: #dc3545;
+}
+
+/* Success Modal */
+.success-modal {
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    text-align: center;
+    max-width: 400px;
+    animation: scaleIn 0.3s ease;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    font-size: 3rem;
+    color: white;
+}
+
+.success-modal h3 {
+    color: #28a745;
+    margin-bottom: 10px;
+}
+
+.success-modal p {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.btn-modal {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-modal:hover {
+    transform: translateY(-2px);
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .password-strength-indicator {
+        padding: 10px;
+    }
+
+    .alert {
+        padding: 10px 12px;
+        font-size: 0.875rem;
+    }
+
+    .success-modal {
+        padding: 30px 20px;
+        max-width: 90%;
+    }
+
+    .success-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 2rem;
+    }
+}

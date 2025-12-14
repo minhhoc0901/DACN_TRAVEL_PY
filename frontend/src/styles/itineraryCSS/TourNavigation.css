@@ -1,0 +1,77 @@
+.tour-navigation-section {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+  padding: 0.75rem 1rem; /* Padding for the nav bar */
+  margin-bottom: 2rem;
+  position: sticky; /* Sticky navigation */
+  top: 10px; /* Adjust based on your main header height if any */
+  z-index: 999;
+  transition: box-shadow 0.3s ease;
+}
+
+.tour-navigation-section.scrolled { /* Optional: add shadow when scrolled */
+    box-shadow: var(--shadow-md);
+}
+
+.tour-nav-tabs {
+  display: flex;
+  justify-content: space-around; /* Or flex-start if you prefer */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-x: auto; /* For responsiveness on small screens */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+.tour-nav-tabs::-webkit-scrollbar { /* Chrome, Safari, Opera */
+    display: none;
+}
+
+.tour-nav-item {
+  /* flex-grow: 1; /* Uncomment if you want tabs to fill space */
+  text-align: center;
+}
+
+.tour-nav-link {
+  display: block;
+  padding: 0.8rem 1.2rem; /* Padding for tab links */
+  color: var(--text-color-muted);
+  text-decoration: none;
+  font-weight: 500;
+  font-family: var(--font-primary);
+  border-bottom: 3px solid transparent;
+  transition: color 0.3s ease, border-bottom-color 0.3s ease;
+  white-space: nowrap;
+}
+
+.tour-nav-link:hover {
+  color: var(--primary-color);
+}
+
+.tour-nav-link.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+  font-weight: 600;
+}
+
+.tour-nav-link i {
+  margin-right: 0.5rem;
+  font-size: 1rem; /* Adjust icon size */
+}
+
+@media (max-width: 768px) {
+  .tour-navigation-section {
+    padding: 0.5rem;
+  }
+  .tour-nav-tabs {
+    justify-content: flex-start; /* Allow scrolling */
+  }
+  .tour-nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  .tour-nav-link i {
+    font-size: 0.9rem;
+  }
+}

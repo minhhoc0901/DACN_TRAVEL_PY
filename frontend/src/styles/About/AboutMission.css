@@ -1,0 +1,184 @@
+/* ==================== ABOUT MISSION - PREFIX: pyam- ==================== */
+
+.pyam-section {
+  padding: 100px 0;
+  background: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.pyam-wrapper {
+  position: relative;
+}
+
+/* Mission Cards */
+.pyam-card {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pyam-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.pyam-card-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  font-size: 2.5rem;
+  transition: all 0.3s ease;
+}
+
+.pyam-primary .pyam-card-icon {
+  background: linear-gradient(135deg, #0072bb, #00b4d8);
+  color: white;
+}
+
+.pyam-vision .pyam-card-icon {
+  background: linear-gradient(135deg, #00b4d8, #48cae4);
+  color: white;
+}
+
+.pyam-values .pyam-card-icon {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+}
+
+.pyam-card:hover .pyam-card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.pyam-card h3 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #0a2540;
+}
+
+.pyam-card p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #666;
+  margin: 0;
+}
+
+/* Principles */
+.pyam-principles {
+  padding-top: 80px;
+  margin-top: 80px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.pyam-principles-image {
+  width: 100%;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.pyam-principles-content {
+  padding-left: 40px;
+}
+
+.pyam-principles-content h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 40px;
+}
+
+.pyam-principles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.pyam-principle-item {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.pyam-principle-item i {
+  font-size: 2rem;
+  color: #0072bb;
+  flex-shrink: 0;
+}
+
+.pyam-principle-item h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #0a2540;
+}
+
+.pyam-principle-item p {
+  color: #666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .pyam-principles-content {
+    padding-left: 0;
+    margin-top: 40px;
+  }
+
+  .pyam-principles-content h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pyam-section {
+    padding: 60px 0;
+  }
+
+  .pyam-card {
+    padding: 30px 20px;
+  }
+
+  .pyam-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .pyam-card-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .pyam-principles {
+    padding-top: 60px;
+    margin-top: 60px;
+  }
+
+  .pyam-principles-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .pyam-principle-item {
+    gap: 15px;
+  }
+
+  .pyam-principle-item i {
+    font-size: 1.5rem;
+  }
+
+  .pyam-principle-item h4 {
+    font-size: 1.1rem;
+  }
+}

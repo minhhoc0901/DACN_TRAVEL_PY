@@ -1,0 +1,276 @@
+/* ==================== ABOUT TEAM - PREFIX: pyat- ==================== */
+
+.pyat-section {
+  padding: 80px 0; /* ✅ GIẢM TỪ 100px → 80px */
+  background: #fff;
+  position: relative;
+}
+
+/* Header */
+.pyat-header {
+  text-align: center;
+  margin-bottom: 50px; /* ✅ GIẢM TỪ 60px → 50px */
+}
+
+.pyat-badge {
+  display: inline-block;
+  padding: 6px 18px; /* ✅ GIẢM TỪ 8px 20px */
+  background: linear-gradient(to right, rgba(255, 158, 27, 0.15), rgba(255, 158, 27, 0.05));
+  color: #ff9e1b;
+  border-radius: 50px;
+  font-size: 0.85rem; /* ✅ GIẢM TỪ 0.9rem */
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px; /* ✅ GIẢM TỪ 15px */
+}
+
+.pyat-title {
+  font-size: 2rem; /* ✅ GIẢM TỪ 2.5rem */
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 12px; /* ✅ GIẢM TỪ 15px */
+}
+
+.pyat-subtitle {
+  font-size: 1rem; /* ✅ GIẢM TỪ 1.05rem */
+  color: #666;
+  max-width: 550px; /* ✅ GIẢM TỪ 600px */
+  margin: 0 auto;
+}
+
+/* Team Grid */
+.pyat-team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* ✅ GIẢM TỪ 300px */
+  gap: 30px; /* ✅ GIẢM TỪ 40px */
+  margin-bottom: 60px; /* ✅ GIẢM TỪ 80px */
+  max-width: 1000px; /* ✅ THÊM MAX-WIDTH ĐỂ KHÔNG QUÁ RỘNG */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.pyat-team-card {
+  background: white;
+  border-radius: 16px; /* ✅ GIẢM TỪ 20px */
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); /* ✅ GIẢM ĐỘ ĐẬM */
+  transition: all 0.3s ease;
+}
+
+.pyat-team-card:hover {
+  transform: translateY(-8px); /* ✅ GIẢM TỪ -10px */
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+}
+
+.pyat-team-image {
+  position: relative;
+  width: 100%;
+  height: 300px; /* ✅ GIẢM TỪ 350px */
+  overflow: hidden;
+}
+
+.pyat-team-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.pyat-team-card:hover .pyat-team-image img {
+  transform: scale(1.08); /* ✅ GIẢM TỪ 1.1 */
+}
+
+.pyat-team-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 114, 187, 0.9) 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  padding: 25px; /* ✅ GIẢM TỪ 30px */
+}
+
+.pyat-team-card:hover .pyat-team-overlay {
+  opacity: 1;
+}
+
+.pyat-social-links {
+  display: flex;
+  gap: 12px; /* ✅ GIẢM TỪ 15px */
+}
+
+.pyat-social-links a {
+  width: 40px; /* ✅ GIẢM TỪ 45px */
+  height: 40px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0072bb;
+  font-size: 1.1rem; /* ✅ GIẢM TỪ 1.2rem */
+  transition: all 0.3s ease;
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.pyat-team-card:hover .pyat-social-links a {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.pyat-social-links a:nth-child(1) {
+  transition-delay: 0.1s;
+}
+
+.pyat-social-links a:nth-child(2) {
+  transition-delay: 0.2s;
+}
+
+.pyat-social-links a:nth-child(3) {
+  transition-delay: 0.3s;
+}
+
+.pyat-social-links a:hover {
+  background: #0072bb;
+  color: white;
+  transform: translateY(-5px);
+}
+
+.pyat-team-info {
+  padding: 20px; /* ✅ GIẢM TỪ 25px */
+  text-align: center;
+}
+
+.pyat-team-info h3 {
+  font-size: 1.3rem; /* ✅ GIẢM TỪ 1.5rem */
+  font-weight: 700;
+  color: #0a2540;
+  margin-bottom: 6px; /* ✅ GIẢM TỪ 8px */
+}
+
+.pyat-team-info p {
+  color: #0072bb;
+  font-size: 0.95rem; /* ✅ GIẢM TỪ 1rem */
+  margin: 0;
+}
+
+/* CTA */
+.pyat-cta {
+  text-align: center;
+  background: linear-gradient(135deg, #0072bb, #00b4d8);
+  padding: 50px 35px; /* ✅ GIẢM TỪ 60px 40px */
+  border-radius: 16px; /* ✅ GIẢM TỪ 20px */
+  color: white;
+  max-width: 800px; /* ✅ THÊM MAX-WIDTH */
+  margin: 0 auto;
+}
+
+.pyat-cta h3 {
+  font-size: 1.75rem; /* ✅ GIẢM TỪ 2rem */
+  font-weight: 700;
+  margin-bottom: 25px; /* ✅ GIẢM TỪ 30px */
+}
+
+.pyat-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 35px; /* ✅ GIẢM TỪ 16px 40px */
+  background: white;
+  color: #0072bb;
+  font-size: 1.05rem; /* ✅ GIẢM TỪ 1.1rem */
+  font-weight: 600;
+  border-radius: 50px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.pyat-btn:hover {
+  background: #0a2540;
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 991.98px) {
+  .pyat-section {
+    padding: 60px 0;
+  }
+
+  .pyat-title {
+    font-size: 1.75rem;
+  }
+
+  .pyat-team-grid {
+    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
+
+  .pyat-team-image {
+    height: 280px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pyat-section {
+    padding: 50px 0;
+  }
+
+  .pyat-title {
+    font-size: 1.6rem;
+  }
+
+  .pyat-team-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .pyat-team-image {
+    height: 320px;
+  }
+
+  .pyat-cta {
+    padding: 40px 25px;
+  }
+
+  .pyat-cta h3 {
+    font-size: 1.4rem;
+  }
+
+  .pyat-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .pyat-team-image {
+    height: 280px;
+  }
+
+  .pyat-social-links {
+    gap: 10px;
+  }
+
+  .pyat-social-links a {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+  }
+
+  .pyat-team-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .pyat-team-info p {
+    font-size: 0.9rem;
+  }
+}

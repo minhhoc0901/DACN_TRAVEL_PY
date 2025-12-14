@@ -1,0 +1,545 @@
+/* ==================== ABOUT SECTION - PREFIX: pyhome- ==================== */
+
+.pyhome-about-section {
+    padding: 100px 0;
+    position: relative;
+    overflow: hidden;
+    background-color: #fff;
+}
+
+/* Background shapes */
+.pyhome-about-bg-shapes {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    overflow: hidden;
+}
+
+.pyhome-shape-1 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: rgba(0, 114, 187, 0.03);
+    border-radius: 50%;
+    top: -100px;
+    left: -100px;
+}
+
+.pyhome-shape-2 {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 158, 27, 0.04);
+    border-radius: 50%;
+    bottom: -50px;
+    right: -50px;
+}
+
+.pyhome-shape-3 {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border: 15px solid rgba(76, 175, 80, 0.03);
+    border-radius: 50%;
+    top: 40%;
+    right: 10%;
+}
+
+/* Section header */
+.pyhome-about-header {
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 1;
+}
+
+.pyhome-about-subtitle {
+    display: inline-block;
+    padding: 8px 20px;
+    background: linear-gradient(to right, rgba(255, 158, 27, 0.15), rgba(255, 158, 27, 0.05));
+    border-radius: 30px;
+    color: var(--secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+.pyhome-about-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--dark);
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.pyhome-title-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.pyhome-title-separator span {
+    display: block;
+    height: 2px;
+    width: 40px;
+    background: var(--primary);
+    opacity: 0.7;
+}
+
+.pyhome-title-separator i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+/* Main content */
+.pyhome-about-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* Image Gallery */
+.pyhome-about-gallery {
+    position: relative;
+}
+
+.pyhome-main-image {
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: var(--shadow);
+}
+
+.pyhome-main-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: transform 1s ease;
+}
+
+.pyhome-main-image:hover img {
+    transform: scale(1.05);
+}
+
+.pyhome-gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.pyhome-grid-item {
+    overflow: hidden;
+    border-radius: 15px;
+    height: 100px;
+    position: relative;
+}
+
+.pyhome-grid-item:nth-child(1) {
+    grid-column: span 2;
+}
+
+.pyhome-grid-item:nth-child(2) {
+    grid-column: span 2;
+}
+
+.pyhome-grid-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s ease;
+}
+
+.pyhome-grid-item:hover img {
+    transform: scale(1.1);
+}
+
+/* Statistics Box */
+.pyhome-grid-item.pyhome-statistics {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: span 2;
+    border-radius: 20px;
+    padding: 30px 20px;
+    box-shadow: 0 10px 30px rgba(0, 114, 187, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.pyhome-grid-item.pyhome-statistics::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pyhomeRotate 20s linear infinite;
+}
+
+@keyframes pyhomeRotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.pyhome-about-stat-box {
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.pyhome-about-stat-box__number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    color: #ffffff;
+}
+
+.pyhome-about-stat-box__label {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.95;
+    color: #ffffff;
+}
+
+/* Highlight Box */
+.pyhome-grid-item.pyhome-highlight {
+    background: linear-gradient(135deg, #ff9e1b 0%, #e88c00 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: span 2;
+    border-radius: 20px;
+    padding: 30px 20px;
+    box-shadow: 0 10px 30px rgba(255, 158, 27, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.pyhome-grid-item.pyhome-highlight::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: pyhomeRotate 20s linear infinite;
+}
+
+.pyhome-highlight-content {
+    text-align: center;
+    color: #ffffff;
+    position: relative;
+    z-index: 1;
+}
+
+.pyhome-highlight-content i {
+    font-size: 2.5rem;
+    margin-bottom: 5px;
+    display: block;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.pyhome-highlight-content span {
+    font-size: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    opacity: 0.95;
+}
+
+/* Right column - Info content */
+.pyhome-about-info {
+    padding-left: 20px;
+}
+
+.pyhome-section-subtitle {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 20px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.pyhome-section-subtitle::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background: var(--secondary);
+    border-radius: 2px;
+}
+
+.pyhome-about-description {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: var(--text-gray);
+    margin-bottom: 30px;
+}
+
+/* Feature boxes */
+.pyhome-features-list {
+    margin-bottom: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.pyhome-feature-box {
+    display: flex;
+    align-items: flex-start;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.pyhome-feature-box:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.pyhome-feature-icon {
+    width: 50px;
+    height: 50px;
+    min-width: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--primary), var(--dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.pyhome-feature-icon i {
+    color: white;
+    font-size: 1.3rem;
+}
+
+.pyhome-feature-content {
+    flex: 1;
+    padding-left: 5%;
+}
+
+.pyhome-feature-content h4 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 5px;
+    color: var(--dark);
+}
+
+.pyhome-feature-content p {
+    font-size: 0.9rem;
+    color: var(--text-gray);
+    margin: 0;
+}
+
+/* ==================== ACTION BUTTONS ==================== */
+.pyhome-about-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+/* ✅ NÚT KHÁM PHÁ NGAY - MÀU XANH */
+.pyhome-btn-explore {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 30px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--dark) 100%);
+    color: white !important; /* ✅ OVERRIDE BOOTSTRAP */
+    border-radius: 50px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgba(0, 114, 187, 0.3);
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.pyhome-btn-explore:hover {
+    background: linear-gradient(135deg, #005a94 0%, #003a70 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 114, 187, 0.4);
+    color: white !important;
+}
+
+.pyhome-btn-explore i {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+}
+
+.pyhome-btn-explore:hover i {
+    transform: translateX(5px);
+}
+
+/* ✅ LINK TÌM HIỂU THÊM */
+.pyhome-about-link {
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 1.05rem;
+    text-decoration: none;
+    position: relative;
+    padding-bottom: 3px;
+    transition: all 0.3s ease;
+}
+
+.pyhome-about-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background-color: var(--primary);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+.pyhome-about-link:hover {
+    color: var(--dark);
+}
+
+.pyhome-about-link:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+/* Responsive styles */
+@media (max-width: 1199.98px) {
+    .pyhome-main-image img {
+        height: 350px;
+    }
+    
+    .pyhome-grid-item {
+        height: 90px;
+    }
+    
+    .pyhome-about-info {
+        padding-left: 10px;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .pyhome-about-section {
+        padding: 80px 0;
+    }
+    
+    .pyhome-about-title {
+        font-size: 2.2rem;
+    }
+    
+    .pyhome-main-image img {
+        height: 400px;
+    }
+    
+    .pyhome-grid-item {
+        height: 120px;
+    }
+    
+    .pyhome-about-info {
+        padding-left: 0;
+        margin-top: 40px;
+    }
+    
+    .pyhome-features-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    
+    .pyhome-feature-box {
+        height: 100%;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .pyhome-about-section {
+        padding: 60px 0;
+    }
+    
+    .pyhome-about-title {
+        font-size: 1.8rem;
+    }
+    
+    .pyhome-main-image img {
+        height: 300px;
+    }
+    
+    .pyhome-grid-item {
+        height: 100px;
+    }
+    
+    .pyhome-features-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .pyhome-about-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .pyhome-about-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .pyhome-about-section {
+        padding: 50px 0;
+    }
+    
+    .pyhome-about-title {
+        font-size: 1.6rem;
+    }
+    
+    .pyhome-main-image img {
+        height: 250px;
+    }
+    
+    .pyhome-grid-item {
+        height: 80px;
+    }
+    
+    .pyhome-about-description {
+        font-size: 1rem;
+    }
+    
+    .pyhome-feature-icon {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+    }
+    
+    .pyhome-feature-icon i {
+        font-size: 1.1rem;
+    }
+    
+    .pyhome-feature-content h4 {
+        font-size: 1rem;
+    }
+    
+    .pyhome-feature-content p {
+        font-size: 0.85rem;
+    }
+}
