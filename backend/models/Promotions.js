@@ -84,6 +84,55 @@ class Promotion {
         );
         return rows[0]; // Trả về dòng đầu tiên tìm được
     }
+
+    /**
+     * TỰ ĐỘNG ĐÁNH DẤU PROMOTIONS HẾT HẠN
+     * Chỉ để admin UI hiển thị đúng trạng thái
+     * KHÔNG ẢNH HƯỞNG LOGIC VALIDATE (vì đã có runtime check)
+     */
+    static async markExpiredPromotions() {
+        try {
+            const [result] = await pool.query(`
+                UPDATE Promotions 
+                SET is_active = 0 
+                WHERE is_active = 1 
+                  AND end_date < NOW()
+            `);
+
+            if (result.affectedRows > 0) {
+                console.log(`[CRON] Marked ${result.affectedRows} promotions as expired.`);
+            }
+
+            return result.affectedRows;
+        } catch (error) {
+            console.error('[Promotions] Error marking expired promotions:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * TỰ ĐỘNG KÍCH HOẠT PROMOTIONS ĐẾN HẠN BẮT ĐẦU
+     */
+    static async activateScheduledPromotions() {
+        try {
+            const [result] = await pool.query(`
+                UPDATE Promotions 
+                SET is_active = 1 
+                WHERE is_active = 0 
+                  AND start_date <= NOW()
+                  AND end_date >= NOW()
+            `);
+
+            if (result.affectedRows > 0) {
+                console.log(`[CRON] Activated ${result.affectedRows} scheduled promotions.`);
+            }
+
+            return result.affectedRows;
+        } catch (error) {
+            console.error('[Promotions] Error activating promotions:', error);
+            throw error;
+        }
+    }
 }
 
 module.exports = Promotion;

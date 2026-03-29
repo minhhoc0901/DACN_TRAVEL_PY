@@ -2,21 +2,31 @@ const express = require('express');
 const router = express.Router();
 const departureController = require('../controllers/tourDepartureController');
 const auth = require('../middlewares/autMiddleware');
+const { validate } = require('../middlewares/validationMiddleware');
+const { validateTourDeparture } = require('../utils/validators/tourDepartureValidator');
 
-// === PUBLIC ROUTES ===
-// Lấy danh sách lịch khởi hành còn trống cho một tour cụ thể
+// ===== PUBLIC ROUTES =====
 router.get('/:tourId/available', departureController.getAvailableDepartures);
 
-// === ADMIN ROUTES ===
-// Lấy tất cả lịch khởi hành của một tour
+// ===== ADMIN ROUTES =====
 router.get('/:tourId', auth.verifyToken, auth.isAdmin, departureController.getAllDeparturesForTour);
 
-// Tạo lịch khởi hành mới
-router.post('/', auth.verifyToken, auth.isAdmin, departureController.createDeparture);
+router.post(
+    '/', 
+    auth.verifyToken, 
+    auth.isAdmin, 
+    // validate((data) => validateTourDeparture(data, false)),
+    departureController.createDeparture
+);
 
-// Cập nhật và Xóa một lịch khởi hành cụ thể
-router.route('/:id')
-    .put(auth.verifyToken, auth.isAdmin, departureController.updateDeparture)
-    .delete(auth.verifyToken, auth.isAdmin, departureController.deleteDeparture);
+router.put(
+    '/:id',
+    auth.verifyToken,
+    auth.isAdmin,
+    // validate((data) => validateTourDeparture(data, true)),
+    departureController.updateDeparture
+);
+
+router.delete('/:id', auth.verifyToken, auth.isAdmin, departureController.deleteDeparture);
 
 module.exports = router;

@@ -1,7 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const Tour = require('../models/Tour');
-
+const Notification = require('../models/Notification'); 
+const NOTIFICATION_TYPES = require('../constants/notificationTypes');
+const NotificationService = require('../utils/notificationService');
+const { pool } = require('../config/db');
 const { 
   createTour, 
   getAllTours, 
@@ -12,8 +15,92 @@ const {
   updateTourStatus,
   getToursByStatus,
   getToursByUser,
+  hideTour,
+  restoreTour,
   
 } = require('../models/Tour');
+
+
+
+/**
+ * Khôi phục một tour đã bị ẩn
+ * @route PUT /api/tours/admin/tours/:id/restore
+ */
+exports.restoreTour = async (req, res) => {
+  try {
+    const tourId = req.params.id;
+    
+    // 1. Lấy thông tin tour
+    const tour = await getTourById(tourId);
+    if (!tour) {
+      return res.status(404).json({ success: false, message: 'Tour not found' });
+    }
+
+    // 2. Khôi phục tour (đồng thời đặt status = 'pending')
+    const success = await restoreTour(tourId);
+    if (!success) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour để khôi phục' });
+    }
+
+    // GỬI THÔNG BÁO CHO NGƯỜI TẠO TOUR
+    if (tour.user_id) {
+      const io = req.app.get('io');
+      await NotificationService.notifyTourRestored(
+        io, 
+        tour.user_id, 
+        tour.id, 
+        tour.destination
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Tour đã được khôi phục thành công và đặt lại về trạng thái "Chờ duyệt"' });
+  } catch (error) {
+    console.error('Error restoring tour:', error);
+    res.status(500).json({ success: false, message: 'Lỗi khi khôi phục tour' });
+  }
+};
+exports.hideTour = async (req, res) => {
+  try {
+    const tourId = req.params.id;
+    
+    if (!tourId || isNaN(parseInt(tourId))) {
+      return res.status(400).json({ success: false, message: 'Invalid tour ID' });
+    }
+    
+    // 1. Lấy thông tin tour
+    const tour = await getTourById(tourId);
+    if (!tour) {
+      return res.status(404).json({ success: false, message: 'Tour not found' });
+    }
+    
+    // 2. Kiểm tra quyền
+    if (req.user.role !== 'admin' && tour.user_id !== req.user.id) {
+        return res.status(403).json({ success: false, message: 'Bạn không có quyền thực hiện hành động này.' });
+    }
+
+    // 3. Ẩn tour (đồng thời đặt status = 'rejected')
+    const success = await hideTour(tourId);
+    if (!success) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour để ẩn' });
+    }
+
+    // GỬI THÔNG BÁO QUA SERVICE - CHỈ 1 DÒNG
+    if (tour.user_id) {
+      const io = req.app.get('io');
+      await NotificationService.notifyTourHidden(
+        io, 
+        tour.user_id, 
+        tour.id, 
+        tour.destination
+      );
+    }
+
+    res.status(200).json({ success: true, message: 'Tour đã được ẩn và chuyển sang trạng thái "Từ chối" thành công' });
+  } catch (error) {
+    console.error('Error hiding tour:', error);
+    res.status(500).json({ success: false, message: 'Lỗi khi ẩn tour' });
+  }
+};
 
 /**
  * Tạo một tour mới
@@ -110,6 +197,35 @@ exports.createTour = async (req, res) => {
     });
 
     const tourId = await createTour(tourData);
+
+    //GỬI THÔNG BÁO CHO ADMIN
+    const io = req.app.get('io');
+    const adminIds = await NotificationService.getAdminIds();
+
+    const userId = req.user?.id || tourData.user_id;
+    
+    if (userId) {
+      const [userInfo] = await pool.query(
+        'SELECT full_name, username FROM users WHERE id = ?',
+        [userId]  
+      );
+
+      await NotificationService.notifyAdminNewTour(
+        io,
+        adminIds,
+        tourId,
+        {
+          destination: tourData.destination,
+          userName: userInfo[0]?.full_name || userInfo[0]?.username || 'Unknown',
+          duration: tourData.duration,
+          departureFrom: tourData.departure_from
+        }
+      );
+    } else {
+      console.warn('[createTour] ⚠️ No userId found, skipping notification');
+    }
+    
+
     res.status(201).json({ 
       success: true, 
       message: 'Tour created successfully', 
@@ -131,7 +247,10 @@ exports.createTour = async (req, res) => {
  */
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await getAllTours(false); // false để chỉ lấy tour đã phê duyệt
+
+    // Tham số đầu tiên (true) để lấy tất cả status
+    // Tham số thứ hai (true) để lấy cả tour không hoạt động (is_active = FALSE)
+    const tours = await getAllTours(false,true); // false để chỉ lấy tour đã phê duyệt
     res.status(200).json({ 
       success: true, 
       tours 
@@ -152,7 +271,6 @@ exports.getAllTours = async (req, res) => {
  */
 exports.getAdminTours = async (req, res) => {
   try {
-    // Kiểm tra quyền admin
     if (!req.user || req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
@@ -160,24 +278,24 @@ exports.getAdminTours = async (req, res) => {
       });
     }
     
-    console.log('Admin user requesting all tours:', req.user.id);
+    console.log('[getAdminTours] Admin user:', req.user.id, 'requesting all tours');
     
-    // QUAN TRỌNG: Cần truyền true vào hàm getAllTours để bao gồm các tour ở tất cả trạng thái
-    const allTours = await getAllTours(true);
+    const allTours = await getAllTours(true, true);
     
-    // Log chi tiết để debug
-    const pending = allTours.filter(t => t.status === 'pending').length;
-    const approved = allTours.filter(t => t.status === 'approved').length;
-    const rejected = allTours.filter(t => t.status === 'rejected').length;
+    console.log(`[getAdminTours] ✅ Trả về tổng cộng ${allTours.length} tours`);
     
-    console.log(`API trả về ${allTours.length} tour: pending=${pending}, approved=${approved}, rejected=${rejected}`);
+    // ✅ LOG CHI TIẾT 3 TOUR ĐẦU TIÊN
+    console.log('[getAdminTours] Sample tours being sent to frontend:');
+    allTours.slice(0, 3).forEach(t => {
+      console.log(`  - Tour ${t.id}: is_active=${t.is_active} (type: ${typeof t.is_active}), status=${t.status}`);
+    });
     
     res.status(200).json({ 
       success: true, 
-      tours: allTours
+      tours: allTours 
     });
   } catch (error) {
-    console.error('Error in getAdminTours:', error);
+    console.error('[getAdminTours] Error:', error);
     res.status(500).json({ 
       success: false, 
       message: 'Error fetching admin tours',
@@ -203,7 +321,7 @@ exports.getUserTours = async (req, res) => {
     console.log('Fetching tours for user:', req.user.id);
     
     // Lấy tour của người dùng thông qua userId
-    const userTours = await getToursByUser(req.user.id);
+    const userTours = await getToursByUser(req.user.id, true);
 
     res.status(200).json({
       success: true,
@@ -304,13 +422,19 @@ exports.updateTour = async (req, res) => {
     const tourId = req.params.id;
     const tourData = req.body;
 
+    console.log('[updateTour] Received data:', {
+      tourId,
+      hasFiles: !!req.files,
+      imageField: req.files?.image,
+      bodyKeys: Object.keys(tourData)
+    });
+
     // Kiểm tra xem dữ liệu đã là object hay chưa
     // Nếu là string, thử parse JSON
     if (typeof tourData.highlights === 'string') {
       try {
         tourData.highlights = JSON.parse(tourData.highlights);
       } catch (e) {
-        // Nếu không parse được, giữ nguyên giá trị
         console.warn('Failed to parse highlights as JSON:', e);
       }
     }
@@ -347,12 +471,55 @@ exports.updateTour = async (req, res) => {
       }
     }
 
+    if (typeof tourData.selected_location_ids === 'string') {
+      try {
+        tourData.selected_location_ids = JSON.parse(tourData.selected_location_ids);
+      } catch (e) {
+        console.warn('Failed to parse selected_location_ids as JSON:', e);
+      }
+    }
+
+    // ✅ QUAN TRỌNG: Chỉ xử lý ảnh mới nếu có file được upload
+    if (req.files && req.files.image) {
+      const file = req.files.image;
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowedTypes.includes(file.mimetype)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Loại file không hợp lệ. Chỉ chấp nhận JPEG, PNG, GIF, WEBP.'
+        });
+      }
+
+      // Validate file size (5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        return res.status(400).json({
+          success: false,
+          message: 'Kích thước file quá lớn. Tối đa 5MB.'
+        });
+      }
+
+      const fileName = `${Date.now()}-${file.name}`;
+      const uploadPath = path.join(__dirname, '../uploads/tours', fileName);
+      
+      await file.mv(uploadPath);
+      tourData.image = `/uploads/tours/${fileName}`;
+      
+      console.log('[updateTour] New image uploaded:', tourData.image);
+    } else {
+      // ✅ Nếu không có file mới, GIỮ NGUYÊN ảnh cũ bằng cách xóa field image
+      // Backend sẽ không update field image trong database
+      delete tourData.image;
+      console.log('[updateTour] No new image uploaded, keeping existing image');
+    }
+
     // Validate required fields
     if (!tourData.destination || !tourData.departure_from || 
         !tourData.duration || !tourData.description) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields'
+        message: 'Thiếu các trường bắt buộc (destination, departure_from, duration, description)'
       });
     }
 
@@ -360,45 +527,39 @@ exports.updateTour = async (req, res) => {
     if (!Array.isArray(tourData.schedule) || tourData.schedule.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid schedule format'
+        message: 'Lịch trình không hợp lệ hoặc trống'
       });
     }
 
-    // Reset status to 'pending' if the tour is being updated
-    // This ensures tour must be re-reviewed by admin
-    // Skip if admin is the one making changes
-    if (!req.isAdmin) {
+    // Reset status to 'pending' if the tour is being updated by non-admin
+    if (req.user && req.user.role !== 'admin') {
       tourData.status = 'pending';
+      console.log('[updateTour] User is not admin, setting status to pending');
     }
 
-    // Handle file upload if exists
-    if (req.files && req.files.image) {
-      const file = req.files.image;
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(__dirname, '../uploads/tours', fileName);
+    // Perform update
+    const success = await Tour.updateTour(tourId, tourData);
+
+    if (success) {
+      // Fetch updated tour
+      const updatedTour = await Tour.getTourById(tourId);
       
-      await file.mv(uploadPath);
-      tourData.image = `/uploads/tours/${fileName}`;
-    }
-
-    const success = await updateTour(tourId, tourData);
-    
-    if (!success) {
-      return res.status(404).json({
+      res.json({
+        success: true,
+        message: 'Cập nhật tour thành công',
+        tour: updatedTour
+      });
+    } else {
+      res.status(400).json({
         success: false,
-        message: 'Tour not found'
+        message: 'Không thể cập nhật tour'
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: 'Tour updated successfully'
-    });
   } catch (error) {
-    console.error('Update tour error:', error);
+    console.error('[updateTour] Error:', error);
     res.status(500).json({
       success: false,
-      message: 'Error updating tour',
+      message: 'Lỗi khi cập nhật tour',
       error: error.message
     });
   }
@@ -633,7 +794,7 @@ exports.getAllToursForAdmin = async (req, res) => {
     console.log('Admin user requesting all tours with filtering:', req.user.id);
     
     // Lấy tất cả tour
-    let allTours = await getAllTours(true); // true để lấy tất cả các trạng thái
+    let allTours = await getAllTours(true,false); // true để lấy tất cả các trạng thái
     
     // Nếu admin là user_id=1, chỉ hiển thị tour của mình
     if (req.user.id === 1) {
@@ -787,127 +948,47 @@ exports.getFeaturedTours = async (req, res) => {
         });
     }
 };
-// ✅ APPROVE TOUR - TẠO NOTIFICATION VỚI ACTION_URL
+
 exports.approveTour = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // 1. Lấy thông tin tour
     const tour = await Tour.getTourById(id);
     if (!tour) {
       return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
     }
 
-    // 2. Cập nhật trạng thái tour
     await Tour.updateTourStatus(id, 'approved');
-    console.log(`[TourController] ✅ Tour ${id} approved for user ${tour.user_id}`);
 
-    // 3. Tạo thông báo
-    const notificationMessage = `Tour "${tour.destination}" của bạn đã được duyệt và hiển thị công khai!`;
-    const actionUrl = `/itinerary/${tour.id}`;
-    const notification = await Notification.createNotificationWithType(
-      tour.user_id,
-      notificationMessage,
-      NOTIFICATION_TYPES.TOUR_APPROVED,
-      parseInt(tour.id),
-      actionUrl
-    );
-
-    console.log('[TourController] Notification created:', notification);
-
-    // 4. Emit notification qua Socket.IO
+    // GỬI THÔNG BÁO
     const io = req.app.get('io');
-    if (io) {
-      const userRoom = `user_${tour.user_id}`;
-      io.to(userRoom).emit('new_notification', {
-        id: notification.id,
-        message: notification.message,
-        type: notification.type,
-        action_url: notification.action_url,
-        created_at: notification.created_at,
-      });
-      console.log(`[TourController] ✅ Notification emitted to ${userRoom}`);
-    } else {
-      console.warn('[TourController] ❌ Socket.IO instance not found');
-    }
+    await NotificationService.notifyTourApproved(io, tour.user_id, tour.id, tour.destination);
 
     res.json({ success: true, message: 'Đã duyệt tour thành công' });
   } catch (error) {
-    console.error('[TourController] ❌ Error approving tour:', error);
-    res.status(500).json({ success: false, message: 'Lỗi server khi duyệt tour', error: error.message });
+    console.error('[TourController] Error approving tour:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server khi duyệt tour' });
   }
 };
 
-// ✅ REJECT TOUR - TẠO NOTIFICATION VỚI ACTION_URL
 exports.rejectTour = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // 1. Lấy thông tin tour
+
     const tour = await Tour.getTourById(id);
     if (!tour) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Không tìm thấy tour' 
-      });
+      return res.status(404).json({ success: false, message: 'Không tìm thấy tour' });
     }
 
-    if (!tour.user_id) {
-      console.error('[TourController] Tour không có user_id:', tour);
-      return res.status(400).json({
-        success: false,
-        message: 'Tour không có thông tin người tạo'
-      });
-    }
-
-    // 2. Cập nhật status
     await Tour.updateTourStatus(id, 'rejected');
-    console.log(`[TourController] ❌ Tour ${id} rejected for user ${tour.user_id}`);
-    
-    // 3. Tạo notification với action_url
-    const notificationMessage = `Tour "${tour.destination}" của bạn đã bị từ chối. Vui lòng liên hệ quản trị viên để biết thêm chi tiết.`;
-    const actionUrl = `/admin/tours`; // Chuyển hướng đến trang quản trị tour
-    
-    const notification = await Notification.createNotificationWithType(
-      tour.user_id,
-      notificationMessage,
-      NOTIFICATION_TYPES.TOUR_REJECTED,
-      parseInt(tour.id),
-      actionUrl
-    );
-    
-    console.log('[TourController] Notification created:', notification);
 
-    // 4. Emit notification qua socket
+    // GỬI THÔNG BÁO
     const io = req.app.get('io');
-    if (io) {
-      const notificationData = {
-        id: notification.id,
-        user_id: tour.user_id,
-        message: notification.message,
-        type: notification.type,
-        related_id: notification.related_id,
-        action_url: `/itinerary/${tour.id}`,
-        created_at: notification.created_at || new Date(),
-      };
+    await NotificationService.notifyTourRejected(io, tour.user_id, tour.id, tour.destination);
 
-      const userRoom = `user_${tour.user_id}`; // Room của user
-      io.to(userRoom).emit('new_notification', notificationData); // Emit sự kiện
-      console.log(`[TourController] ✅ Notification emitted to ${userRoom}:`, notificationData);
-    } else {
-      console.warn('[TourController] ❌ Socket.IO instance not found');
-    }
-
-    res.json({ 
-      success: true, 
-      message: 'Đã từ chối tour thành công' 
-    });
+    res.json({ success: true, message: 'Đã từ chối tour' });
   } catch (error) {
-    console.error('[TourController] ❌ Error rejecting tour:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Lỗi server khi từ chối tour',
-      error: error.message
-    });
+    console.error('[TourController] Error rejecting tour:', error);
+    res.status(500).json({ success: false, message: 'Lỗi server' });
   }
 };

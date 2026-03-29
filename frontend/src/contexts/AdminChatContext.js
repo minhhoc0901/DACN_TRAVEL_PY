@@ -20,10 +20,12 @@ export const AdminChatProvider = ({ children }) => {
     const [messages, setMessages] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [onlineUsers, setOnlineUsers] = useState(new Set());
+    const [unreadCounts, setUnreadCounts] = useState({});
 
     const selectedUserRef = useRef(selectedUser);
     const socketRef = useRef(null);
-    const fetchUsersCalledRef = useRef(false); // ✅ Prevent duplicate calls
+    const fetchUsersCalledRef = useRef(false);
     const adminId = user?.id;
 
     useEffect(() => {
@@ -39,12 +41,6 @@ export const AdminChatProvider = ({ children }) => {
         const token = getToken();
         
         if (!isAuthenticated || !token || !adminId || user?.role !== 'admin') {
-            console.log('[AdminChat] Not ready for connection:', {
-                isAuthenticated,
-                hasToken: !!token,
-                adminId,
-                role: user?.role
-            });
             return;
         }
 
@@ -59,6 +55,9 @@ export const AdminChatProvider = ({ children }) => {
             console.log('[AdminChat] Socket connected');
             setIsConnected(true);
             newSocket.emit('join', `user_${adminId}`);
+            
+            // Request online users list
+            newSocket.emit('get_online_users');
         };
 
         const handleDisconnect = () => {
@@ -67,13 +66,9 @@ export const AdminChatProvider = ({ children }) => {
         };
 
         const handleConversationHistory = (conversation) => {
-            console.log('[AdminChat] Received conversation_history_chatadmin:', conversation);
-            
             if (Array.isArray(conversation)) {
-                console.log('[AdminChat] Setting messages count:', conversation.length);
                 setMessages(conversation);
             } else {
-                console.error('[AdminChat] Invalid conversation format:', conversation);
                 setMessages([]);
             }
             setLoading(false);
@@ -87,17 +82,63 @@ export const AdminChatProvider = ({ children }) => {
                 const currentUserId = currentUser.id || currentUser;
                 const { senderId, receiverId } = messageData;
                 
+                // Update messages if it's for current conversation
                 if ((Number(senderId) === Number(currentUserId) && Number(receiverId) === adminId) || 
                     (Number(senderId) === adminId && Number(receiverId) === Number(currentUserId))) {
                     setMessages(prev => [...prev, messageData]);
+                    
+                    // Mark as read if admin is viewing
+                    if (Number(senderId) === Number(currentUserId)) {
+                        newSocket.emit('mark_as_read', { senderId, receiverId: adminId });
+                    }
+                } else {
+                    // Increment unread count for other users
+                    if (Number(senderId) !== adminId) {
+                        setUnreadCounts(prev => ({
+                            ...prev,
+                            [senderId]: (prev[senderId] || 0) + 1
+                        }));
+                    }
+                }
+            } else {
+                // If no user selected, increment unread count
+                const { senderId } = messageData;
+                if (Number(senderId) !== adminId) {
+                    setUnreadCounts(prev => ({
+                        ...prev,
+                        [senderId]: (prev[senderId] || 0) + 1
+                    }));
                 }
             }
+        };
+
+        // Handle online users list
+        const handleOnlineUsersList = (users) => {
+            console.log('[AdminChat] Online users:', users);
+            const onlineUserIds = new Set(users.map(u => u.userId));
+            setOnlineUsers(onlineUserIds);
+        };
+
+        // Handle user status changes
+        const handleUserStatusChanged = ({ userId, status }) => {
+            console.log('[AdminChat] User status changed:', userId, status);
+            setOnlineUsers(prev => {
+                const newSet = new Set(prev);
+                if (status === 'online') {
+                    newSet.add(userId);
+                } else {
+                    newSet.delete(userId);
+                }
+                return newSet;
+            });
         };
 
         newSocket.on('connect', handleConnect);
         newSocket.on('disconnect', handleDisconnect);
         newSocket.on('conversation_history_chatadmin', handleConversationHistory);
         newSocket.on('private_message', handleNewMessage);
+        newSocket.on('online_users_list', handleOnlineUsersList);
+        newSocket.on('user_status_changed', handleUserStatusChanged);
 
         setSocket(newSocket);
 
@@ -107,31 +148,29 @@ export const AdminChatProvider = ({ children }) => {
             newSocket.off('disconnect', handleDisconnect);
             newSocket.off('conversation_history_chatadmin', handleConversationHistory);
             newSocket.off('private_message', handleNewMessage);
+            newSocket.off('online_users_list', handleOnlineUsersList);
+            newSocket.off('user_status_changed', handleUserStatusChanged);
             newSocket.close();
             setSocket(null);
             setIsConnected(false);
         };
     }, [isAuthenticated, adminId, user?.role, getToken]);
 
-    // ✅ FIX: Fetch users function với duplicate call prevention
+    // Fetch users function
     const fetchUsers = async () => {
         const token = getToken();
         
         if (!token || !isAuthenticated) {
-            console.log('[AdminChat] Cannot fetch users - not authenticated');
             return;
         }
 
-        // ✅ Prevent duplicate calls
         if (fetchUsersCalledRef.current) {
-            console.log('[AdminChat] fetchUsers already in progress, skipping...');
             return;
         }
 
         try {
             fetchUsersCalledRef.current = true;
             setLoading(true);
-            console.log('[AdminChat] Fetching users...');
             
             const response = await fetch('http://localhost:5000/api/chatwithadmin/users', {
                 method: 'GET',
@@ -146,10 +185,18 @@ export const AdminChatProvider = ({ children }) => {
             }
             
             const data = await response.json();
-            console.log('[AdminChat] Users response:', data);
             
             if (data.success && Array.isArray(data.users)) {
                 setUserList(data.users);
+                
+                // Initialize unread counts
+                const counts = {};
+                data.users.forEach(user => {
+                    if (user.unreadCount) {
+                        counts[user.id] = user.unreadCount;
+                    }
+                });
+                setUnreadCounts(counts);
             } else {
                 setUserList([]);
             }
@@ -158,20 +205,15 @@ export const AdminChatProvider = ({ children }) => {
             setUserList([]);
         } finally {
             setLoading(false);
-            fetchUsersCalledRef.current = false; // ✅ Reset flag
+            fetchUsersCalledRef.current = false;
         }
     };
 
-    // Get conversation using REST API
+    // Get conversation
     const getConversation = async (user) => {
         const token = getToken();
         
         if (!token || !user || !adminId) {
-            console.error('[AdminChat] Cannot get conversation - missing dependencies:', {
-                hasToken: !!token,
-                hasUser: !!user,
-                adminId
-            });
             return;
         }
         
@@ -180,7 +222,6 @@ export const AdminChatProvider = ({ children }) => {
             setMessages([]);
             
             const userId = user.id || user;
-            console.log('[AdminChat] Getting conversation for user:', userId);
             
             const response = await fetch(
                 `http://localhost:5000/api/chatwithadmin/conversation?userId1=${adminId}&userId2=${userId}`,
@@ -198,13 +239,10 @@ export const AdminChatProvider = ({ children }) => {
             }
             
             const data = await response.json();
-            console.log('[AdminChat] Conversation response:', data);
             
             if (data.success && Array.isArray(data.conversation)) {
-                console.log('[AdminChat] Setting messages:', data.conversation.length);
                 setMessages(data.conversation);
             } else {
-                console.error('[AdminChat] Invalid conversation response:', data);
                 setMessages([]);
             }
             
@@ -216,22 +254,33 @@ export const AdminChatProvider = ({ children }) => {
         }
     };
 
-    // Select user và load conversation
+    // Select user and load conversation
     const selectUser = async (user) => {
         console.log('[AdminChat] Selecting user:', user);
         setSelectedUser(user);
         setMessages([]);
         
+        // Clear unread count for this user
+        const userId = user.id || user;
+        setUnreadCounts(prev => ({
+            ...prev,
+            [userId]: 0
+        }));
+        
         await getConversation(user);
+        
+        // Mark messages as read
+        if (socket) {
+            socket.emit('mark_as_read', { senderId: userId, receiverId: adminId });
+        }
     };
 
     // Send message function
     const sendMessage = (message, imageUrls = []) => {
         if (!socket || !selectedUser || (!message.trim() && imageUrls.length === 0) || !adminId) {
-            console.log('[AdminChat] Cannot send message - missing dependencies');
             return;
         }
-        
+
         const userId = selectedUser.id || selectedUser;
         const messageData = {
             senderId: adminId,
@@ -240,18 +289,17 @@ export const AdminChatProvider = ({ children }) => {
             imageUrls: imageUrls
         };
         
-        console.log('[AdminChat] Sending message with images:', messageData);
         socket.emit('private_message', messageData);
-    
     };
 
-    // ✅ FIX: Add loading to value
     const value = {
         userList,
         selectedUser,
         messages,
         isConnected,
-        loading, // ✅ MISSING - Thêm loading vào value
+        loading,
+        onlineUsers,
+        unreadCounts,
         fetchUsers,
         selectUser,
         sendMessage,

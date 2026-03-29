@@ -1,7 +1,9 @@
+const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const path = require('path');
 const fs = require('fs');
-const User = require('../models/user');
+const { validateUpdateProfile, validateChangePassword } = require('../utils/validators/authValidator');
+const sanitizers = require('../utils/validators/sanitizers');
 
 // Lấy danh sách tất cả người dùng (chỉ admin)
 exports.getAllUsers = async (req, res) => {
@@ -57,59 +59,186 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Cập nhật thông tin người dùng (admin hoặc chính người dùng đó)
+/**
+ * ✅ UPDATE USER PROFILE WITH VALIDATION
+ * Route: PUT /api/users/:id
+ */
 exports.updateUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    
-    // Kiểm tra quyền: chỉ admin hoặc chính người dùng đó mới cập nhật được
-    if (req.user.role !== 'admin' && req.user.id !== parseInt(userId)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: 'Bạn không có quyền cập nhật thông tin này'
-      });
+    try {
+        const userId = req.params.id;
+        const { fullName, email, phone } = req.body;
+
+        console.log(`[updateUser] Request from user ${req.user.id} to update user ${userId}`);
+
+        // 🔹 BƯỚC 1: CHECK PERMISSION
+        if (req.user.id !== parseInt(userId) && req.user.role !== 'admin') {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền cập nhật thông tin này'
+            });
+        }
+
+        // 🔹 BƯỚC 2: SANITIZE INPUT
+        const sanitizedData = sanitizers.sanitizeProfileData(req.body);
+
+        // 🔹 BƯỚC 3: VALIDATE
+        const { error } = validateUpdateProfile(sanitizedData);
+        
+        if (error) {
+            const errors = {};
+            error.details.forEach(detail => {
+                const key = detail.path[0];
+                if (!errors[key]) {
+                    errors[key] = [];
+                }
+                errors[key].push(detail.message);
+            });
+
+            return res.status(400).json({
+                success: false,
+                message: 'Dữ liệu không hợp lệ',
+                errors
+            });
+        }
+
+        // 🔹 BƯỚC 4: CHECK EXISTING EMAIL (nếu thay đổi email)
+        if (sanitizedData.email) {
+            const User = require('../models/user');
+            const existingEmail = await User.findByEmail(sanitizedData.email);
+            
+            if (existingEmail && existingEmail.id !== parseInt(userId)) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email đã được sử dụng',
+                    errors: { email: ['Email đã được đăng ký bởi tài khoản khác'] }
+                });
+            }
+        }
+
+        // 🔹 BƯỚC 5: UPDATE USER
+        const User = require('../models/user');
+        const updated = await User.updateUser(userId, {
+            fullName: sanitizedData.fullName,
+            email: sanitizedData.email,
+            phone: sanitizedData.phone
+        });
+
+        if (updated) {
+            const user = await User.findById(userId);
+            
+            res.status(200).json({
+                success: true,
+                message: 'Cập nhật thông tin thành công',
+                data: {
+                    id: user.id,
+                    username: user.username,
+                    fullName: user.full_name,
+                    email: user.email,
+                    phone: user.phone,
+                    role: user.role,
+                    avatar: user.avatar
+                }
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Không thể cập nhật thông tin'
+            });
+        }
+    } catch (error) {
+        console.error('[UPDATE USER] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi khi cập nhật thông tin',
+            error: error.message
+        });
     }
-    
-    // Kiểm tra người dùng tồn tại
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Không tìm thấy thông tin người dùng'
-      });
+};
+
+/**
+ * ✅ CHANGE PASSWORD WITH VALIDATION
+ * Route: PUT /api/users/:id/change-password
+ */
+exports.changePassword = async (req, res) => {
+    try {
+        const userId = req.params.id;
+        const { currentPassword, newPassword, confirmPassword } = req.body;
+
+        console.log(`[changePassword] Request from user ${req.user.id} to change password for user ${userId}`);
+
+        // 🔹 BƯỚC 1: CHECK PERMISSION
+        if (req.user.id !== parseInt(userId)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền thay đổi mật khẩu này'
+            });
+        }
+
+        // 🔹 BƯỚC 2: VALIDATE INPUT
+        const { error } = validateChangePassword({ currentPassword, newPassword, confirmPassword });
+        
+        if (error) {
+            const errors = {};
+            error.details.forEach(detail => {
+                const key = detail.path[0];
+                if (!errors[key]) {
+                    errors[key] = [];
+                }
+                errors[key].push(detail.message);
+            });
+
+            return res.status(400).json({
+                success: false,
+                message: 'Dữ liệu không hợp lệ',
+                errors
+            });
+        }
+
+        // 🔹 BƯỚC 3: FIND USER
+        const User = require('../models/user');
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy người dùng'
+            });
+        }
+
+        // 🔹 BƯỚC 4: VERIFY CURRENT PASSWORD
+        const bcrypt = require('bcryptjs');
+        const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
+        
+        if (!isValidPassword) {
+            return res.status(400).json({
+                success: false,
+                message: 'Mật khẩu hiện tại không đúng',
+                errors: { currentPassword: ['Mật khẩu hiện tại không đúng'] }
+            });
+        }
+
+        // 🔹 BƯỚC 5: UPDATE PASSWORD
+        const updated = await User.updateUser(userId, { password: newPassword });
+
+        if (updated) {
+            res.status(200).json({
+                success: true,
+                message: 'Đổi mật khẩu thành công'
+            });
+        } else {
+            res.status(400).json({
+                success: false,
+                message: 'Không thể đổi mật khẩu'
+            });
+        }
+    } catch (error) {
+        console.error('[CHANGE PASSWORD] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi khi đổi mật khẩu',
+            error: error.message
+        });
     }
-    
-    // Chỉ admin mới có thể thay đổi role
-    const updateData = { ...req.body };
-    if (req.user.role !== 'admin') {
-      delete updateData.role;
-    }
-    
-    // Cập nhật thông tin
-    const updated = await User.updateUser(userId, updateData);
-    
-    if (updated) {
-      const updatedUser = await User.findById(userId);
-      
-      res.status(200).json({
-        success: true,
-        message: 'Cập nhật thông tin thành công',
-        data: updatedUser
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Cập nhật thông tin thất bại'
-      });
-    }
-  } catch (error) {
-    console.error('Update user error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Đã xảy ra lỗi khi cập nhật thông tin người dùng',
-      error: error.message
-    });
-  }
 };
 
 // Xóa người dùng (chỉ admin)
@@ -153,74 +282,6 @@ exports.deleteUser = async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: 'Đã xảy ra lỗi khi xóa người dùng',
-      error: error.message
-    });
-  }
-};
-
-// Controller đổi mật khẩu
-exports.changePassword = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const { currentPassword, newPassword } = req.body;
-
-    // Validate input
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'Vui lòng cung cấp đầy đủ thông tin'
-      });
-    }
-
-    // Kiểm tra quyền
-    if (req.user.id !== parseInt(userId)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Bạn không có quyền thay đổi mật khẩu này'
-      });
-    }
-
-    // Kiểm tra user tồn tại
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'Không tìm thấy người dùng'
-      });
-    }
-
-    // Xác thực mật khẩu hiện tại
-    const isValidPassword = await bcrypt.compare(currentPassword, user.password_hash);
-    if (!isValidPassword) {
-      return res.status(400).json({
-        success: false,
-        message: 'Mật khẩu hiện tại không đúng'
-      });
-    }
-
-    // Hash mật khẩu mới và cập nhật
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-    
-    // Cập nhật mật khẩu mới
-    const updated = await User.updateUser(userId, { password: newPassword });
-
-    if (updated) {
-      res.status(200).json({
-        success: true,
-        message: 'Đổi mật khẩu thành công'
-      });
-    } else {
-      res.status(400).json({
-        success: false,
-        message: 'Không thể đổi mật khẩu'
-      });
-    }
-  } catch (error) {
-    console.error('Change password error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Đã xảy ra lỗi khi đổi mật khẩu',
       error: error.message
     });
   }

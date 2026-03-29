@@ -1,4 +1,6 @@
 const qrcode = require('qrcode');
+const fs = require('fs');
+const path = require('path');
 
 /**
  * Tạo mã QR từ một token xác thực và trả về dưới dạng Data URL (base64).
@@ -32,7 +34,71 @@ const generateQrCodeDataUrl = async (verificationToken) => {
         throw new Error('Could not generate QR code.');
     }
 };
+/**
+ * TẠO QR CODE VÀ LƯU VÀO SERVER (CHỈ DÙNG CHO EMAIL)
+ * @returns {string} - HTTP URL của QR code image
+ */
+const generateQrCodeFile = async (verificationToken) => {
+    if (!verificationToken) {
+        throw new Error('Verification token is required to generate a QR code.');
+    }
+
+    try {
+        const verificationUrl = `${process.env.FRONTEND_URL}/verify-invoice/${verificationToken}`;
+        
+        // Tạo tên file duy nhất
+        const fileName = `qr_${verificationToken}.png`;
+        const qrDir = path.join(__dirname, '../uploads/qr-codes');
+        const filePath = path.join(qrDir, fileName);
+
+        // Đảm bảo folder tồn tại
+        if (!fs.existsSync(qrDir)) {
+            fs.mkdirSync(qrDir, { recursive: true });
+        }
+
+        // TẠO QR CODE VÀ LƯU VÀO FILE
+        await qrcode.toFile(filePath, verificationUrl, {
+            errorCorrectionLevel: 'H',
+            margin: 2,
+            width: 300,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF',
+            },
+        });
+
+        // TRẢ VỀ URL CÔNG KHAI
+        const qrUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/qr-codes/${fileName}`;
+        
+        console.log(`✅ [qrCodeGenerator] QR file created: ${filePath}`);
+        console.log(`✅ [qrCodeGenerator] QR URL: ${qrUrl}`);
+        
+        return qrUrl;
+    } catch (err) {
+        console.error('❌ Failed to generate QR code file:', err);
+        throw new Error('Could not generate QR code file.');
+    }
+};
+
+/**
+ * XÓA QR CODE FILE CŨ (OPTIONAL - CLEAN UP)
+ */
+const deleteQrCodeFile = async (verificationToken) => {
+    try {
+        const fileName = `qr_${verificationToken}.png`;
+        const filePath = path.join(__dirname, '../uploads/qr-codes', fileName);
+
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            console.log(`🗑️ [qrCodeGenerator] Deleted old QR: ${fileName}`);
+        }
+    } catch (err) {
+        console.error('❌ Failed to delete QR code file:', err);
+    }
+};
 
 module.exports = {
-    generateQrCodeDataUrl,
+    generateQrCodeDataUrl,  // Dùng cho PDF
+    generateQrCodeFile,     // Dùng cho Email
+    deleteQrCodeFile        // Cleanup
 };

@@ -1,11 +1,53 @@
 /* Enhanced styles for TourList component */
 
 /* Tour list container */
+.mng-tour-hide-button:hover {
+  background-color: #e67e22;
+}
+
+/*  CSS CHO NÚT KHÔI PHỤC */
+.mng-tour-restore-button {
+  background-color: #27ae60; /* Màu xanh lá */
+  color: white;
+}
+
+.mng-tour-restore-button:hover {
+  background-color: #229954;
+}
+
+/* CSS CHO TOUR BỊ ẨN */
+.mng-hidden {
+  border-left-color: #7f8c8d; /* Màu xám */
+  opacity: 0.7;
+}
+.mng-hidden .mng-status-badge {
+  background-color: #7f8c8d;
+  color: white;
+}
 .mng-tour-list {
   display: flex;
   flex-direction: column;
   gap: 24px;
   margin-bottom: 40px;
+}
+
+.mng-tour-delete-button {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.mng-tour-delete-button:hover {
+  background-color: #c0392b;
+}
+
+/* CSS CHO NÚT ẨN */
+.mng-tour-hide-button {
+  background-color: #f39c12; /* Màu cam */
+  color: white;
+}
+
+.mng-tour-hide-button:hover {
+  background-color: #e67e22;
 }
 
 /* Tour item card with enhanced shadow and transitions */

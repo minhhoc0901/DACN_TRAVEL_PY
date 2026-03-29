@@ -10,27 +10,53 @@ const TravelPlanSection = () => {
             id: 1,
             icon: 'calendar-event',
             title: 'Chọn thời gian',
-            description: 'Lựa chọn thời điểm lý tưởng để du lịch Phú Yên và tham khảo thông tin về mùa đẹp nhất trong năm.'
+            description: 'Lựa chọn thời điểm lý tưởng để du lịch Phú Yên và tham khảo thông tin về mùa đẹp nhất trong năm.',
+            details: [
+                'Mùa đẹp nhất: Tháng 3 - Tháng 8',
+                'Thời tiết ổn định, nắng đẹp',
+                'Biển xanh, sóng nhẹ phù hợp tắm biển',
+                'Tránh mùa mưa: Tháng 10 - Tháng 12'
+            ]
         },
         {
             id: 2,
             icon: 'pin-map',
             title: 'Chọn địa điểm',
-            description: 'Khám phá và lựa chọn các điểm đến phù hợp với sở thích và thời gian của bạn tại Phú Yên.'
+            description: 'Khám phá và lựa chọn các điểm đến phù hợp với sở thích và thời gian của bạn tại Phú Yên.',
+            details: [
+                'Bãi Xép - Bãi biển hoang sơ tuyệt đẹp',
+                'Gành Đá Đĩa - Kỳ quan thiên nhiên',
+                'Vũng Rô - Vịnh biển xanh trong',
+                'Tháp Nhạn - Di tích lịch sử văn hóa'
+            ]
         },
         {
             id: 3,
             icon: 'houses',
             title: 'Chọn nơi nghỉ',
-            description: 'Tìm kiếm các khách sạn, homestay hoặc resort phù hợp với ngân sách và trải nghiệm bạn mong muốn.'
+            description: 'Tìm kiếm các khách sạn, homestay hoặc resort phù hợp với ngân sách và trải nghiệm bạn mong muốn.',
+            details: [
+                'Khách sạn 3-5 sao tại trung tâm',
+                'Homestay gần biển, giá hợp lý',
+                'Resort cao cấp với view biển',
+                'Khu cắm trại cho phượt thủ'
+            ]
         },
         {
             id: 4,
             icon: 'journal-check',
             title: 'Lên lịch trình',
-            description: 'Sắp xếp các địa điểm và hoạt động vào lịch trình chi tiết, tối ưu thời gian di chuyển.'
+            description: 'Sắp xếp các địa điểm và hoạt động vào lịch trình chi tiết, tối ưu thời gian di chuyển.',
+            details: [
+                'Lên kế hoạch theo ngày',
+                'Tối ưu tuyến đường di chuyển',
+                'Sắp xếp thời gian hợp lý',
+                'Gợi ý hoạt động mỗi điểm'
+            ]
         }
     ];
+
+    const currentStep = steps.find(step => step.id === activeStep);
 
     return (
         <section className="travel-plan-section">
@@ -40,115 +66,98 @@ const TravelPlanSection = () => {
             </div>
             
             <div className="container position-relative">
-                <div className="travel-plan-header">
-                    <div className="plan-badge">Lập kế hoạch</div>
-                    <h2 className="plan-title">Bắt đầu <span className="highlight">Hành trình</span> của bạn</h2>
-                    <p className="plan-subtitle">
-                        Lên kế hoạch cho chuyến đi hoàn hảo đến Phú Yên chỉ với vài bước đơn giản.
-                        Chúng tôi giúp bạn tạo ra một lịch trình du lịch phù hợp nhất.
+                {/* HEADER */}
+                <div 
+                    className="travel-plan-header"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                >
+                    <div className="plan-badge">
+                        <i className="bi bi-map"></i>
+                        <span>Lập kế hoạch</span>
+                    </div>
+                    <h2 className="plan-title">
+                        Lên Kế Hoạch <span className="highlight-orange">Du Lịch</span>
+                    </h2>
+                    <p className="plan-description">
+                        Bốn bước đơn giản để tạo nên chuyến du lịch hoàn hảo tại Phú Yên
                     </p>
                 </div>
-                
-                <div className="travel-plan-steps">
-                    <div className="step-timeline">
-                        <div className="timeline-track">
-                            <div 
-                                className="timeline-progress"
-                                style={{ width: `${(activeStep - 1) * 100 / (steps.length - 1)}%` }}
-                            ></div>
-                        </div>
-                        
-                        <div className="timeline-points-wrapper">
-                            {steps.map(step => (
-                                <div 
-                                    key={step.id} 
-                                    className={`timeline-point ${activeStep >= step.id ? 'active' : ''}`}
-                                    onClick={() => setActiveStep(step.id)}
-                                >
-                                    <div className="point-number">{step.id}</div>
-                                    <div className="point-label">{step.title}</div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    <div className="step-cards">
-                        {steps.map(step => (
-                            <div 
+
+                {/* ✅ NEW: STEPS TABS - SIMPLE HORIZONTAL DESIGN */}
+                <div 
+                    className="travel-steps-container"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    data-aos-delay="200"
+                >
+                    <div className="travel-steps-tabs">
+                        {steps.map((step) => (
+                            <button
                                 key={step.id}
-                                className={`step-card ${activeStep === step.id ? 'active' : ''}`}
+                                className={`travel-step-tab ${activeStep === step.id ? 'active' : ''}`}
+                                onClick={() => setActiveStep(step.id)}
                             >
-                                <div className="step-icon">
+                                <div className="tab-icon">
                                     <i className={`bi bi-${step.icon}`}></i>
                                 </div>
-                                <div className="step-content">
-                                    <h3 className="step-title">{step.title}</h3>
-                                    <p className="step-description">{step.description}</p>
+                                <div className="tab-info">
+                                    <span className="tab-number">Bước {step.id}</span>
+                                    <span className="tab-title">{step.title}</span>
                                 </div>
-                            </div>
-                        ))}
-                        
-                        <div className="step-navigation">
-                            <button 
-                                className="btn-prev"
-                                onClick={() => setActiveStep(prev => Math.max(prev - 1, 1))}
-                                disabled={activeStep === 1}
-                            >
-                                <i className="bi bi-arrow-left"></i>
-                                <span>Trước</span>
                             </button>
-                            
-                            {activeStep < steps.length ? (
-                                <button 
-                                    className="btn-next"
-                                    onClick={() => setActiveStep(prev => Math.min(prev + 1, steps.length))}
-                                >
-                                    <span>Tiếp theo</span>
-                                    <i className="bi bi-arrow-right"></i>
-                                </button>
-                            ) : (
-                                <Link to="/plan" className="btn-create-plan">
-                                    <span>Tạo Lịch Trình</span>
-                                    <i className="bi bi-calendar-plus"></i>
-                                </Link>
-                            )}
-                        </div>
+                        ))}
                     </div>
                 </div>
-                
-                <div className="travel-plan-features">
-                    <div className="plan-feature">
-                        <div className="feature-icon">
-                            <i className="bi bi-calendar-check"></i>
+
+                {/* ✅ NEW: CONTENT CARD - WHITE BACKGROUND */}
+                <div 
+                    className="travel-content-card"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    data-aos-delay="400"
+                >
+                    <div className="card-header">
+                        <div className="header-icon">
+                            <i className={`bi bi-${currentStep.icon}`}></i>
                         </div>
-                        <h4>Tiết kiệm thời gian</h4>
-                        <p>Tối ưu hóa lịch trình với các gợi ý lộ trình thông minh</p>
+                        <div className="header-text">
+                            <h3>{currentStep.title}</h3>
+                            <p>{currentStep.description}</p>
+                        </div>
                     </div>
-                    
-                    <div className="plan-feature">
-                        <div className="feature-icon">
-                            <i className="bi bi-piggy-bank"></i>
-                        </div>
-                        <h4>Quản lý chi phí</h4>
-                        <p>Ước tính ngân sách và tìm các lựa chọn phù hợp với túi tiền</p>
-                    </div>
-                    
-                    <div className="plan-feature">
-                        <div className="feature-icon">
-                            <i className="bi bi-share"></i>
-                        </div>
-                        <h4>Chia sẻ dễ dàng</h4>
-                        <p>Mời bạn bè đóng góp ý kiến hoặc tham gia lập kế hoạch cùng bạn</p>
+
+                    <div className="card-body">
+                        <ul className="details-list">
+                            {currentStep.details.map((detail, index) => (
+                                <li key={index} className="detail-item-new">
+                                    <span className="item-number">{index + 1}</span>
+                                    <span className="item-text">{detail}</span>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
-                
-                <div className="travel-plan-cta">
-                    <Link to="/plan" className="btn-get-started">
-                        <span>Bắt đầu ngay</span>
+
+                {/* CTA BUTTONS */}
+                <div 
+                    className="plan-cta"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    data-aos-delay="600"
+                >
+                    <Link to="/itinerary-planner" className="btn-get-started">
+                        <i className="bi bi-stars"></i>
+                        <span>Gợi ý lịch trình thông minh</span>
                         <i className="bi bi-arrow-right"></i>
                     </Link>
-                    <Link to="/locations" className="btn-explore-more">
-                        Khám phá địa điểm
+                    <Link to="/plan" className="btn-create-custom">
+                        <i className="bi bi-pencil-square"></i>
+                        <span>Tự tạo lịch trình</span>
+                    </Link>
+                    <Link to="/tours" className="btn-explore-more">
+                        <i className="bi bi-compass"></i>
+                        <span>Khám phá tour có sẵn</span>
                     </Link>
                 </div>
             </div>

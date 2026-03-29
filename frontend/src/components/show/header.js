@@ -1,15 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+// import { useNotification } from '../../contexts/NotificationContext'; // XÓA DÒNG NÀY
+import NotificationBell from '../Notifications/NotificationBell';
 import '../../styles/show/header.css';
 
-const Header = () => {
+const Header = ({ setMenuOpen, menuOpen }) => {
     const [scrolled, setScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const location = useLocation();
     const navigate = useNavigate();
     const { user, isAuthenticated, logout } = useAuth();
+    // XÓA CÁC DÒNG DƯỚI ĐÂY
+    // const {
+    //     handleNotificationClick,
+    //     markAllAsRead,
+    //     deleteNotification
+    // } = useNotification();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -79,6 +87,12 @@ const Header = () => {
                                 </Link>
                             </li>
                             <li className="nav-item">
+                                <Link to="/tours" className="nav-link">
+                                    <i className="bi bi-compass"></i>
+                                    <span>Tours du lịch</span>
+                                </Link>
+                            </li>
+                            <li className="nav-item">
                                 <Link to="/plan" className="nav-link">
                                     <i className="bi bi-calendar3"></i>
                                     <span>Lập kế hoạch</span>
@@ -104,28 +118,39 @@ const Header = () => {
                                 <i className="bi bi-search"></i>
                             </button>
 
+                            {isAuthenticated && <NotificationBell />}
+
                             {isAuthenticated ? (
                                 <div className="dropdown user-menu">
-                                    <div className="user-dropdown"> {/* Giữ class này nếu bạn có style riêng cho nó */}
-                                        <div className="user-info" onClick={() => setUserMenuOpen(!userMenuOpen)}>
-                                            <div className="user-avatar">
+                                    <div className="user-dropdown">
+                                        <div className="header-user-profile" onClick={() => setUserMenuOpen(!userMenuOpen)}>
+                                            <div className="header-user-avatar">
                                                 <img 
                                                     src={user.avatar ? `http://localhost:5000${user.avatar}` : 'https://via.placeholder.com/40'} 
                                                     alt="Avatar" 
                                                     className="avatar-img" 
                                                 />
                                             </div>
-                                            <span className="user-name">{user.username}</span>
-                                            {/* Sử dụng class 'open' để xoay icon nếu cần */}
+                                            <span className="header-user-name">{user.username}</span>
                                             <i className={`bi ${userMenuOpen ? 'bi-chevron-up' : 'bi-chevron-down'}`}></i>
                                         </div>
-                                        {/* Dropdown menu */}
-                                        {/* Thay đổi ở đây: Luôn render ul và dùng class 'show' */}
                                         <ul className={`dropdown-menu ${userMenuOpen ? 'show' : ''}`}>
                                             <li>
                                                 <Link to="/profile" className="dropdown-item" onClick={() => setUserMenuOpen(false)}>
                                                     <i className="bi bi-person"></i>
                                                     <span>Tài khoản</span>
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/profile/credit-wallet" className="dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                                                    <i className="bi bi-wallet2"></i>
+                                                    <span>Ví Credit</span>
+                                                </Link>
+                                            </li>
+                                            <li>
+                                                <Link to="/profile/my-bookings" className="dropdown-item" onClick={() => setUserMenuOpen(false)}>
+                                                    <i className="bi bi-bookmark-check"></i>
+                                                    <span>Đặt chỗ của tôi</span>
                                                 </Link>
                                             </li>
                                             {user.role === 'admin' && (

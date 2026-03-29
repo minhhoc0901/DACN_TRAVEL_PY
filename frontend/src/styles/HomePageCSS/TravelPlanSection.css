@@ -1,21 +1,20 @@
+/* ===== TRAVEL PLAN SECTION ===== */
 .travel-plan-section {
-    padding: 120px 0;
+    padding: 100px 0;
     position: relative;
     overflow: hidden;
-    color: var(--text-light);
+    min-height: 100vh;
 }
 
-/* Background với overlay */
+/* BACKGROUND */
 .travel-plan-bg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
-    background: url('../../assets/images/background_PY_1.jpg') no-repeat center center;
-    background-size: cover;
-    background-attachment: fixed;
+    z-index: 0;
+    background: linear-gradient(135deg, #003a70 0%, #0072bb 100%);
 }
 
 .bg-overlay {
@@ -24,7 +23,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(to right, rgba(0, 58, 112, 0.9), rgba(0, 114, 187, 0.85));
+    background: linear-gradient(135deg, rgba(0, 58, 112, 0.95), rgba(0, 114, 187, 0.9));
     z-index: 1;
 }
 
@@ -34,11 +33,18 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+    background-size: 40px 40px;
+    opacity: 0.5;
     z-index: 2;
 }
 
-/* Header section */
+.travel-plan-section .container {
+    position: relative;
+    z-index: 3;
+}
+
+/* ===== HEADER ===== */
 .travel-plan-header {
     text-align: center;
     margin-bottom: 60px;
@@ -48,501 +54,398 @@
 }
 
 .plan-badge {
-    display: inline-block;
-    padding: 10px 25px;
-    background: rgba(255, 255, 255, 0.15);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 28px;
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 50px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+}
+
+.plan-badge i {
+    font-size: 1.2rem;
 }
 
 .plan-title {
-    font-size: 3rem;
+    font-size: 3.2rem;
     font-weight: 800;
     margin-bottom: 25px;
     line-height: 1.2;
+    color: #ffffff;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-.highlight {
-    color: var(--secondary);
+.highlight-orange {
+    color: #ff9e1b;
     position: relative;
 }
 
-.highlight::after {
-    content: '';
-    position: absolute;
-    bottom: 5px;
-    left: 0;
-    width: 100%;
-    height: 10px;
-    background: rgba(255, 158, 27, 0.3);
-    z-index: -1;
-    border-radius: 10px;
-}
-
-.plan-subtitle {
-    font-size: 1.1rem;
-    opacity: 0.9;
+.plan-description {
+    font-size: 1.15rem;
+    opacity: 0.95;
     line-height: 1.7;
     margin-bottom: 0;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* Travel Steps */
-.travel-plan-steps {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 40px;
-    margin-bottom: 60px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-/* Timeline */
-.step-timeline {
-    position: relative;
+/* ===== NEW: STEPS TABS DESIGN ===== */
+.travel-steps-container {
     margin-bottom: 40px;
-}
-
-.timeline-track {
-    position: absolute;
-    top: 30px;
-    left: 20px;
-    right: 20px;
-    height: 4px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    z-index: 1;
-}
-
-.timeline-progress {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: var(--secondary);
-    border-radius: 2px;
-    transition: width 0.5s ease;
-}
-
-.timeline-points-wrapper {
     display: flex;
-    justify-content: space-between;
-    position: relative;
-    z-index: 2;
-    padding: 0 20px;
+    justify-content: center;
 }
 
-.timeline-point {
-    position: relative;
+.travel-steps-tabs {
+    display: inline-flex;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    padding: 8px;
+    gap: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.travel-step-tab {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 14px;
     cursor: pointer;
     transition: all 0.3s ease;
-    transform: translateY(0);
-    flex: 0 0 auto;
-    text-align: center;
-    width: calc(100% / 4);
+    position: relative;
 }
 
-.timeline-point:hover {
-    transform: translateY(-5px);
-}
-
-.point-number {
-    width: 60px;
-    height: 60px;
+.travel-step-tab:hover {
     background: rgba(255, 255, 255, 0.1);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
+}
+
+.travel-step-tab.active {
+    background: linear-gradient(135deg, #ff9e1b 0%, #ff7b00 100%);
+    box-shadow: 0 8px 25px rgba(255, 158, 27, 0.5);
+}
+
+.tab-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    font-weight: 700;
-    margin: 0 auto 15px;
+    color: rgba(255, 255, 255, 0.9);
     transition: all 0.3s ease;
 }
 
-.timeline-point.active .point-number {
-    background: var(--secondary);
-    border-color: var(--secondary);
-    color: var(--text-dark);
-    box-shadow: 0 5px 15px rgba(255, 158, 27, 0.4);
+.travel-step-tab.active .tab-icon {
+    background: rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    transform: scale(1.1);
 }
 
-.point-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-align: center;
-    margin: 0 auto;
-    white-space: nowrap;
-    max-width: 120px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-/* Step Cards */
-.step-cards {
-    position: relative;
-    min-height: 280px;
-}
-
-.step-card {
-    position: absolute;
-    top: 40%;
-    left: 0;
-    width: 100%;
+.tab-info {
     display: flex;
+    flex-direction: column;
     align-items: flex-start;
+    gap: 4px;
+}
+
+.tab-number {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.travel-step-tab.active .tab-number {
+    color: rgba(255, 255, 255, 0.95);
+}
+
+.tab-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.95);
+    white-space: nowrap;
+}
+
+.travel-step-tab.active .tab-title {
+    color: #ffffff;
+}
+
+/* ===== NEW: CONTENT CARD DESIGN ===== */
+.travel-content-card {
+    background: #ffffff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    margin-bottom: 50px;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card Header */
+.card-header {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 35px 40px;
+    display: flex;
     gap: 25px;
-    opacity: 0;
-    transform: translateX(30px);
-    transition: all 0.5s ease;
-    visibility: hidden;
+    align-items: flex-start;
+    border-bottom: 3px solid #ff9e1b;
 }
 
-.step-card.active {
-    opacity: 1;
-    transform: translateX(0);
-    visibility: visible;
-}
-
-.step-icon {
+.header-icon {
     width: 80px;
     height: 80px;
     min-width: 80px;
-    background: rgba(255, 255, 255, 0.1);
     border-radius: 20px;
+    background: linear-gradient(135deg, #ff9e1b 0%, #ff7b00 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2.2rem;
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-size: 2.5rem;
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(255, 158, 27, 0.4);
 }
 
-.step-content {
-    flex: 1;
-}
-
-.step-title {
-    font-size: 1.8rem;
+.header-text h3 {
+    font-size: 2rem;
     font-weight: 700;
-    margin-bottom: 15px;
+    color: #212529;
+    margin: 0 0 12px 0;
 }
 
-.step-description {
+.header-text p {
     font-size: 1.05rem;
-    line-height: 1.7;
-    opacity: 0.9;
-    margin-bottom: 30px;
+    line-height: 1.6;
+    color: #6c757d;
+    margin: 0;
 }
 
-/* Navigation buttons */
-.step-navigation {
+/* Card Body */
+.card-body {
+    padding: 40px;
+}
+
+.details-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     display: flex;
-    justify-content: space-between;
-    margin-top: 40px;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.btn-prev, .btn-next {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: var(--text-light);
-    padding: 12px 25px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.btn-prev:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.btn-prev:not(:disabled):hover, .btn-next:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-3px);
-}
-
-.btn-create-plan {
+.detail-item-new {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: var(--secondary);
-    border: none;
-    color: var(--text-dark);
-    padding: 12px 30px;
-    border-radius: 50px;
-    font-size: 1rem;
-    font-weight: 700;
-    cursor: pointer;
+    gap: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border-left: 4px solid #ff9e1b;
     transition: all 0.3s ease;
-    text-decoration: none;
-    box-shadow: 0 5px 15px rgba(255, 158, 27, 0.3);
 }
 
-.btn-create-plan:hover {
-    background: #ffb347;
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(255, 158, 27, 0.4);
-    color: var(--text-dark);
+.detail-item-new:hover {
+    background: #e9ecef;
+    transform: translateX(8px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
 }
 
-/* Features */
-.travel-plan-features {
-    display: flex;
-    justify-content: space-between;
-    gap: 30px;
-    margin-bottom: 60px;
-}
-
-.plan-feature {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 30px;
-    flex: 1;
-    text-align: center;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.plan-feature:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.feature-icon {
-    width: 70px;
-    height: 70px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 50%;
+.item-number {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #ff9e1b 0%, #ff7b00 100%);
+    color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.8rem;
-    margin: 0 auto 20px;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    font-weight: 800;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(255, 158, 27, 0.3);
 }
 
-.plan-feature:hover .feature-icon {
-    background: var(--secondary);
-    color: var(--text-dark);
-    transform: rotateY(180deg);
-}
-
-.plan-feature h4 {
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-}
-
-.plan-feature p {
-    font-size: 0.95rem;
-    opacity: 0.9;
-    margin-bottom: 0;
+.item-text {
+    font-size: 1rem;
     line-height: 1.6;
+    color: #212529;
+    font-weight: 500;
 }
 
-/* CTA Section */
-.travel-plan-cta {
+/* ===== CTA BUTTONS ===== */
+.plan-cta {
     display: flex;
     justify-content: center;
     gap: 20px;
     flex-wrap: wrap;
 }
 
-.btn-get-started {
-    display: flex;
+.plan-cta a {
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
-    background: var(--secondary);
-    color: var(--text-dark);
-    padding: 15px 35px;
+    gap: 12px;
+    padding: 18px 35px;
     border-radius: 50px;
     font-size: 1.1rem;
     font-weight: 700;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 5px 15px rgba(255, 158, 27, 0.3);
+    white-space: nowrap;
+}
+
+/* Button 1: AI Orange */
+.btn-get-started {
+    background: linear-gradient(135deg, #ff9e1b 0%, #ff7b00 100%);
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(255, 158, 27, 0.5);
 }
 
 .btn-get-started:hover {
-    background: #ffb347;
-    transform: translateY(-5px);
-    box-shadow: 0 10px 25px rgba(255, 158, 27, 0.4);
-    color: var(--text-dark);
+    background: linear-gradient(135deg, #ffb347 0%, #ff9e1b 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 158, 27, 0.6);
+    color: #ffffff;
 }
 
-.btn-get-started i {
-    transition: transform 0.3s ease;
+/* Button 2: Custom White */
+.btn-create-custom {
+    background: #ffffff;
+    color: #0072bb;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
 }
 
-.btn-get-started:hover i {
-    transform: translateX(5px);
+.btn-create-custom:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+    color: #005a94;
 }
 
+/* Button 3: Outline */
 .btn-explore-more {
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-light);
-    padding: 15px 35px;
-    border-radius: 50px;
-    font-size: 1.1rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
+    background: transparent;
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.5);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .btn-explore-more:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-5px);
-    color: var(--text-light);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: translateY(-3px);
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive design */
+/* ===== RESPONSIVE ===== */
+@media (max-width: 1199px) {
+    .travel-steps-tabs {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+
 @media (max-width: 991px) {
     .travel-plan-section {
-        padding: 90px 0;
+        padding: 80px 0;
     }
-    
+
     .plan-title {
         font-size: 2.5rem;
     }
-    
-    .travel-plan-steps {
+
+    .travel-steps-tabs {
+        flex-direction: column;
+        width: 100%;
+        max-width: 500px;
+    }
+
+    .travel-step-tab {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .card-header {
+        flex-direction: column;
         padding: 30px;
     }
-    
-    .timeline-points-wrapper {
-        justify-content: space-around;
+
+    .header-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
     }
-    
-    .point-number {
-        width: 50px;
-        height: 50px;
-        font-size: 1.3rem;
-    }
-    
-    .travel-plan-features {
-        flex-wrap: wrap;
-    }
-    
-    .plan-feature {
-        flex: 0 0 calc(50% - 15px);
+
+    .card-body {
+        padding: 30px;
     }
 }
 
 @media (max-width: 767px) {
-    .travel-plan-section {
-        padding: 70px 0;
-    }
-    
     .plan-title {
         font-size: 2rem;
     }
-    
-    .plan-subtitle {
-        font-size: 1rem;
+
+    .card-header {
+        padding: 25px 20px;
     }
-    
-    .timeline-points-wrapper {
-        justify-content: flex-start;
-        overflow-x: auto;
-        padding-bottom: 15px;
-        gap: 40px;
-    }
-    
-    .timeline-point {
-        width: auto;
-        flex: 0 0 auto;
-    }
-    
-    .timeline-track {
-        left: 30px;
-        right: 30px;
-    }
-    
-    .step-icon {
-        width: 60px;
-        height: 60px;
-        min-width: 60px;
-        font-size: 1.8rem;
-    }
-    
-    .step-title {
+
+    .header-text h3 {
         font-size: 1.5rem;
     }
-    
-    .step-description {
-        font-size: 1rem;
-    }
-    
-    .step-navigation {
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    
-    .plan-feature {
-        flex: 0 0 100%;
-    }
-}
 
-@media (max-width: 575px) {
-    .travel-plan-section {
-        padding: 60px 0;
-    }
-    
-    .plan-badge {
-        padding: 8px 18px;
-        font-size: 0.8rem;
-    }
-    
-    .plan-title {
-        font-size: 1.8rem;
-    }
-    
-    .travel-plan-steps {
+    .card-body {
         padding: 20px;
     }
-    
-    .step-card {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+
+    .detail-item-new {
+        padding: 16px;
+        gap: 15px;
     }
-    
-    .step-icon {
-        margin-bottom: 20px;
-    }
-    
-    .step-cards {
-        min-height: 350px;
-    }
-    
-    .btn-prev, .btn-next, .btn-create-plan {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .btn-get-started, .btn-explore-more {
-        width: 100%;
-        justify-content: center;
-        padding: 14px 20px;
+
+    .item-number {
+        width: 35px;
+        height: 35px;
         font-size: 1rem;
+    }
+
+    .item-text {
+        font-size: 0.95rem;
+    }
+
+    .plan-cta {
+        flex-direction: column;
+    }
+
+    .plan-cta a {
+        width: 100%;
+        justify-content: center;
     }
 }

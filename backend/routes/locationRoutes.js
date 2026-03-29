@@ -6,6 +6,8 @@ const authMiddleware = require('../middlewares/autMiddleware');
 // 1. Import các middleware cache
 const cacheMiddleware = require('../middlewares/cacheMiddleware');
 const invalidateCacheMiddleware = require('../middlewares/invalidateCacheMiddleware');
+const { validate } = require('../middlewares/validationMiddleware');
+const { validateLocation } = require('../utils/validators/locationValidator');
 
 
 // 2. Định nghĩa một tiền tố duy nhất cho cache của location
@@ -24,6 +26,7 @@ router.post(
     '/', 
     authMiddleware.verifyToken, 
     authMiddleware.isAdmin, 
+    // validate(validateLocation),
     invalidateCacheMiddleware(LOCATION_CACHE_PREFIX), 
     LocationController.createLocation
 );
@@ -33,6 +36,7 @@ router.put(
     '/:id', 
     authMiddleware.verifyToken, 
     authMiddleware.isAdmin, 
+    // validate(validateLocation),
     invalidateCacheMiddleware([
         LOCATION_CACHE_PREFIX, 
         (req) => `${LOCATION_CACHE_PREFIX}/${req.params.id}`

@@ -123,11 +123,12 @@ const Footer = () => {
                                     </div>
                                     <ul className="footer-links">
                                         <li><Link to="/">Trang chủ</Link></li>
-                                        <li><Link to="/about">Giới thiệu</Link></li>
+                                        <li><Link to="/locations">Địa điểm</Link></li>
+                                        <li><Link to="/tours">Tours du lịch</Link></li>
                                         <li><Link to="/plan">Lập kế hoạch</Link></li>
-                                        <li><Link to="/blog">Blog</Link></li>
+                                        <li><Link to="/itinerary-planner">Gợi ý lịch trình thông minh</Link></li>
+                                        <li><Link to="/about">Giới thiệu</Link></li>
                                         <li><Link to="/contact">Liên hệ</Link></li>
-                                        <li><Link to="/faq">Câu hỏi thường gặp</Link></li>
                                     </ul>
                                 </div>
                             </div>

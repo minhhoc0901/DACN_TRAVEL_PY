@@ -20,7 +20,7 @@ class Chat {
     }
   }
 
-  static async getConversationByUserId(userId, messageLimit = 50) {
+static async getConversationByUserId(userId, messageLimit = 50) {
     try {
       const connection = await pool.getConnection();
       try {
@@ -29,14 +29,17 @@ class Chat {
         
         // Use string interpolation for the LIMIT value
         const query = `
-          SELECT id, user_id, message, is_bot, created_at 
-          FROM chat_messages 
-          WHERE user_id = ? 
-          ORDER BY created_at ASC 
-          LIMIT ${limit}
+            SELECT * FROM (
+            SELECT id, user_id, message, is_bot, created_at 
+            FROM chat_messages 
+            WHERE user_id = ? 
+            ORDER BY created_at DESC 
+            LIMIT ?
+          ) AS recent_messages
+          ORDER BY created_at ASC;
         `;
         
-        const [rows] = await connection.query(query, [userId]);
+        const [rows] = await connection.query(query, [userId, limit]);
         
         // Format the results for frontend consumption
         return rows.map(row => ({

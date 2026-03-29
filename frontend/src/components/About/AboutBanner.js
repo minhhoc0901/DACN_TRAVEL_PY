@@ -3,67 +3,65 @@ import '../../styles/About/AboutBanner.css';
 import bannerImg from '../../assets/images/background_BX_2.jpg';
 
 const AboutBanner = () => (
-  <section className="about-banner">
-    <div className="about-banner__overlay"></div>
+  <section className="pyab-banner">
+    <div className="pyab-overlay"></div>
     <div className="container position-relative">
-      <div className="about-banner__content">
+      <div className="pyab-content">
         <div className="row align-items-center">
-          <div className="col-lg-6 about-banner__text-content">
-            <div className="about-banner__badge">
-              <span className="badge-text">Khám phá Phú Yên</span>
+          <div className="col-lg-6 pyab-text-content">
+            <div className="pyab-badge">
+              <span className="pyab-badge-text">Khám phá Phú Yên</span>
               <i className="bi bi-compass-fill"></i>
             </div>
             
-            <h1 className="about-banner__title">
+            <h1 className="pyab-title">
               Trải Nghiệm Vẻ Đẹp 
-              <span className="highlight-text"> Xứ Nẫu</span>
+              <span className="pyab-highlight"> Xứ Nẫu</span>
             </h1>
 
-            <p className="about-banner__description">
-              Chào mừng bạn đến với Phú Yên Travel - nơi những hành trình đáng nhớ bắt đầu. 
-              Chúng tôi tự hào mang đến cho bạn những trải nghiệm du lịch độc đáo và đáng nhớ nhất.
+            <p className="pyab-description">
+              Phú Yên - nơi thiên nhiên hào phóng ban tặng những bãi biển tuyệt đẹp, 
+              những di tích lịch sử giàu giá trị văn hóa, và ẩm thực đặc sắc. 
+              Hãy cùng chúng tôi khám phá vùng đất kỳ diệu này!
             </p>
 
-            <div className="about-banner__stats">
-              <div className="stat-item">
-                <i className="bi bi-geo-alt"></i>
-                <div className="stat-content">
+            <div className="pyab-stats">
+              <div className="pyab-stat-item">
+                <div className="pyab-stat-card">
                   <h4>50+</h4>
                   <p>Điểm đến</p>
                 </div>
               </div>
-              <div className="stat-item">
-                <i className="bi bi-people"></i>
-                <div className="stat-content">
+              <div className="pyab-stat-item">
+                <div className="pyab-stat-card">
                   <h4>1000+</h4>
-                  <p>Khách hàng</p>
+                  <p>Du khách</p>
                 </div>
               </div>
-              <div className="stat-item">
-                <i className="bi bi-star"></i>
-                <div className="stat-content">
+              <div className="pyab-stat-item">
+                <div className="pyab-stat-card">
                   <h4>98%</h4>
                   <p>Đánh giá tốt</p>
                 </div>
               </div>
             </div>
 
-            <div className="about-banner__cta">
-              <a href="#about-mission" className="btn-explore">
+            <div className="pyab-cta">
+              <a href="#about-mission" className="pyab-btn-explore">
                 Khám phá ngay
                 <i className="bi bi-arrow-right"></i>
               </a>
             </div>
           </div>
 
-          <div className="col-lg-6 about-banner__image-content">
-            <div className="image-wrapper">
-              <img src={bannerImg} alt="Phú Yên cảnh đẹp" className="main-image" />
-              <div className="floating-card card-1">
+          <div className="col-lg-6 pyab-image-content">
+            <div className="pyab-image-wrapper">
+              <img src={bannerImg} alt="Phú Yên cảnh đẹp" className="pyab-main-image" />
+              <div className="pyab-floating-card pyab-card-1">
                 <i className="bi bi-camera"></i>
                 <span>Điểm check-in tuyệt đẹp</span>
               </div>
-              <div className="floating-card card-2">
+              <div className="pyab-floating-card pyab-card-2">
                 <i className="bi bi-heart"></i>
                 <span>Trải nghiệm độc đáo</span>
               </div>
@@ -73,10 +71,10 @@ const AboutBanner = () => (
       </div>
     </div>
 
-    <div className="about-banner__shapes">
-      <div className="shape shape-1"></div>
-      <div className="shape shape-2"></div>
-      <div className="shape shape-3"></div>
+    <div className="pyab-shapes">
+      <div className="pyab-shape pyab-shape-1"></div>
+      <div className="pyab-shape pyab-shape-2"></div>
+      <div className="pyab-shape pyab-shape-3"></div>
     </div>
   </section>
 );

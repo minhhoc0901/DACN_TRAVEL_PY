@@ -32,7 +32,7 @@ const ItineraryPlanner = () => {
     return (
         <div className="itinerary-planner">
             <div className="planner-sidebar">
-                <h1>Hành Trình Thông Minh</h1>
+                <h1>Gợi ý hành trình du lịch</h1>
                 <p>Tự tạo lịch trình du lịch cho riêng bạn chỉ trong vài giây!</p>
                 <ItineraryForm onSubmit={handleSubmit} isLoading={isLoading} />
             </div>

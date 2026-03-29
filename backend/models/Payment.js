@@ -26,9 +26,29 @@ class Payment {
   static async findByTxnRef(txnRef) {
     try {
       const [rows] = await pool.query(
-        `SELECT * FROM payments WHERE vnp_TxnRef = ? LIMIT 1`,
+        `SELECT 
+          p.id,
+          p.booking_id,
+          p.vnp_TxnRef,
+          p.amount,
+          p.payment_status,
+          p.payment_method,
+          p.vnp_TransactionNo,
+          p.vnp_ResponseCode,
+          b.user_id  
+        FROM payments p
+        JOIN bookings b ON p.booking_id = b.id  
+        WHERE p.vnp_TxnRef = ?
+        LIMIT 1`,
         [txnRef]
       );
+
+      if (rows.length === 0) {
+        console.log('[Payment][findByTxnRef] Payment not found:', txnRef);
+        return null;
+      }
+
+      console.log('[Payment][findByTxnRef] Found payment:', rows[0]);
       return rows[0];
     } catch (error) {
       console.error('[Payment][findByTxnRef] Error:', error);
@@ -235,6 +255,26 @@ class Payment {
       console.error('[Payment][getTotalStats] Error:', error);
       throw error;
     }
+  }
+
+  /**
+   * TẠO PAYMENT CHO CREDIT WALLET
+   */
+  static async createCreditPayment(bookingId, txnRef, amount) {
+      try {
+          const [result] = await pool.query(
+              `INSERT INTO payments 
+                (booking_id, vnp_TxnRef, amount, payment_method, payment_status, payment_date, updated_at)
+                VALUES (?, ?, ?, 'credit', 'success', NOW(), NOW())`,
+              [bookingId, txnRef, amount]
+          );
+          
+          console.log('[Payment][createCreditPayment] Created payment ID:', result.insertId);
+          return result.insertId;
+      } catch (error) {
+          console.error('[Payment][createCreditPayment] Error:', error);
+          throw error;
+      }
   }
 }
 

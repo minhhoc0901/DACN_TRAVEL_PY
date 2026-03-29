@@ -2,95 +2,119 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/HomePageCSS/HeroSection.css';
 
-// Import ảnh
-import bg1 from '../../assets/images/background_PY_1.jpg';
-import bg2 from '../../assets/images/background_BX_2.jpg';
-import bg3 from '../../assets/images/background_GDD_3.jpg';
-import bg4 from '../../assets/images/background_MD_4.jpg';
+// Import images
+import heroImg1 from '../../assets/images/background_PY_1.jpg';
+import heroImg2 from '../../assets/images/background_BX_2.jpg';
+import heroImg3 from '../../assets/images/background_GDD_3.jpg';
 
 const HeroSection = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
-    
+
     const slides = [
         {
             id: 1,
-            image: bg1,
-            title: "PHÚ YÊN",
-            subtitle: "Xứ sở hoa vàng cỏ xanh"
+            image: heroImg1,
+            badge: 'KHÁM PHÁ PHÚ YÊN',
+            title: 'Thiên Đường Nghỉ Dưỡng',
+            subtitle: 'Biển xanh - Cát trắng - Nắng vàng',
+            description: 'Khám phá vẻ đẹp hoang sơ của vùng đất Phú Yên với những bãi biển tuyệt đẹp, ẩm thực phong phú và con người thân thiện.'
         },
         {
             id: 2,
-            image: bg2,
-            title: "GÀNH ĐÁ ĐĨA",
-            subtitle: "Kỳ quan thiên nhiên độc đáo"
+            image: heroImg2,
+            badge: 'BÃI XÉP NỔI TIẾNG',
+            title: 'Bãi Biển Hoang Sơ',
+            subtitle: 'Nơi tôi thấy hoa vàng trên cỏ xanh',
+            description: 'Trải nghiệm không gian yên bình tại bãi biển đẹp nhất Phú Yên, nơi lý tưởng để thư giãn và tận hưởng thiên nhiên.'
         },
         {
             id: 3,
-            image: bg3,
-            title: "BÃI XÉP",
-            subtitle: "Thiên đường nghỉ dưỡng"
-        },
-        {
-            id: 4,
-            image: bg4,
-            title: "MŨI ĐIỆN",
-            subtitle: "Đón ánh bình minh đầu tiên"
-        },
+            image: heroImg3,
+            badge: 'DI TÍCH LỊCH SỬ',
+            title: 'Gành Đá Đĩa',
+            subtitle: 'Kỳ quan thiên nhiên độc đáo',
+            description: 'Chiêm ngưỡng những khối đá bazan hình lục giác xếp chồng lên nhau - công trình kiến tạo tuyệt vời của thiên nhiên.'
+        }
     ];
 
+    // Auto slide
     useEffect(() => {
-        // Tự động chuyển slide sau mỗi 5 giây
-        const interval = setInterval(() => {
-            setCurrentSlide(prevSlide => (prevSlide + 1) % slides.length);
+        const timer = setInterval(() => {
+            setCurrentSlide((prev) => (prev + 1) % slides.length);
         }, 5000);
-
-        // Clean up interval
-        return () => clearInterval(interval);
+        return () => clearInterval(timer);
     }, [slides.length]);
 
-    // Xử lý chuyển đến slide cụ thể
-    const goToSlide = (index) => {
-        setCurrentSlide(index);
+    // ✅ Hàm scroll xuống section tiếp theo
+    const scrollToNextSection = () => {
+        const heroHeight = document.querySelector('.hero-modern').offsetHeight;
+        window.scrollTo({
+            top: heroHeight,
+            behavior: 'smooth'
+        });
     };
 
     return (
-        <section className="hero-section">
-            {/* Slideshow Background */}
-            <div className="hero-slideshow">
+        <section className="hero-modern">
+            {/* Background Slider */}
+            <div className="hero-slider">
                 {slides.map((slide, index) => (
-                    <div 
+                    <div
                         key={slide.id}
                         className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-                        style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${slide.image})` }}
+                        style={{ backgroundImage: `url(${slide.image})` }}
+                    >
+                        <div className="hero-overlay"></div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Content */}
+            <div className="hero-content">
+                <div className="container">
+                    <div className="hero-text-wrapper">
+                        <span className="hero-badge">{slides[currentSlide].badge}</span>
+                        <h1 className="hero-title">
+                            {slides[currentSlide].title}
+                        </h1>
+                        <p className="hero-subtitle">{slides[currentSlide].subtitle}</p>
+                        <p className="hero-description">{slides[currentSlide].description}</p>
+
+                        {/* Quick Actions */}
+                        <div className="hero-actions">
+                            <Link to="/tours" className="hero-btn hero-btn-outline">
+                                <i className="bi bi-ticket-perforated"></i>
+                                <span>Xem Tours</span>
+                            </Link>
+                            <Link to="/itinerary-planner" className="hero-btn hero-btn-secondary">
+                                <i className="bi bi-stars"></i>
+                                <span>Gợi ý lịch trình thông minh</span>
+                            </Link>
+                            <Link to="/locations" className="hero-btn hero-btn-outline">
+                                <i className="bi bi-map"></i>
+                                <span>Khám phá</span>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ✅ Slide Indicators - Di chuyển lên trên Scroll Indicator */}
+            <div className="hero-indicators">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        className={`indicator ${index === currentSlide ? 'active' : ''}`}
+                        onClick={() => setCurrentSlide(index)}
+                        aria-label={`Slide ${index + 1}`}
                     />
                 ))}
             </div>
 
-            {/* Hero Content */}
-            <div className="hero-content">
-                <h1 className="hero-title">{slides[currentSlide].title}</h1>
-                <p className="hero-subtitle">{slides[currentSlide].subtitle}</p>
-                <Link to="/locations" className="btn btn-secondary hero-btn">
-                    Khám phá ngay
-                </Link>
-                
-                {/* Dots Navigation */}
-                <div className="slide-dots">
-                    {slides.map((_, index) => (
-                        <span 
-                            key={index}
-                            className={`dot ${index === currentSlide ? 'active' : ''}`}
-                            onClick={() => goToSlide(index)}
-                        />
-                    ))}
-                </div>
-            </div>
-
-            {/* Wave divider */}
-            <div className="wave-divider">
-                <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                    <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" className="shape-fill"></path>
-                </svg>
+            {/* ✅ Scroll Indicator - Nằm dưới cùng */}
+            <div className="scroll-indicator" onClick={scrollToNextSection}>
+                <span>Khám phá thêm</span>
+                <i className="bi bi-chevron-down"></i>
             </div>
         </section>
     );

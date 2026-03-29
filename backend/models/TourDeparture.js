@@ -6,31 +6,13 @@ class TourDeparture {
      */
     static async listByTour(tourId) {
         const [rows] = await pool.query(
-            `SELECT id, tour_id, departure_date, capacity, slots_booked, status 
+            `SELECT id, tour_id, departure_date, end_date, capacity, slots_booked, status 
              FROM Tour_Departures WHERE tour_id = ? ORDER BY departure_date DESC`,
             [tourId]
         );
         return rows;
     }
 
-    /**
-     * Lấy các lịch khởi hành còn trống và đang mở bán (dành cho người dùng)
-     */
-    // static async listAvailableByTour(tourId) {
-    //     const [rows] = await pool.query(
-    //         `SELECT 
-    //             id, 
-    //             departure_date, 
-    //             capacity, 
-    //             slots_booked,
-    //             (capacity - slots_booked) AS slots_available 
-    //          FROM Tour_Departures 
-    //          WHERE tour_id = ? AND status = 'OPEN' AND (capacity - slots_booked) > 0 
-    //          ORDER BY departure_date ASC`,
-    //         [id]
-    //     );
-    //     return rows;
-    // }
 
     /**
      * Tìm một lịch khởi hành bằng ID
@@ -44,24 +26,70 @@ class TourDeparture {
     }
 
     /**
-     * Tạo một lịch khởi hành mới
+     * ✅ Tạo lịch khởi hành mới - TỰ ĐỘNG TÍNH END_DATE
      */
     static async create({ tour_id, departure_date, capacity, status = 'OPEN' }) {
-        const [result] = await pool.query(
-            `INSERT INTO Tour_Departures (tour_id, departure_date, capacity, status) VALUES (?, ?, ?, ?)`,
-            [tour_id, departure_date, capacity, status]
+        // ✅ Lấy duration từ Tours
+        const [tourRows] = await pool.query(
+            'SELECT duration FROM tours WHERE id = ?',
+            [tour_id]
         );
+
+        if (!tourRows || tourRows.length === 0) {
+            throw new Error('Tour không tồn tại');
+        }
+
+        const duration = tourRows[0].duration;
+        
+        // ✅ Tính end_date
+        let end_date = null;
+        if (duration) {
+            const days = parseInt(duration.split(' ')[0]) || 1;
+            const departureDate = new Date(departure_date);
+            const endDate = new Date(departureDate);
+            endDate.setDate(departureDate.getDate() + days - 1);
+            end_date = endDate.toISOString().split('T')[0];
+        }
+
+        // ✅ Insert với đầy đủ thông tin
+        const [result] = await pool.query(
+            `INSERT INTO Tour_Departures 
+             (tour_id, departure_date, duration, end_date, capacity, status) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [tour_id, departure_date, duration, end_date, capacity, status]
+        );
+        
         return this.findById(result.insertId);
     }
 
     /**
-     * Cập nhật thông tin một lịch khởi hành
+     * ✅ Cập nhật lịch khởi hành - TỰ ĐỘNG TÍNH LẠI END_DATE
      */
     static async update(id, { departure_date, capacity, status }) {
+        // ✅ Lấy duration từ bản ghi hiện tại
+        const current = await this.findById(id);
+        
+        if (!current) {
+            throw new Error('Lịch khởi hành không tồn tại');
+        }
+
+        // ✅ Tính lại end_date nếu departure_date thay đổi
+        let end_date = current.end_date;
+        if (departure_date && departure_date !== current.departure_date && current.duration) {
+            const days = parseInt(current.duration.split(' ')[0]) || 1;
+            const departureDate = new Date(departure_date);
+            const endDate = new Date(departureDate);
+            endDate.setDate(departureDate.getDate() + days - 1);
+            end_date = endDate.toISOString().split('T')[0];
+        }
+
         await pool.query(
-            `UPDATE Tour_Departures SET departure_date = ?, capacity = ?, status = ? WHERE id = ?`,
-            [departure_date, capacity, status, id]
+            `UPDATE Tour_Departures 
+             SET departure_date = ?, end_date = ?, capacity = ?, status = ? 
+             WHERE id = ?`,
+            [departure_date, end_date, capacity, status, id]
         );
+        
         return this.findById(id);
     }
 

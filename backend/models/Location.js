@@ -1,4 +1,3 @@
-
 const { pool } = require("../config/db");
 const path = require("path");
 const fs = require("fs");
@@ -183,6 +182,17 @@ async function createLocation(data) {
       }
     }
 
+    // ✅ 10. THÊM MỚI: Insert vào bảng LocationHotels
+    if (Array.isArray(data.hotel_ids) && data.hotel_ids.length > 0) {
+      const hotelValues = data.hotel_ids.map((hotelId) => [locationId, hotelId]);
+      if (hotelValues.length > 0) {
+        await connection.query(
+          `INSERT INTO LocationHotels (location_id, hotel_id) VALUES ?`,
+          [hotelValues]
+        );
+      }
+    }
+
     await connection.commit();
     return locationId;
   } catch (error) {
@@ -193,12 +203,12 @@ async function createLocation(data) {
   }
 }
 
-async function getNearbyLocations(locationId) {
+async function getNearbyHotels(locationId) {
   const query = `
-        SELECT l.id, l.name
-        FROM Locations l
-        JOIN NearbyLocations n ON l.id = n.nearby_location_id
-        WHERE n.location_id = ?;
+        SELECT h.id, h.name, h.address, h.latitude, h.longitude, h.rating, h.website
+        FROM LocationHotels lh
+        JOIN Hotels h ON lh.hotel_id = h.id
+        WHERE lh.location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
   return rows;
@@ -283,232 +293,116 @@ async function updateLocation(locationId, data) {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
-    console.log(`Starting transaction for location update ID: ${locationId}`);
+    console.log(`[updateLocation] Bắt đầu transaction cho địa điểm ID: ${locationId}`);
 
-    // Input validation
+    // 1. Input Validation
     if (!locationId || !data) {
-      throw new Error('Invalid input data');
+      throw new Error('Dữ liệu đầu vào không hợp lệ (thiếu locationId hoặc data)');
     }
 
-    // Parse data safely
+    // 2. Phân tích cú pháp dữ liệu một cách an toàn
+    // ✅ SỬA LỖI: Bổ sung experiences và cuisines vào đây
     const parsedData = {
       ...data,
       bestTimes: safeJSONParse(data.bestTimes, []),
       tips: safeJSONParse(data.tips, []),
       travelMethods: safeJSONParse(data.travelMethods, { fromTuyHoa: [], fromElsewhere: [] }),
       nearby: safeJSONParse(data.nearby, []),
-      experiences: safeJSONParse(data.experiences, []),
-      cuisines: safeJSONParse(data.cuisines, [])
+      experiences: safeJSONParse(data.experiences, []), // <-- THÊM DÒNG NÀY
+      cuisines: safeJSONParse(data.cuisines, []),       // <-- THÊM DÒNG NÀY
+      hotel_ids: safeJSONParse(data.hotel_ids, []),
     };
 
-    console.log('Updating base location info');
-    // Update base location info
+    // 3. Cập nhật bảng chính `Locations`
     await connection.execute(
       `UPDATE Locations 
        SET name = ?, type = ?, description = ?, latitude = ?, longitude = ?
        WHERE id = ?`,
       [
-        data.name, 
-        data.type, 
-        data.description || '', 
-        parseFloat(data.latitude) || 0, 
-        parseFloat(data.longitude) || 0, 
+        parsedData.name || '', 
+        parsedData.type || '', 
+        parsedData.description || '', 
+        parseFloat(parsedData.latitude) || 0, 
+        parseFloat(parsedData.longitude) || 0, 
         locationId
       ]
     );
 
-    console.log('Updating location details');
-    // Update location details - check if exists first
-    const [detailsCheck] = await connection.execute(
-      'SELECT location_id FROM LocationDetails WHERE location_id = ?',
-      [locationId]
-    );
-
+    // 4. Cập nhật hoặc Thêm mới (UPSERT) vào `LocationDetails`
+    const [detailsCheck] = await connection.execute('SELECT location_id FROM LocationDetails WHERE location_id = ?', [locationId]);
     if (detailsCheck.length > 0) {
       await connection.execute(
-        `UPDATE LocationDetails 
-         SET subtitle = ?, introduction = ?, 
-             why_visit_architecture_title = ?, 
-             why_visit_architecture_text = ?,
-             why_visit_culture = ?
-         WHERE location_id = ?`,
-        [
-          data.subtitle || '', 
-          data.introduction || '',
-          data.why_visit_architecture_title || '',
-          data.why_visit_architecture_text || '',
-          data.why_visit_culture || '',
-          locationId
-        ]
+        `UPDATE LocationDetails SET subtitle = ?, introduction = ?, why_visit_architecture_title = ?, why_visit_architecture_text = ?, why_visit_culture = ? WHERE location_id = ?`,
+        [parsedData.subtitle || '', parsedData.introduction || '', parsedData.why_visit_architecture_title || '', parsedData.why_visit_architecture_text || '', parsedData.why_visit_culture || '', locationId]
       );
     } else {
-      // Insert if not exists
       await connection.execute(
-        `INSERT INTO LocationDetails 
-         (location_id, subtitle, introduction, why_visit_architecture_title, 
-          why_visit_architecture_text, why_visit_culture)
-         VALUES (?, ?, ?, ?, ?, ?)`,
-        [
-          locationId,
-          data.subtitle || '', 
-          data.introduction || '',
-          data.why_visit_architecture_title || '',
-          data.why_visit_architecture_text || '',
-          data.why_visit_culture || '',
-        ]
+        `INSERT INTO LocationDetails (location_id, subtitle, introduction, why_visit_architecture_title, why_visit_architecture_text, why_visit_culture) VALUES (?, ?, ?, ?, ?, ?)`,
+        [locationId, parsedData.subtitle || '', parsedData.introduction || '', parsedData.why_visit_architecture_title || '', parsedData.why_visit_architecture_text || '', parsedData.why_visit_culture || '']
       );
     }
 
-    // Update travel info
-    const [travelInfoCheck] = await connection.execute(
-      'SELECT location_id FROM TravelInfo WHERE location_id = ?',
-      [locationId]
-    );
-
+    // 5. Cập nhật hoặc Thêm mới (UPSERT) vào `TravelInfo`
+    const [travelInfoCheck] = await connection.execute('SELECT location_id FROM TravelInfo WHERE location_id = ?', [locationId]);
     if (travelInfoCheck.length > 0) {
-      await connection.execute(
-        `UPDATE TravelInfo 
-         SET ticket_price = ?, tip = ?
-         WHERE location_id = ?`,
-        [data.ticket_price || '', data.tip || '', locationId]
-      );
+      await connection.execute(`UPDATE TravelInfo SET ticket_price = ?, tip = ? WHERE location_id = ?`, [parsedData.ticket_price || '', parsedData.tip || '', locationId]);
     } else {
-      await connection.execute(
-        `INSERT INTO TravelInfo (location_id, ticket_price, tip)
-         VALUES (?, ?, ?)`,
-        [locationId, data.ticket_price || '', data.tip || '']
-      );
+      await connection.execute(`INSERT INTO TravelInfo (location_id, ticket_price, tip) VALUES (?, ?, ?)`, [locationId, parsedData.ticket_price || '', parsedData.tip || '']);
     }
 
-    console.log('Updating best times');
-    // Update best times with error handling
-    await connection.execute('DELETE FROM BestTimes WHERE location_id = ?', [locationId]);
-    if (Array.isArray(parsedData.bestTimes)) {
-      for (const time of parsedData.bestTimes) {
-        if (time && typeof time === 'string') {
-          await connection.execute(
-            'INSERT INTO BestTimes (location_id, time_description) VALUES (?, ?)',
-            [locationId, time.trim()]
-          );
-        }
-      }
-    }
+    // 6. Cập nhật các bảng liên quan (theo mô hình Xóa và Thêm lại)
+    const relatedTables = {
+      'BestTimes': { data: parsedData.bestTimes, columns: ['location_id', 'time_description'] },
+      'Tips': { data: parsedData.tips, columns: ['location_id', 'description'] },
+      'TravelMethods': { data: parsedData.travelMethods, isObject: true },
+      'Experiences': { data: parsedData.experiences, columns: ['location_id', 'description'], nestedField: 'text' },
+      'Cuisines': { data: parsedData.cuisines, columns: ['location_id', 'description'], nestedField: 'text' },
+      'NearbyLocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
+      'LocationHotels': { data: parsedData.hotel_ids, columns: ['location_id', 'hotel_id'] }
+    };
 
-    console.log('Updating travel methods');
-    // Update travel methods with validation
-    await connection.execute('DELETE FROM TravelMethods WHERE location_id = ?', [locationId]);
-    const { fromTuyHoa = [], fromElsewhere = [] } = parsedData.travelMethods;
-    
-    for (const method of fromTuyHoa) {
-      if (method && typeof method === 'string') {
-        await connection.execute(
-          'INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)',
-          [locationId, 'fromTuyHoa', method.trim()]
-        );
-      }
-    }
-    
-    for (const method of fromElsewhere) {
-      if (method && typeof method === 'string') {
-        await connection.execute(
-          'INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)',
-          [locationId, 'fromElsewhere', method.trim()]
-        );
-      }
-    }
+    for (const [tableName, config] of Object.entries(relatedTables)) {
+      await connection.execute(`DELETE FROM ${tableName} WHERE location_id = ?`, [locationId]);
 
-    console.log('Updating tips');
-    // Update tips with validation
-    await connection.execute('DELETE FROM Tips WHERE location_id = ?', [locationId]);
-    if (Array.isArray(parsedData.tips)) {
-      for (const tip of parsedData.tips) {
-        if (tip && typeof tip === 'string') {
-          await connection.execute(
-            'INSERT INTO Tips (location_id, description) VALUES (?, ?)',
-            [locationId, tip.trim()]
-          );
-        }
-      }
-    }
-
-    console.log('Updating nearby locations');
-    // Update nearby with validation
-    await connection.execute('DELETE FROM NearbyLocations WHERE location_id = ?', [locationId]);
-    if (Array.isArray(parsedData.nearby)) {
-      for (const nearbyId of parsedData.nearby) {
-        if (nearbyId) {
-          // Verify nearby location exists
-          const [rows] = await connection.execute(
-            'SELECT id FROM Locations WHERE id = ?',
-            [nearbyId]
-          );
-          
-          if (rows.length > 0 && Number(nearbyId) !== Number(locationId)) {
-            await connection.execute(
-              'INSERT INTO NearbyLocations (location_id, nearby_location_id) VALUES (?, ?)',
-              [locationId, nearbyId]
-            );
+      if (config.isObject) { // Xử lý riêng cho TravelMethods
+        const { fromTuyHoa = [], fromElsewhere = [] } = config.data;
+        if (Array.isArray(fromTuyHoa)) {
+          for (const method of fromTuyHoa) {
+            if (method && typeof method === 'string' && method.trim()) {
+              await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromTuyHoa', method.trim()]);
+            }
           }
         }
-      }
-    }
-
-    console.log('Updating experiences');
-    // Update experiences
-    await connection.execute('DELETE FROM Experiences WHERE location_id = ?', [locationId]);
-    if (Array.isArray(parsedData.experiences)) {
-      for (const exp of parsedData.experiences) {
-        if (exp && exp.text) {
-          const [result] = await connection.execute(
-            'INSERT INTO Experiences (location_id, description) VALUES (?, ?)',
-            [locationId, exp.text.trim()]
-          );
-          
-          // If there's a stored image URL and no new image file
-          if (exp.imageUrl && !exp.image) {
-            // We need to store the reference to maintain the image relationship
-            const experienceId = result.insertId;
-            
-            // Extract the image type and existing reference ID if available
-            // Format might be like: /uploads/locations/1/1-exp-1.jpg
-            // We don't create a new image record here since the image itself is unchanged
-            // That's handled separately when new images are uploaded
+        if (Array.isArray(fromElsewhere)) {
+          for (const method of fromElsewhere) {
+            if (method && typeof method === 'string' && method.trim()) {
+              await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromElsewhere', method.trim()]);
+            }
           }
         }
-      }
-    }
-
-    console.log('Updating cuisines');
-    // Update cuisines
-    await connection.execute('DELETE FROM Cuisines WHERE location_id = ?', [locationId]);
-    if (Array.isArray(parsedData.cuisines)) {
-      for (const cuisine of parsedData.cuisines) {
-        if (cuisine && cuisine.text) {
-          const [result] = await connection.execute(
-            'INSERT INTO Cuisines (location_id, description) VALUES (?, ?)',
-            [locationId, cuisine.text.trim()]
-          );
-          
-          // Similar to experiences, handle image references if needed
-          if (cuisine.imageUrl && !cuisine.image) {
-            const cuisineId = result.insertId;
-            // Reference handling similar to experiences
-          }
+      } else if (Array.isArray(config.data) && config.data.length > 0) {
+        const values = config.data
+          .map(item => config.nestedField ? item[config.nestedField] : item)
+          .filter(item => item && (typeof item !== 'string' || item.trim()))
+          .map(item => [locationId, item]);
+        
+        if (values.length > 0) {
+          await connection.query(`INSERT INTO ${tableName} (${config.columns.join(', ')}) VALUES ?`, [values]);
         }
       }
     }
 
     await connection.commit();
-    console.log(`Transaction committed for location update ID: ${locationId}`);
+    console.log(`[updateLocation] Giao dịch thành công cho địa điểm ID: ${locationId}`);
     return true;
+
   } catch (error) {
     await connection.rollback();
-    console.error('Update location error details:', {
-      locationId,
+    console.error(`[updateLocation] Lỗi giao dịch cho địa điểm ID: ${locationId}`, {
       error: error.message,
       stack: error.stack
     });
-    throw error;
+    throw error; // Ném lỗi để controller có thể bắt và xử lý
   } finally {
     connection.release();
   }
@@ -798,7 +692,7 @@ async function getNearbyLocations(locationId) {
  */
 async function getNearbyHotels(locationId) {
   const query = `
-        SELECT h.id, h.name, h.address, h.latitude, h.longitude
+        SELECT h.id, h.name, h.address, h.latitude, h.longitude, h.rating, h.website
         FROM LocationHotels lh
         JOIN Hotels h ON lh.hotel_id = h.id
         WHERE lh.location_id = ?;

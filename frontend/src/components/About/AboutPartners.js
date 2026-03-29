@@ -1,54 +1,61 @@
 import React from "react";
 import '../../styles/About/AboutPartners.css';
-import doitac_1 from '../../assets/images/doitac_1.png';
-import doitac_2 from '../../assets/images/doitac_2.jpg';
 
 const partners = [
   {
-    name: "TravelCo",
-    logo: doitac_1,
-    description: "Đối tác du lịch hàng đầu khu vực miền Trung",
-    website: "#"
+    name: "VNPay",
+    logo: "https://vnpay.vn/s1/statics.vnpay.vn/2023/6/0oxhzjmxbksr1686814746087.png",
+    description: "Đối tác thanh toán",
+    website: "https://vnpay.vn"
   },
   {
-    name: "HotelX",
-    logo: doitac_2,
-    description: "Chuỗi khách sạn cao cấp tại Phú Yên",
-    website: "#"
+    name: "Vietcombank",
+    logo: "https://www.vietcombank.com.vn/images/logo.png",
+    description: "Ngân hàng hợp tác",
+    website: "https://vietcombank.com.vn"
+  },
+  {
+    name: "Agoda",
+    logo: "https://logos-world.net/wp-content/uploads/2021/02/Agoda-Logo.png",
+    description: "Đặt phòng khách sạn",
+    website: "https://agoda.com"
   }
 ];
 
 const AboutPartners = () => (
-  <section className="aboutpartners-modern-section">
+  <section className="pyap-section">
     <div className="container">
-      <div className="aboutpartners-header text-center">
-        <span className="aboutpartners-badge">Đối tác chiến lược</span>
-        <h2 className="aboutpartners-title">
-          Cùng đồng hành phát triển <span className="highlight">Phú Yên Travel</span>
-        </h2>
-        <p className="aboutpartners-desc">
-          Chúng tôi tự hào hợp tác với những thương hiệu uy tín để mang đến trải nghiệm tốt nhất cho khách hàng.
+      {/* Header */}
+      <div className="pyap-header">
+        <span className="pyap-badge">Đối tác tin cậy</span>
+        <h2 className="pyap-title">Đối Tác Của Chúng Tôi</h2>
+        <p className="pyap-subtitle">
+          Chúng tôi hợp tác với những đơn vị uy tín hàng đầu để mang đến dịch vụ tốt nhất
         </p>
       </div>
-      <div className="aboutpartners-grid">
-        {partners.map((partner, idx) => (
-          <div className="aboutpartners-card" key={idx}>
-            <div className="aboutpartners-logo-wrap">
-              <img src={partner.logo} alt={partner.name} className="aboutpartners-logo" />
+
+      {/* Partners Grid */}
+      <div className="pyap-partners-grid">
+        {partners.map((partner, index) => (
+          <div key={index} className="pyap-partner-card">
+            <div className="pyap-partner-logo">
+              <img src={partner.logo} alt={partner.name} />
             </div>
-            <div className="aboutpartners-info">
-              <h3 className="aboutpartners-name">{partner.name}</h3>
-              <p className="aboutpartners-description">{partner.description}</p>
-              <a href={partner.website} className="aboutpartners-link" target="_blank" rel="noopener noreferrer">
+            <div className="pyap-partner-info">
+              <h3>{partner.name}</h3>
+              <p>{partner.description}</p>
+              <a href={partner.website} target="_blank" rel="noopener noreferrer" className="pyap-partner-link">
                 Xem website <i className="bi bi-box-arrow-up-right"></i>
               </a>
             </div>
           </div>
         ))}
       </div>
-      <div className="aboutpartners-cta text-center">
+
+      {/* CTA */}
+      <div className="pyap-cta">
         <h3>Bạn muốn trở thành đối tác?</h3>
-        <a href="#contact" className="aboutpartners-btn">
+        <a href="#contact" className="pyap-btn">
           Liên hệ hợp tác <i className="bi bi-arrow-right"></i>
         </a>
       </div>

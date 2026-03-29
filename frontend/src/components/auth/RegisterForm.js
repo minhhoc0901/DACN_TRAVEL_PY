@@ -1,12 +1,28 @@
-import React, { useState, useEffect } from 'react'; // Thêm useEffect
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/auth/AuthForm.css';
-import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
+import '../../styles/auth/ValidationStyles.css'; // ✅ THÊM CSS VALIDATION
+import { useAuth } from '../../contexts/AuthContext';
+
+// ✅ IMPORT VALIDATION UTILITIES
+import { 
+    validateUsername,
+    validateEmail,
+    validatePhone,
+    validatePassword,
+    validateFullName,
+    validateOTP,
+    validateConfirmPassword,
+    calculatePasswordStrength
+} from '../../utils/validationUtils';
+
+import { extractValidationErrors } from '../../utils/formHelpers';
 
 const RegisterForm = () => {
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth(); // Lấy isAuthenticated từ context
+    const { isAuthenticated } = useAuth();
+    
     const [formData, setFormData] = useState({
         username: '',
         fullName: '',
@@ -28,35 +44,117 @@ const RegisterForm = () => {
         confirm: false
     });
 
-    // Thêm useEffect để kiểm tra và chuyển hướng nếu đã đăng nhập
+    // ✅ THÊM VALIDATION ERRORS STATE
+    const [validationErrors, setValidationErrors] = useState({});
+    const [touched, setTouched] = useState({});
+
+    // ✅ THÊM PASSWORD STRENGTH
+    const [passwordStrength, setPasswordStrength] = useState({
+        strength: 'weak',
+        score: 0,
+        color: '#ff4444',
+        suggestions: []
+    });
+
     useEffect(() => {
         if (isAuthenticated) {
-            navigate('/', { replace: true }); // Chuyển hướng về trang chủ
+            navigate('/', { replace: true });
         }
     }, [isAuthenticated, navigate]);
 
+    // ✅ VALIDATE FIELD KHI BLUR
+    const handleBlur = (fieldName) => {
+        setTouched(prev => ({ ...prev, [fieldName]: true }));
+        
+        let error = '';
+        switch (fieldName) {
+            case 'username':
+                error = validateUsername(formData.username);
+                break;
+            case 'fullName':
+                error = validateFullName(formData.fullName);
+                break;
+            case 'email':
+                error = validateEmail(formData.email);
+                break;
+            case 'phone':
+                error = validatePhone(formData.phone);
+                break;
+            case 'password':
+                error = validatePassword(formData.password);
+                break;
+            case 'confirmPassword':
+                error = validateConfirmPassword(formData.password, formData.confirmPassword);
+                break;
+            case 'otp':
+                error = validateOTP(formData.otp);
+                break;
+            default:
+                break;
+        }
+        
+        setValidationErrors(prev => ({ ...prev, [fieldName]: error }));
+    };
+
+    // ✅ UPDATE PASSWORD STRENGTH REALTIME
+    useEffect(() => {
+        if (formData.password) {
+            const strength = calculatePasswordStrength(formData.password);
+            setPasswordStrength(strength);
+        } else {
+            setPasswordStrength({
+                strength: 'weak',
+                score: 0,
+                color: '#ff4444',
+                suggestions: []
+            });
+        }
+    }, [formData.password]);
+
+    // ✅ CLEAR ERROR WHEN USER TYPES
+    const handleInputChange = (field, value) => {
+        setFormData(prev => ({ ...prev, [field]: value }));
+        
+        // Clear error when user types
+        if (touched[field]) {
+            setValidationErrors(prev => ({ ...prev, [field]: '' }));
+        }
+        setError('');
+    };
+
     const validateForm = () => {
-        if (!formData.username) {
-            setError('Vui lòng nhập tên đăng nhập');
-            return false;
-        }
-        if (!formData.email) {
-            setError('Vui lòng nhập email');
-            return false;
-        }
-        if (!formData.password) {
-            setError('Vui lòng nhập mật khẩu');
-            return false;
-        }
-        if (formData.password !== formData.confirmPassword) {
-            setError('Mật khẩu xác nhận không khớp');
-            return false;
-        }
+        const errors = {};
+        
+        // Validate all fields
+        errors.username = validateUsername(formData.username);
+        errors.fullName = validateFullName(formData.fullName);
+        errors.email = validateEmail(formData.email);
+        errors.phone = validatePhone(formData.phone);
+        errors.password = validatePassword(formData.password);
+        errors.confirmPassword = validateConfirmPassword(formData.password, formData.confirmPassword);
+        errors.otp = validateOTP(formData.otp);
+        
+        // Check terms
         if (!formData.agreeTerms) {
             setError('Vui lòng đồng ý với điều khoản và điều kiện');
             return false;
         }
-        return true;
+        
+        // Filter out empty errors
+        const filteredErrors = Object.fromEntries(
+            Object.entries(errors).filter(([_, v]) => v !== '')
+        );
+        
+        setValidationErrors(filteredErrors);
+        
+        // Mark all fields as touched
+        const allTouched = {};
+        Object.keys(formData).forEach(key => {
+            allTouched[key] = true;
+        });
+        setTouched(allTouched);
+        
+        return Object.keys(filteredErrors).length === 0;
     };
 
     const startCountdown = () => {
@@ -74,13 +172,16 @@ const RegisterForm = () => {
 
     const handleSendOTP = async () => {
         try {
-            if (!formData.email) {
-                setError('Vui lòng nhập email');
+            // Validate email first
+            const emailError = validateEmail(formData.email);
+            if (emailError) {
+                setValidationErrors(prev => ({ ...prev, email: emailError }));
+                setTouched(prev => ({ ...prev, email: true }));
                 return;
             }
 
-            setSendingOTP(true); // Set loading state
-            startCountdown(); // Start countdown immediately
+            setSendingOTP(true);
+            startCountdown();
 
             const response = await axios.post('http://localhost:5000/api/auth/send-otp', {
                 email: formData.email
@@ -91,7 +192,7 @@ const RegisterForm = () => {
             }
         } catch (error) {
             setError(error.response?.data?.message || 'Không thể gửi mã OTP');
-            setCountdown(0); // Reset countdown if error
+            setCountdown(0);
         } finally {
             setSendingOTP(false);
         }
@@ -101,19 +202,49 @@ const RegisterForm = () => {
         e.preventDefault();
         setError('');
 
-        if (!validateForm()) return;
+        if (!validateForm()) {
+            setError('Vui lòng kiểm tra lại thông tin');
+            return;
+        }
 
         try {
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/auth/register', {
-                ...formData,
-                otp: formData.otp
+            
+            const payload = {
+                username: formData.username.trim(),
+                fullName: formData.fullName.trim() || formData.username.trim(),
+                email: formData.email.trim(),
+                phone: formData.phone.trim(),
+                password: formData.password,
+                otp: formData.otp.trim()
+            };
+
+            console.log('[REGISTER] Sending payload:', {
+                ...payload,
+                password: '***hidden***'
             });
+
+            const response = await axios.post('http://localhost:5000/api/auth/register', payload);
+
+            console.log('[REGISTER] Response:', response.data);
 
             if (response.data.success) {
                 setShowSuccessModal(true);
             }
         } catch (error) {
+            console.error('[REGISTER] Error:', error.response?.data || error.message);
+            
+            // ✅ HANDLE BACKEND VALIDATION ERRORS
+            if (error.response?.data?.errors) {
+                const backendErrors = extractValidationErrors(error);
+                setValidationErrors(backendErrors);
+                
+                // Mark affected fields as touched
+                Object.keys(backendErrors).forEach(field => {
+                    setTouched(prev => ({ ...prev, [field]: true }));
+                });
+            }
+            
             setError(error.response?.data?.message || 'Có lỗi xảy ra khi đăng ký');
         } finally {
             setLoading(false);
@@ -154,54 +285,75 @@ const RegisterForm = () => {
                     <form onSubmit={handleSubmit} className="auth-form">
                         {error && <div className="alert alert-danger">{error}</div>}
                         
-                        <div className="form-group">
+                        {/* USERNAME */}
+                        <div className="auth-form-group">
                             <label htmlFor="username">Tên đăng nhập</label>
-                            <div className="input-group">
+                            <div className="auth-input-group">
                                 <i className="bi bi-person"></i>
                                 <input
                                     type="text"
                                     id="username"
                                     placeholder="Nhập tên đăng nhập"
                                     value={formData.username}
-                                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                                    onChange={(e) => handleInputChange('username', e.target.value)}
+                                    onBlur={() => handleBlur('username')}
+                                    className={touched.username && validationErrors.username ? 'error' : ''}
                                     required
                                 />
                             </div>
+                            {touched.username && validationErrors.username && (
+                                <span className="error-message">
+                                    <i className="bi bi-exclamation-circle"></i>
+                                    {validationErrors.username}
+                                </span>
+                            )}
                         </div>
 
-                        <div className="form-group">
+                        {/* FULL NAME */}
+                        <div className="auth-form-group">
                             <label htmlFor="fullName">Họ và tên</label>
-                            <div className="input-group">
+                            <div className="auth-input-group">
                                 <i className="bi bi-person"></i>
                                 <input
                                     type="text"
                                     id="fullName"
                                     placeholder="Nhập họ và tên"
                                     value={formData.fullName}
-                                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                                    onBlur={() => handleBlur('fullName')}
+                                    className={touched.fullName && validationErrors.fullName ? 'error' : ''}
                                     required
                                 />
                             </div>
+                            {touched.fullName && validationErrors.fullName && (
+                                <span className="error-message">
+                                    <i className="bi bi-exclamation-circle"></i>
+                                    {validationErrors.fullName}
+                                </span>
+                            )}
                         </div>
 
+                        {/* EMAIL & PHONE ROW */}
                         <div className="form-row">
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label htmlFor="email">Email</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-envelope"></i>
                                     <input
                                         type="email"
                                         id="email"
                                         placeholder="Nhập email"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        onChange={(e) => handleInputChange('email', e.target.value)}
+                                        onBlur={() => handleBlur('email')}
+                                        className={touched.email && validationErrors.email ? 'error' : ''}
                                         required
                                     />
                                     <button
                                         type="button"
                                         className={`btn-send-otp ${sendingOTP ? 'loading' : ''}`}
                                         onClick={handleSendOTP}
-                                        disabled={countdown > 0 || sendingOTP}
+                                        disabled={countdown > 0 || sendingOTP || !!validationErrors.email}
                                     >
                                         {sendingOTP ? (
                                             <i className="bi bi-hourglass-split spinning"></i>
@@ -212,49 +364,76 @@ const RegisterForm = () => {
                                         )}
                                     </button>
                                 </div>
+                                {touched.email && validationErrors.email && (
+                                    <span className="error-message">
+                                        <i className="bi bi-exclamation-circle"></i>
+                                        {validationErrors.email}
+                                    </span>
+                                )}
                             </div>
 
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label htmlFor="phone">Số điện thoại</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-phone"></i>
                                     <input
                                         type="tel"
                                         id="phone"
                                         placeholder="Nhập số điện thoại"
                                         value={formData.phone}
-                                        onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                                        onBlur={() => handleBlur('phone')}
+                                        className={touched.phone && validationErrors.phone ? 'error' : ''}
                                         required
                                     />
                                 </div>
+                                {touched.phone && validationErrors.phone && (
+                                    <span className="error-message">
+                                        <i className="bi bi-exclamation-circle"></i>
+                                        {validationErrors.phone}
+                                    </span>
+                                )}
                             </div>
                         </div>
 
-                        <div className="form-group">
+                        {/* OTP */}
+                        <div className="auth-form-group">
                             <label htmlFor="otp">Mã xác thực</label>
-                            <div className="input-group">
+                            <div className="auth-input-group">
                                 <i className="bi bi-shield-lock"></i>
                                 <input
                                     type="text"
                                     id="otp"
                                     placeholder="Nhập mã OTP Email"
                                     value={formData.otp}
-                                    onChange={(e) => setFormData({...formData, otp: e.target.value})}
+                                    onChange={(e) => handleInputChange('otp', e.target.value)}
+                                    onBlur={() => handleBlur('otp')}
+                                    className={touched.otp && validationErrors.otp ? 'error' : ''}
+                                    maxLength="6"
                                     required
                                 />
                             </div>
+                            {touched.otp && validationErrors.otp && (
+                                <span className="error-message">
+                                    <i className="bi bi-exclamation-circle"></i>
+                                    {validationErrors.otp}
+                                </span>
+                            )}
                         </div>
 
-                        <div className="form-group">
+                        {/* PASSWORD */}
+                        <div className="auth-form-group">
                             <label htmlFor="password">Mật khẩu</label>
-                            <div className="input-group">
+                            <div className="auth-input-group">
                                 <i className="bi bi-lock"></i>
                                 <input
                                     type={showPasswords.password ? "text" : "password"}
                                     id="password"
                                     placeholder="Tạo mật khẩu"
                                     value={formData.password}
-                                    onChange={(e) => setFormData({...formData, password: e.target.value})}
+                                    onChange={(e) => handleInputChange('password', e.target.value)}
+                                    onBlur={() => handleBlur('password')}
+                                    className={touched.password && validationErrors.password ? 'error' : ''}
                                     required
                                 />
                                 <button
@@ -265,18 +444,58 @@ const RegisterForm = () => {
                                     <i className={`bi bi-eye${showPasswords.password ? '-slash' : ''}`}></i>
                                 </button>
                             </div>
+                            {touched.password && validationErrors.password && (
+                                <span className="error-message">
+                                    <i className="bi bi-exclamation-circle"></i>
+                                    {validationErrors.password}
+                                </span>
+                            )}
+                            
+                            {/* ✅ PASSWORD STRENGTH INDICATOR */}
+                            {formData.password && (
+                                <div className="password-strength-indicator">
+                                    <div className="password-strength-header">
+                                        <span className="strength-label">Độ mạnh:</span>
+                                        <span className={`strength-value ${passwordStrength.strength}`}>
+                                            {passwordStrength.strength === 'weak' ? 'Yếu' : 
+                                             passwordStrength.strength === 'medium' ? 'Trung bình' : 'Mạnh'}
+                                        </span>
+                                    </div>
+                                    <div className="strength-progress">
+                                        <div 
+                                            className="strength-progress-bar"
+                                            style={{
+                                                width: `${(passwordStrength.score / 6) * 100}%`,
+                                                backgroundColor: passwordStrength.color
+                                            }}
+                                        ></div>
+                                    </div>
+                                    {passwordStrength.suggestions.length > 0 && (
+                                        <div className="strength-suggestions">
+                                            <ul>
+                                                {passwordStrength.suggestions.map((suggestion, index) => (
+                                                    <li key={index}>{suggestion}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="form-group">
+                        {/* CONFIRM PASSWORD */}
+                        <div className="auth-form-group">
                             <label htmlFor="confirmPassword">Xác nhận mật khẩu</label>
-                            <div className="input-group">
+                            <div className="auth-input-group">
                                 <i className="bi bi-lock-fill"></i>
                                 <input
                                     type={showPasswords.confirm ? "text" : "password"}
                                     id="confirmPassword"
                                     placeholder="Nhập lại mật khẩu"
                                     value={formData.confirmPassword}
-                                    onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                    onBlur={() => handleBlur('confirmPassword')}
+                                    className={touched.confirmPassword && validationErrors.confirmPassword ? 'error' : ''}
                                     required
                                 />
                                 <button
@@ -287,19 +506,26 @@ const RegisterForm = () => {
                                     <i className={`bi bi-eye${showPasswords.confirm ? '-slash' : ''}`}></i>
                                 </button>
                             </div>
+                            {touched.confirmPassword && validationErrors.confirmPassword && (
+                                <span className="error-message">
+                                    <i className="bi bi-exclamation-circle"></i>
+                                    {validationErrors.confirmPassword}
+                                </span>
+                            )}
                         </div>
 
-                        <div className="form-group">
-                            <label className="checkbox-wrapper terms">
+                        {/* TERMS CHECKBOX */}
+                        <div className="auth-form-group">
+                            <label className="auth-checkbox-wrapper terms">
                                 <input
                                     type="checkbox"
                                     checked={formData.agreeTerms}
                                     onChange={(e) => setFormData({...formData, agreeTerms: e.target.checked})}
                                     required
                                 />
-                                <span className="checkbox-label">
+                                <span className="auth-checkbox-label">
                                     Tôi đồng ý với <Link to="/terms">Điều khoản</Link> và 
-                                    <Link to="/privacy">Chính sách bảo mật</Link>
+                                    <Link to="/privacy"> Chính sách bảo mật</Link>
                                 </span>
                             </label>
                         </div>

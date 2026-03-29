@@ -119,3 +119,4 @@ const EditTourModal = ({ show, onClose, formData, setFormData, onSubmit, isSubmi
 };
 
 export default EditTourModal;
+

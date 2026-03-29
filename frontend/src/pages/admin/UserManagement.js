@@ -55,10 +55,13 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="user-management">
-      <h2>Quản lý người dùng</h2>
+    <div className="admin-page-container">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Quản lý người dùng</h1>
+      </div>
+      
       {loading ? (
-        <div>Đang tải...</div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>Đang tải...</div>
       ) : (
         <UserList
           users={users}

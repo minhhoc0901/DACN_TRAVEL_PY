@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import LocationForm from './LocationForm';
 
-const EditLocationModal = ({ show, onClose, formData, setFormData, selectedLocation, onSubmit }) => {
+const EditLocationModal = ({ show, onClose, selectedLocation, onSubmit, availableLocations, availableHotels }) => {
+  const [formData, setFormData] = useState(null); 
+
   useEffect(() => {
     if (selectedLocation) {
-      // Create a complete form data object from the selected location
+      // Chuẩn bị dữ liệu form khi location được chọn thay đổi
       const formDataObj = {
         name: selectedLocation.title || '',
         type: selectedLocation.type || '',
@@ -18,83 +21,46 @@ const EditLocationModal = ({ show, onClose, formData, setFormData, selectedLocat
         why_visit_culture: selectedLocation.whyVisit?.culture || '',
         ticket_price: selectedLocation.travelInfo?.ticketPrice || '',
         tip: selectedLocation.travelInfo?.tip || '',
-        
-        // Handle arrays with proper fallback to empty arrays
-        bestTimes: Array.isArray(selectedLocation.bestTimes) && selectedLocation.bestTimes.length > 0 
-          ? selectedLocation.bestTimes 
-          : [''],
-        
-        // Handle travel methods object with proper structure
-        travelMethods: {
-          fromTuyHoa: Array.isArray(selectedLocation.travelMethods?.fromTuyHoa) && 
-                      selectedLocation.travelMethods.fromTuyHoa.length > 0
-            ? selectedLocation.travelMethods.fromTuyHoa 
-            : [''],
-          fromElsewhere: Array.isArray(selectedLocation.travelMethods?.fromElsewhere) && 
-                        selectedLocation.travelMethods.fromElsewhere.length > 0
-            ? selectedLocation.travelMethods.fromElsewhere 
-            : ['']
-        },
-        
-        // Handle experiences array with proper image URL retention
-        experiences: Array.isArray(selectedLocation.experiences) && selectedLocation.experiences.length > 0
-          ? selectedLocation.experiences.map(exp => ({
-              text: exp.text || '',
-              image: null, // New image file will be set here if user uploads one
-              imageUrl: exp.image // Store the existing image URL
-            }))
-          : [{ text: '', image: null }],
-        
-        // Handle cuisines array with proper image URL retention
-        cuisines: Array.isArray(selectedLocation.cuisine) && selectedLocation.cuisine.length > 0
-          ? selectedLocation.cuisine.map(cuisine => ({
-              text: cuisine.text || '',
-              image: null, // New image file will be set here if user uploads one
-              imageUrl: cuisine.image // Store the existing image URL
-            }))
-          : [{ text: '', image: null }],
-        
-        // Tips array with fallback
-        tips: Array.isArray(selectedLocation.tips) && selectedLocation.tips.length > 0
-          ? selectedLocation.tips 
-          : [''],
-        
-        // Nearby locations array with fallback
-        nearby: Array.isArray(selectedLocation.nearby) && selectedLocation.nearby.length > 0
-          ? selectedLocation.nearby.map(location => location.id || location) 
-          : [],
-        
-        // Image placeholders - will be filled with File objects if user uploads new images
-        images: {
-          introduction: null,
-          architecture: null
-        },
-        
-        // Store original image URLs for reference
-        originalImages: {
-          introduction: selectedLocation.introduction?.image || null,
-          architecture: selectedLocation.whyVisit?.architecture?.image || null
-        }
+        bestTimes: selectedLocation.bestTimes?.length ? selectedLocation.bestTimes : [''],
+        travelMethods: selectedLocation.travelMethods || { fromTuyHoa: [''], fromElsewhere: [''] },
+         experiences: selectedLocation.experiences?.length 
+            ? selectedLocation.experiences.map(e => ({ text: e.text, image: null, imageUrl: e.image })) 
+            : [{ text: '', image: null, imageUrl: null }],
+        cuisines: selectedLocation.cuisine?.length 
+            ? selectedLocation.cuisine.map(c => ({ text: c.text, image: null, imageUrl: c.image })) 
+            : [{ text: '', image: null, imageUrl: null }],
+        tips: selectedLocation.tips?.length ? selectedLocation.tips : [''],
+        nearby: selectedLocation.nearby?.length ? selectedLocation.nearby.map(loc => loc.id) : [],
+        hotel_ids: selectedLocation.nearbyHotels?.length ? selectedLocation.nearbyHotels.map(hotel => hotel.id) : [],
+        images: { introduction: null, architecture: null }
       };
-      
-      // Set the form data
       setFormData(formDataObj);
+    } else {
+      setFormData(null); // Reset khi không có location nào được chọn
     }
-  }, [selectedLocation, setFormData]);
-
+  }, [selectedLocation]);
+  
   if (!show) return null;
 
   return (
     <div className="modal-overlay">
-      <div className="modal-content">
+      <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">Chỉnh Sửa Địa Điểm</h2>
-        <LocationForm
-          formData={formData}
-          setFormData={setFormData}
-          onSubmit={onSubmit}
-          onCancel={onClose}
-          selectedLocation={selectedLocation}
-        />
+        {/* 2. Chỉ render LocationForm khi formData đã có dữ liệu */}
+        {formData ? (
+          <LocationForm
+            formData={formData}
+            setFormData={setFormData}
+            // onSubmit={(e) => onSubmit(e, formData)}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+            selectedLocation={selectedLocation}
+            availableLocations={availableLocations}
+            availableHotels={availableHotels}
+          />
+        ) : (
+          <div>Đang tải dữ liệu...</div> // Hoặc một spinner loading
+        )}
       </div>
     </div>
   );

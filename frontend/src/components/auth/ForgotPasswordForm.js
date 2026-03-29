@@ -150,9 +150,9 @@ const ForgotPasswordForm = () => {
 
                     {step === 1 && (
                         <div className="auth-form">
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label>Email</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-envelope"></i>
                                     <input
                                         type="email"
@@ -176,9 +176,9 @@ const ForgotPasswordForm = () => {
 
                     {step === 2 && (
                         <div className="auth-form">
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label>Mã xác thực</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-shield-lock"></i>
                                     <input
                                         type="text"
@@ -205,9 +205,9 @@ const ForgotPasswordForm = () => {
 
                     {step === 3 && (
                         <div className="auth-form">
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label>Mật khẩu mới</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-lock"></i>
                                     <input
                                         type={showPasswords.new ? "text" : "password"}
@@ -226,9 +226,9 @@ const ForgotPasswordForm = () => {
                                 </div>
                             </div>
 
-                            <div className="form-group">
+                            <div className="auth-form-group">
                                 <label>Xác nhận mật khẩu mới</label>
-                                <div className="input-group">
+                                <div className="auth-input-group">
                                     <i className="bi bi-lock"></i>
                                     <input
                                         type={showPasswords.confirm ? "text" : "password"}

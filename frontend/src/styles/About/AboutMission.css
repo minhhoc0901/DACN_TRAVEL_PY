@@ -1,116 +1,184 @@
-.mission-section {
-  padding: 80px 0;
-  background: #f8fafc;
-}
+/* ==================== ABOUT MISSION - PREFIX: pyam- ==================== */
 
-.mission-card {
-  padding: 40px 30px;
-  border-radius: 20px;
-  height: 100%;
-  transition: all 0.3s ease;
+.pyam-section {
+  padding: 100px 0;
+  background: #fff;
   position: relative;
   overflow: hidden;
 }
 
-.mission-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-  z-index: 1;
-}
-
-.mission-card.primary {
-  background: #0072bb;
-  color: white;
-}
-
-.mission-card.vision {
-  background: #00b4d8;
-  color: white;
-}
-
-.mission-card.values {
-  background: #90e0ef;
-  color: #0c4a6e;
-}
-
-.card-icon {
-  font-size: 2.5rem;
-  margin-bottom: 20px;
+.pyam-wrapper {
   position: relative;
-  z-index: 2;
 }
 
-.mission-card h3 {
+/* Mission Cards */
+.pyam-card {
+  background: #fff;
+  padding: 40px 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 2px solid #f0f0f0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pyam-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.pyam-card-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  font-size: 2.5rem;
+  transition: all 0.3s ease;
+}
+
+.pyam-primary .pyam-card-icon {
+  background: linear-gradient(135deg, #0072bb, #00b4d8);
+  color: white;
+}
+
+.pyam-vision .pyam-card-icon {
+  background: linear-gradient(135deg, #00b4d8, #48cae4);
+  color: white;
+}
+
+.pyam-values .pyam-card-icon {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+  color: white;
+}
+
+.pyam-card:hover .pyam-card-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.pyam-card h3 {
   font-size: 1.8rem;
   font-weight: 700;
   margin-bottom: 15px;
-  position: relative;
-  z-index: 2;
+  color: #0a2540;
 }
 
-.mission-card p {
-  font-size: 1.1rem;
-  line-height: 1.6;
+.pyam-card p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #666;
   margin: 0;
-  position: relative;
-  z-index: 2;
 }
 
-.principles-section {
-  padding-top: 60px;
+/* Principles */
+.pyam-principles {
+  padding-top: 80px;
+  margin-top: 80px;
+  border-top: 1px solid #f0f0f0;
 }
 
-.principles-image {
+.pyam-principles-image {
   width: 100%;
   border-radius: 20px;
   box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
 
-.principles-content {
+.pyam-principles-content {
   padding-left: 40px;
 }
 
-.principles-content h2 {
-  font-size: 2.2rem;
+.pyam-principles-content h2 {
+  font-size: 2.5rem;
   font-weight: 700;
-  color: #0c4a6e;
-  margin-bottom: 30px;
+  color: #0a2540;
+  margin-bottom: 40px;
 }
 
-.principle-item {
+.pyam-principles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.pyam-principle-item {
   display: flex;
   gap: 20px;
-  margin-bottom: 25px;
+  align-items: flex-start;
 }
 
-.principle-item i {
+.pyam-principle-item i {
   font-size: 2rem;
   color: #0072bb;
+  flex-shrink: 0;
 }
 
-.principle-item h4 {
+.pyam-principle-item h4 {
   font-size: 1.3rem;
+  font-weight: 600;
   margin-bottom: 8px;
-  color: #0c4a6e;
+  color: #0a2540;
 }
 
-.principle-item p {
-  color: #64748b;
+.pyam-principle-item p {
+  color: #666;
+  line-height: 1.6;
   margin: 0;
 }
 
+/* Responsive */
 @media (max-width: 991.98px) {
-  .mission-section {
-    padding: 60px 0;
-  }
-  
-  .principles-content {
+  .pyam-principles-content {
     padding-left: 0;
     margin-top: 40px;
   }
-} 
+
+  .pyam-principles-content h2 {
+    font-size: 2rem;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .pyam-section {
+    padding: 60px 0;
+  }
+
+  .pyam-card {
+    padding: 30px 20px;
+  }
+
+  .pyam-card h3 {
+    font-size: 1.5rem;
+  }
+
+  .pyam-card-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .pyam-principles {
+    padding-top: 60px;
+    margin-top: 60px;
+  }
+
+  .pyam-principles-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .pyam-principle-item {
+    gap: 15px;
+  }
+
+  .pyam-principle-item i {
+    font-size: 1.5rem;
+  }
+
+  .pyam-principle-item h4 {
+    font-size: 1.1rem;
+  }
+}

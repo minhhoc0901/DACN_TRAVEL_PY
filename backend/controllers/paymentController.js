@@ -1,7 +1,10 @@
-
 const VNPAYService = require('../utils/VNPAY');
 const Payment = require('../models/Payment');
 const Booking = require('../models/Booking');
+const NotificationService = require('../utils/notificationService');
+const UserCredit = require('../models/UserCredit');
+const emailService = require('../utils/emailService');
+
 
 /**
  * Khởi tạo thanh toán VNPAY với validation chống trùng lặp
@@ -106,7 +109,7 @@ exports.vnpReturn = async (req, res) => {
       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=error&message=Invalid_signature`);
     }
 
-    const { vnp_TxnRef, vnp_ResponseCode, vnp_TransactionNo } = req.query;
+    const { vnp_TxnRef, vnp_ResponseCode, vnp_TransactionNo, vnp_Amount } = req.query;
     const payment = await Payment.findByTxnRef(vnp_TxnRef);
 
     if (!payment) {
@@ -115,9 +118,60 @@ exports.vnpReturn = async (req, res) => {
     }
 
     if (vnp_ResponseCode === '00') {
+      // CẬP NHẬT PAYMENT & BOOKING
       await Payment.markSuccess(vnp_TxnRef, vnp_TransactionNo, vnp_ResponseCode);
       await Booking.updateStatus(payment.booking_id, 'confirmed');
       
+      const io = req.app.get('io');
+      const amount = parseInt(vnp_Amount) / 100;
+
+      // Thông báo cho user
+      await NotificationService.notifyPaymentSuccess(
+        io,
+        payment.user_id,
+        payment.booking_id,
+        amount
+      );
+
+      // Thông báo cho admin
+      const adminIds = await NotificationService.getAdminIds();
+      await NotificationService.notifyAdminPaymentSuccess(
+        io,
+        adminIds,
+        payment.booking_id,
+        amount
+      );
+
+      // GỬI EMAIL 
+      try {
+        const booking = await Booking.findByPk(payment.booking_id);
+        
+        if (booking) {
+          
+          // GỬI EMAIL
+          await emailService.sendBookingConfirmation(
+            booking.contact_email, 
+            {
+              id: payment.booking_id,
+              tour_name: booking.tour_name,
+              final_amount: booking.final_amount,
+              contact_name: booking.contact_name,
+              contact_email: booking.contact_email,
+              contact_phone: booking.contact_phone,
+              departure_date: booking.departure_date,
+              end_date: booking.end_date,
+              verification_token: booking.verification_token,
+              promotion_code: booking.promotion_code,
+              BookingDetails: booking.BookingDetails
+            }
+          );
+          
+          console.log(`[VNPAY][return] ✅ Email sent to ${booking.contact_email}`);
+        }
+      } catch (emailError) {
+        console.error('[VNPAY][return] ❌ Email error (non-critical):', emailError);
+      }
+
       console.log('[VNPAY][return] Payment success:', vnp_TxnRef);
       return res.redirect(`${process.env.FRONTEND_URL}/payment/result?status=success&bookingId=${payment.booking_id}&txnRef=${vnp_TxnRef}`);
     } else {
@@ -308,4 +362,153 @@ exports.getPaymentStats = async (req, res) => {
       error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
+};
+
+/**
+ * THANH TOÁN BẰNG VÍ CREDIT
+ * @route POST /api/payments/credit/pay
+ */
+exports.payWithCredit = async (req, res) => {
+    try {
+        const { bookingId } = req.body;
+        const userId = req.user.id;
+
+        console.log('[CREDIT PAYMENT] bookingId:', bookingId, 'userId:', userId);
+
+        // 1. Kiểm tra booking tồn tại
+        const booking = await Booking.findById(bookingId);
+        if (!booking) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy booking'
+            });
+        }
+
+        // 2. Kiểm tra quyền sở hữu
+        if (booking.user_id !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: 'Bạn không có quyền thanh toán booking này'
+            });
+        }
+
+        // 3. Kiểm tra trạng thái booking
+        if (booking.status !== 'pending_payment') {
+            return res.status(400).json({
+                success: false,
+                message: `Booking đã ${booking.status === 'confirmed' ? 'được thanh toán' : booking.status}`
+            });
+        }
+
+        // 4. Kiểm tra đã thanh toán chưa
+        const existingPayment = await Payment.findSuccessfulByBookingId(bookingId);
+        if (existingPayment) {
+            return res.status(400).json({
+                success: false,
+                message: 'Booking đã được thanh toán'
+            });
+        }
+
+        // 5. Kiểm tra số dư Credit
+        const balance = await UserCredit.getBalance(userId);
+        const amount = parseFloat(booking.final_amount);
+
+        console.log('[CREDIT PAYMENT] Balance:', balance, 'Amount:', amount);
+
+        if (balance < amount) {
+            return res.status(400).json({
+                success: false,
+                message: `Số dư không đủ. Bạn cần thêm ${(amount - balance).toLocaleString('vi-VN')} VNĐ`,
+                data: {
+                    balance,
+                    required: amount,
+                    shortfall: amount - balance
+                }
+            });
+        }
+
+        // 6. Trừ tiền Credit
+        await UserCredit.deductCredit(
+            userId,
+            amount,
+            bookingId,
+            `Thanh toán booking #${bookingId}`
+        );
+
+        // 7. Cập nhật booking status
+        await Booking.updateStatus(bookingId, 'confirmed');
+
+        // 8. Tạo payment record
+        const txnRef = `CREDIT_${bookingId}_${Date.now()}`;
+        await Payment.createCreditPayment(bookingId, txnRef, amount);
+
+        // 9. GỬI THÔNG BÁO
+        const io = req.app.get('io');
+        
+        await NotificationService.notifyPaymentSuccess(
+            io,
+            userId,
+            bookingId,
+            amount 
+        );
+
+        const adminIds = await NotificationService.getAdminIds();
+        await NotificationService.notifyAdminPaymentSuccess(
+            io,
+            adminIds,
+            bookingId,
+            amount
+        );
+
+        // 10. GỬI EMAIL 
+        try {
+          const bookingDetails = await Booking.findByPk(bookingId);
+          
+          if (bookingDetails) {
+            
+            // GỬI EMAIL
+            await emailService.sendBookingConfirmation(
+              bookingDetails.contact_email,
+              {
+                id: bookingId,
+                tour_name: bookingDetails.tour_name,
+                final_amount: bookingDetails.final_amount,
+                contact_name: bookingDetails.contact_name,
+                contact_email: bookingDetails.contact_email,
+                contact_phone: bookingDetails.contact_phone,
+                departure_date: bookingDetails.departure_date,
+                end_date: bookingDetails.end_date,
+                verification_token: bookingDetails.verification_token,
+                promotion_code: bookingDetails.promotion_code,
+                BookingDetails: bookingDetails.BookingDetails
+              }
+            );
+            
+            console.log(`[CREDIT PAYMENT] ✅ Email sent to ${bookingDetails.contact_email}`);
+          }
+        } catch (emailError) {
+            console.error('[CREDIT PAYMENT] ❌ Email error (non-critical):', emailError);
+        }
+
+        console.log('[CREDIT PAYMENT] ✅ Success for booking:', bookingId);
+
+        res.json({
+            success: true,
+            message: 'Thanh toán thành công bằng Ví Credit',
+            data: {
+                bookingId,
+                amount,
+                remainingBalance: balance - amount,
+                paymentMethod: 'credit',
+                txnRef
+            }
+        });
+
+    } catch (error) {
+        console.error('[CREDIT PAYMENT] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Lỗi khi thanh toán bằng Credit'
+        });
+    }
 };

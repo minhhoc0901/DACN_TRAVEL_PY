@@ -1,5 +1,83 @@
 /* sad */
 
+/* ... existing code ... */
+.content-right::-webkit-scrollbar-thumb:hover {
+  background-color: var(--sidebar-border-color-hover);
+}
+
+/* === STYLING MỚI CHO PHẦN KHÁCH SẠN LIÊN KẾT === */
+
+/* Container cho mỗi khách sạn */
+.hotel-link-item {
+  display: flex;
+  align-items: flex-start; /* Căn các mục theo đầu dòng */
+  padding: 0.75rem 0; /* 12px */
+  border-radius: 0.5rem; /* 8px */
+  text-decoration: none;
+  color: var(--content-text-color);
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.hotel-link-item:hover {
+  background-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--content-border-light-color);
+}
+
+/* Icon tòa nhà */
+.hotel-link-item .hotel-icon {
+  margin-right: 0.875rem; /* 14px */
+  margin-top: 0.25rem; /* 4px */
+  font-size: 1.125rem; /* 18px */
+  color: var(--sidebar-icon-color);
+  transition: color 0.2s ease;
+}
+
+.hotel-link-item:hover .hotel-icon {
+  color: var(--secondary); /* Màu cam/vàng khi hover */
+}
+
+/* Tên khách sạn */
+.hotel-link-item .hotel-name {
+  font-weight: 600; /* Semi-bold */
+  color: var(--content-heading-color);
+  margin-bottom: 0.25rem; /* 4px */
+  transition: color 0.2s ease;
+}
+
+.hotel-link-item:hover .hotel-name {
+  color: var(--secondary);
+}
+
+/* Phần đánh giá sao */
+.hotel-rating-display {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem; /* 12.8px */
+  color: var(--content-text-color);
+}
+
+/* Màu cho các loại sao */
+.hotel-rating-display .bi-star-fill {
+  color: #ffc107; /* Màu vàng cho sao đầy */
+}
+.hotel-rating-display .bi-star-half {
+  color: #ffc107; /* Màu vàng cho sao nửa */
+}
+.hotel-rating-display .bi-star {
+  color: #e0e0e0; /* Màu xám cho sao rỗng */
+}
+
+/* Số điểm rating */
+.hotel-rating-display .rating-value {
+  margin-left: 0.375rem; /* 6px */
+  font-weight: 500;
+  color: var(--content-text-color);
+}
+
+
 .location-detail-page {
   max-width: 1200px;
   margin: 0 auto;

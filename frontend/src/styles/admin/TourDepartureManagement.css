@@ -1,0 +1,316 @@
+/* ===== QUẢN LÝ LỊCH TRÌNH - LAYOUT ===== */
+.qlt-departure-page {
+  padding: 0;
+  max-width: 100%;
+  margin: 0;
+}
+
+.qlt-page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 20px;
+  padding: 20px 20px 0 20px;
+}
+
+/* ===== FORM SECTION ===== */
+.qlt-top-form-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin: 0 20px 20px 20px;
+}
+
+.qlt-top-form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  align-items: end;
+}
+
+.qlt-top-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.qlt-top-col label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.qlt-form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.qlt-form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.1);
+}
+
+.qlt-form-control:disabled {
+  background-color: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.qlt-top-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* ===== BUTTONS ===== */
+.qlt-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.qlt-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.qlt-btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.qlt-btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0,123,255,0.3);
+}
+
+.qlt-btn-light {
+  background: #f8f9fa;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.qlt-btn-light:hover:not(:disabled) {
+  background: #e9ecef;
+}
+
+.qlt-btn-sm {
+  padding: 5px 10px;
+  font-size: 12px;
+}
+
+.qlt-btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.qlt-btn-secondary:hover:not(:disabled) {
+  background: #545b62;
+}
+
+.qlt-btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.qlt-btn-danger:hover:not(:disabled) {
+  background: #c82333;
+}
+
+/* ===== FILTERS SECTION ===== */
+.qlt-filters-section {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 0 20px 20px 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.qlt-filters-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.qlt-filters-row:last-child {
+  margin-bottom: 0;
+}
+
+.qlt-filter-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.qlt-filter-col label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #666;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===== STATS BAR ===== */
+.qlt-stats-bar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.qlt-stat-item {
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+}
+
+.qlt-stat-item span {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.qlt-stat-item strong {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+/* ===== TABLE SECTION ===== */
+.qlt-departure-table-section {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+  margin: 0 20px 20px 20px;
+}
+
+.qlt-table-responsive {
+  overflow-x: auto;
+}
+
+.qlt-departure-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.qlt-departure-table thead {
+  background: #f8f9fa;
+}
+
+.qlt-departure-table th {
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.qlt-departure-table td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #dee2e6;
+  vertical-align: middle;
+}
+
+.qlt-departure-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* ===== STATUS BADGES ===== */
+.qlt-status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.qlt-status-open {
+  background: #d4edda;
+  color: #155724;
+}
+
+.qlt-status-closed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.qlt-status-full {
+  background: #fff3cd;
+  color: #856404;
+}
+
+/* ===== LOADING STATE ===== */
+.qlt-departure-table-section p {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6c757d;
+  font-size: 16px;
+}
+
+/* ===== ICONS ===== */
+.qlt-icon {
+  font-size: 14px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .qlt-top-form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .qlt-filters-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .qlt-stats-bar {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .qlt-departure-table {
+    font-size: 12px;
+  }
+  
+  .qlt-departure-table th,
+  .qlt-departure-table td {
+    padding: 8px 4px;
+  }
+  
+  .qlt-btn {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .qlt-stats-bar {
+    grid-template-columns: 1fr;
+  }
+  
+  .qlt-page-title {
+    font-size: 20px;
+  }
+}

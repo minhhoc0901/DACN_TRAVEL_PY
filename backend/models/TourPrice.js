@@ -37,6 +37,13 @@ class TourPrice {
     static async remove(id) {
         await pool.query(`DELETE FROM Tour_Prices WHERE id=?`, [id]);
     }
+    
+    static async listAll() {
+        const [rows] = await pool.query(
+            `SELECT id, tour_id, price_type, price, sale_price
+             FROM Tour_Prices ORDER BY id`);
+        return rows;
+    }
 }
 
 module.exports = TourPrice;

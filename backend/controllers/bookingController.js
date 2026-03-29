@@ -8,6 +8,7 @@ const Booking = require("../models/Booking");
 const TourDeparture = require("../models/TourDeparture");
 const { generateQrCodeDataUrl } = require('../utils/qrCodeGenerator');
 const PDFDocument = require("pdfkit");
+const NotificationService = require('../utils/notificationService');
 exports.quote = async (req, res) => {
     try {
         const { tourId, items } = req.body;
@@ -85,6 +86,32 @@ exports.createBooking = async (req, res) => {
         await BookingDetail.bulkInsert(conn, bookingId, details);
 
         await conn.commit();
+
+        // update thông báo realtime 
+        const io = req.app.get('io');
+
+        // GỬI THÔNG BÁO CHO USER
+        await NotificationService.notifyBookingCreated(io, userId, bookingId, finalAmount);
+
+        // GỬI THÔNG BÁO CHO ADMIN
+        const adminIds = await NotificationService.getAdminIds();
+        const [tourInfo] = await pool.query(
+            'SELECT destination FROM tours WHERE id = ?',
+            [tourId]
+        );
+        const [userInfo] = await pool.query(
+            'SELECT full_name FROM users WHERE id = ?',
+            [userId]
+        );
+
+        await NotificationService.notifyAdminNewBooking(
+            io,
+            adminIds,
+            bookingId,
+            userInfo[0]?.full_name || contact.name,
+            tourInfo[0]?.destination || 'Unknown Tour',
+            finalAmount
+        );
         res.json({
             success: true,
             bookingId,
@@ -118,57 +145,7 @@ exports.getMyBookings = async (req, res) => {
     }
 };
 
-exports.cancelMyBooking = async (req, res) => {
-    const bookingId = req.params.id;
-    const userId = req.user.id;
-    const connection = await pool.getConnection();
 
-    // LOG: Bắt đầu tiến trình hủy
-    console.log(`[CANCEL MY BOOKING] User ${userId} initiated cancellation for booking #${bookingId}.`);
-
-    try {
-        await connection.beginTransaction();
-
-        const booking = await Booking.findByIdForUpdate(bookingId, userId, connection);
-
-        if (!booking) {
-            throw new Error('Đơn hàng không tồn tại hoặc bạn không có quyền hủy.');
-        }
-        if (booking.status !== 'pending_payment') {
-            throw new Error('Chỉ có thể hủy các đơn hàng đang chờ thanh toán.');
-        }
-
-        const slotsToRestore = booking.BookingDetails.reduce((total, detail) => total + detail.quantity, 0);
-
-        // LOG: Ghi lại số vé sắp được hoàn trả và ID của chuyến đi
-        console.log(`[CANCEL MY BOOKING] Calculated ${slotsToRestore} slots to restore for departure ID ${booking.tour_departure_id}.`);
-
-        await TourDeparture.restoreSlots(booking.tour_departure_id, slotsToRestore, connection);
-
-        // LOG: Xác nhận đã gọi hàm hoàn trả vé
-        console.log(`[CANCEL MY BOOKING] Called TourDeparture.restoreSlots successfully.`);
-
-        await Booking.updateStatus(bookingId, 'cancelled', connection);
-
-        // LOG: Xác nhận đã cập nhật trạng thái đơn hàng
-        console.log(`[CANCEL MY BOOKING] Updated booking status to 'cancelled'.`);
-
-        await connection.commit();
-
-        // LOG: Giao dịch thành công
-        console.log(`[CANCEL MY BOOKING] Transaction committed successfully for booking #${bookingId}.`);
-
-        res.status(200).json({ success: true, message: 'Đã hủy đơn hàng thành công.' });
-
-    } catch (error) {
-        await connection.rollback();
-        // Log lỗi đã có sẵn, rất tốt
-        console.error(`[CANCEL MY BOOKING] Error for booking #${bookingId}:`, error);
-        res.status(500).json({ success: false, message: error.message || 'Lỗi khi hủy đơn hàng.' });
-    } finally {
-        connection.release();
-    }
-};
 /**
  * Người dùng xóa ( Ẩn )  booking của mình.
  */
@@ -320,9 +297,28 @@ exports.getInvoicePdf = async (req, res) => {
         doc.fillColor("#000").fontSize(10).text("Tên tour:", col1X, currentY, { bold: true });
         doc.fillColor("#333").text(booking.tour_name, col1X + 100, currentY, { width: 400 }); // Tăng width
         currentY += 18;
+        // ✅ THÊM: Điểm khởi hành
+        if (booking.departure_from) {
+            doc.fillColor("#000").text("Điểm khởi hành:", col1X, currentY, { bold: true });
+            doc.fillColor("#333").text(booking.departure_from, col1X + 100, currentY);
+            currentY += 18;
+        }
+
+        // ✅ THÊM: Thời gian tour
+        if (booking.duration) {
+            doc.fillColor("#000").text("Thời gian:", col1X, currentY, { bold: true });
+            doc.fillColor("#333").text(booking.duration, col1X + 100, currentY);
+            currentY += 18;
+        }
         doc.fillColor("#000").text("Ngày khởi hành:", col1X, currentY, { bold: true });
         doc.fillColor("#333").text(formatDate(booking.departure_date), col1X + 100, currentY);
         currentY += 18;
+        // ✅ THÊM: Ngày kết thúc
+        if (booking.end_date) {
+            doc.fillColor("#000").text("Ngày kết thúc:", col1X, currentY, { bold: true });
+            doc.fillColor("#333").text(formatDate(booking.end_date), col1X + 100, currentY);
+            currentY += 18;
+        }
         doc.fillColor("#000").text("Thanh toán:", col1X, currentY, { bold: true });
         doc.fillColor("#333").text(paymentStatusText, col1X + 100, currentY, { width: 400 });
 
@@ -439,4 +435,441 @@ exports.verifyBookingByToken = async (req, res) => {
         console.error('[VERIFY BOOKING] Error:', error);
         res.status(500).json({ success: false, message: 'Lỗi máy chủ nội bộ.' });
     }
+};
+
+/**
+ * ✅ [ADMIN] Lấy tất cả booking với filter và phân trang
+ */
+exports.getAllBookingsAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền truy cập'
+      });
+    }
+
+    const filters = {
+      status: req.query.status,
+      payment_status: req.query.payment_status,
+      page: req.query.page,
+      limit: req.query.limit,
+      search: req.query.search,
+      date_from: req.query.date_from,
+      date_to: req.query.date_to,
+      sort_by: req.query.sort_by,
+      sort_order: req.query.sort_order
+    };
+
+    const result = await Booking.getAllForAdmin(filters);
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('[getAllBookingsAdmin] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy danh sách booking',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * ✅ [ADMIN] Lấy chi tiết booking
+ */
+exports.getBookingDetailAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền truy cập'
+      });
+    }
+
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findByPk(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy booking'
+      });
+    }
+
+    res.json({
+      success: true,
+      booking
+    });
+  } catch (error) {
+    console.error('[getBookingDetailAdmin] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy chi tiết booking',
+      error: error.message
+    });
+  }
+};
+
+/**
+ *  [ADMIN] Cập nhật trạng thái booking
+ */
+exports.updateBookingStatusAdmin = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền thực hiện'
+      });
+    }
+
+    const { bookingId } = req.params;
+    const { status, reason } = req.body;
+
+    const validStatuses = ['pending_payment', 'confirmed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Trạng thái không hợp lệ'
+      });
+    }
+
+    const result = await Booking.updateStatusByAdmin(bookingId, status, reason);
+
+    // GỬI THÔNG BÁO DỰA TRÊN STATUS
+    if (status === 'confirmed') {
+      await NotificationService.notifyBookingConfirmed(io, result.booking.user_id, bookingId);
+    } else if (status === 'cancelled') {
+      await NotificationService.notifyBookingCancelled(io, result.booking.user_id, bookingId, reason);
+    }
+
+    res.json({
+      success: true,
+      message: 'Cập nhật trạng thái thành công'
+    });
+  } catch (error) {
+    console.error('[updateBookingStatusAdmin] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi cập nhật trạng thái',
+      error: error.message
+    });
+  }
+};
+
+/**
+ *  [ADMIN] Thống kê booking
+ */
+exports.getBookingStats = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền truy cập'
+      });
+    }
+
+    const filters = {
+      date_from: req.query.date_from,
+      date_to: req.query.date_to
+    };
+
+    const stats = await Booking.getStats(filters);
+
+    res.json({
+      success: true,
+      stats
+    });
+  } catch (error) {
+    console.error('[getBookingStats] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi lấy thống kê',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * [ADMIN] Xuất báo cáo Excel
+ */
+exports.exportBookingsReport = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền truy cập'
+      });
+    }
+
+    const filters = {
+      status: req.query.status,
+      payment_status: req.query.payment_status,
+      date_from: req.query.date_from,
+      date_to: req.query.date_to
+    };
+
+    const bookings = await Booking.getExportData(filters);
+
+    res.json({
+      success: true,
+      data: bookings,
+      filename: `booking_report_${Date.now()}.csv`
+    });
+  } catch (error) {
+    console.error('[exportBookingsReport] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi xuất báo cáo',
+      error: error.message
+    });
+  }
+};
+
+/**
+ *  HỦY BOOKING CHƯA THANH TOÁN 
+ * Route: PUT /api/bookings/my-bookings/:id
+ */
+exports.cancelMyBooking = async (req, res) => {
+    try {
+        const bookingId = req.params.id;
+        const userId = req.user.id;
+
+        const result = await Booking.cancelUnpaidBooking(bookingId, userId);
+
+        // GỬI THÔNG BÁO
+        const io = req.app.get('io');
+        await NotificationService.notifyBookingCancelled(io, userId, bookingId, null);
+
+
+        res.json({
+            success: true,
+            message: 'Hủy booking thành công',
+            ...result
+        });
+    } catch (error) {
+        console.error('[CANCEL UNPAID BOOKING] Error:', error);
+        res.status(400).json({
+            success: false,
+            message: error.message
+        });
+    }
+};
+
+/**
+ * HỦY BOOKING ĐÃ THANH TOÁN - VỚI CHÍNH SÁCH HOÀN TIỀN
+ * Route: PUT /api/bookings/my-bookings/:id/cancel-paid
+ */
+exports.cancelPaidBooking = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const userId = req.user.id;
+    const { refund_method } = req.body; 
+
+    console.log(`[cancelPaidBooking] Request from user ${userId} to cancel booking ${bookingId}`);
+    console.log(`[cancelPaidBooking] Body:`, { refund_method });
+
+    
+    // Validate refund_method
+    if (!refund_method || !['credit', 'bank_transfer'].includes(refund_method)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Phương thức hoàn tiền không hợp lệ'
+      });
+    }
+
+
+    const result = await Booking.cancelPaidBooking(
+      bookingId,
+      userId,
+      refund_method,
+    );
+
+    //  GỬI THÔNG BÁO NGAY SAU KHI HỦY
+    if (result.success) {
+      const io = req.app.get('io');
+      
+      setImmediate(async () => {
+        try {
+          if (result.requiresApproval && result.refund_id) {
+            // ✅ CASE 1: CẦN ADMIN DUYỆT (≥3 ngày)
+            
+            // Thông báo cho USER
+            await NotificationService.notifyRefundRequestCreated(
+              io,
+              userId,
+              parseInt(bookingId),
+              result.bookingDetails.tourName,
+              result.originalRefundAmount,
+              refund_method,
+              result.daysUntilDeparture
+            );
+
+            // Thông báo cho ADMIN
+            const adminIds = await NotificationService.getAdminIds();
+            await NotificationService.notifyAdminNewRefundRequest(
+              io,
+              adminIds,
+              result.refund_id,
+              parseInt(bookingId),
+              result.bookingDetails.tourName,
+              result.originalRefundAmount,
+              refund_method,
+              userId
+            );
+
+            console.log(`[cancelPaidBooking]  Sent refund request notifications (Refund ID: ${result.refund_id})`);
+
+          } else if (!result.requiresApproval && result.refundPercent === 0) {
+            // CASE 2: HỦY MUỘN (<3 NGÀY) - KHÔNG HOÀN TIỀN
+            
+            await NotificationService.notifyBookingCancelledNoRefund(
+              io,
+              userId,
+              parseInt(bookingId),
+              result.bookingDetails.tourName,
+              result.daysUntilDeparture
+            );
+
+            console.log(`[cancelPaidBooking]  Sent no-refund cancellation notification`);
+          }
+
+        } catch (notifError) {
+          console.error('[cancelPaidBooking] ❌ Notification error:', notifError);
+          // Không throw để không ảnh hưởng response
+        }
+      });
+    }
+
+    // RẢ RESPONSE
+    res.json({
+      success: true,
+      ...result
+    });
+
+  } catch (error) {
+    console.error('[cancelPaidBooking] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Không thể hủy booking'
+    });
+  }
+};
+
+/**
+ * [ADMIN] ĐÁNH DẤU BOOKING ĐÃ HOÀN THÀNH THỦ CÔNG
+ */
+exports.markBookingAsCompleted = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền thực hiện'
+      });
+    }
+
+    const { bookingId } = req.params;
+
+    const [bookings] = await pool.query(`
+      SELECT 
+        b.*,
+        t.destination as tour_name,
+        td.departure_date,
+        td.end_date,
+        td.duration
+      FROM bookings b
+      JOIN tours t ON b.tour_id = t.id
+      LEFT JOIN tour_departures td ON b.tour_departure_id = td.id
+      WHERE b.id = ?
+    `, [bookingId]);
+
+    if (!bookings || bookings.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Không tìm thấy booking'
+      });
+    }
+
+    const booking = bookings[0];
+
+    if (booking.status !== 'confirmed') {
+      return res.status(400).json({
+        success: false,
+        message: `Chỉ có thể đánh dấu hoàn thành các booking đã xác nhận. Trạng thái hiện tại: ${booking.status}`
+      });
+    }
+
+    // Warning nếu tour chưa kết thúc
+    const endDate = new Date(booking.end_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+
+    let warning = null;
+    if (endDate >= today) {
+      warning = `Lưu ý: Tour chưa kết thúc (Ngày kết thúc: ${endDate.toLocaleDateString('vi-VN')})`;
+    }
+
+    await pool.execute(
+      'UPDATE bookings SET status = ?, completion_date = NOW(), updated_at = NOW() WHERE id = ?',
+      ['completed', bookingId]
+    );
+
+    // Gửi thông báo
+    const io = req.app.get('io');
+    await NotificationService.notifyBookingCompleted(io, booking.user_id, bookingId, booking.tour_name);
+
+
+    res.json({
+      success: true,
+      message: 'Đánh dấu hoàn thành thành công',
+      warning,
+      data: {
+        bookingId,
+        status: 'completed',
+        completion_date: new Date(),
+        tour_name: booking.tour_name,
+        end_date: booking.end_date
+      }
+    });
+  } catch (error) {
+    console.error('[MARK COMPLETED] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi đánh dấu hoàn thành',
+      error: error.message
+    });
+  }
+};
+
+/**
+ * ✅ [ADMIN] TRIGGER MANUAL CRON JOB
+ */
+exports.triggerMarkCompletedJob = async (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Chỉ admin mới có quyền thực hiện'
+      });
+    }
+
+    const count = await Booking.markCompletedBookings();
+
+    res.json({
+      success: true,
+      message: `Đã đánh dấu ${count} booking hoàn thành`,
+      count
+    });
+  } catch (error) {
+    console.error('[TRIGGER MARK COMPLETED] Error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi khi chạy job',
+      error: error.message
+    });
+  }
 };

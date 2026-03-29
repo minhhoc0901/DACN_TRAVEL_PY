@@ -3,7 +3,9 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const jwtConfig = require('../config/jwt');
 const { sendOTPEmail } = require('../utils/emailService');
-const { pool } = require('../config/db'); 
+const { pool } = require('../config/db');
+const { validateRegister, validateLogin } = require('../utils/validators/authValidator');
+const sanitizers = require('../utils/validators/sanitizers');
 
 exports.sendOTP = async (req, res) => {
     try {
@@ -63,47 +65,70 @@ exports.sendOTP = async (req, res) => {
     }
 };
 
+/**
+ * ✅ REGISTER WITH VALIDATION
+ */
 exports.register = async (req, res) => {
     try {
-        const { username, fullName, email, phone, password, otp } = req.body;
+        // 🔹 BƯỚC 1: SANITIZE INPUT
+        const sanitizedData = sanitizers.sanitizeRegistrationData(req.body);
+        
+        // 🔹 BƯỚC 2: VALIDATE
+        const { error } = validateRegister(sanitizedData);
+        
+        if (error) {
+            const errors = {};
+            error.details.forEach(detail => {
+                const key = detail.path[0];
+                if (!errors[key]) {
+                    errors[key] = [];
+                }
+                errors[key].push(detail.message);
+            });
 
-        // Verify OTP
+            return res.status(400).json({
+                success: false,
+                message: 'Dữ liệu không hợp lệ',
+                errors
+            });
+        }
+
+        const { username, fullName, email, phone, password, otp } = sanitizedData;
+
+        // 🔹 BƯỚC 3: VERIFY OTP
         const isOTPValid = await User.verifyOTP(email, otp);
         if (!isOTPValid) {
             return res.status(400).json({
                 success: false,
-                message: 'Mã OTP không hợp lệ hoặc đã hết hạn'
+                message: 'Mã OTP không hợp lệ hoặc đã hết hạn',
+                errors: { otp: ['Mã OTP không hợp lệ hoặc đã hết hạn'] }
             });
         }
 
-        if (!username || !email || !password) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Vui lòng cung cấp đầy đủ thông tin bắt buộc' 
-            });
-        }
-
-        // Kiểm tra username đã tồn tại
+        // 🔹 BƯỚC 4: CHECK EXISTING USERNAME
         const existingUsername = await User.findByUsername(username);
         if (existingUsername) {
             return res.status(400).json({
                 success: false,
-                message: 'Tên đăng nhập đã được sử dụng'
+                message: 'Tên đăng nhập đã được sử dụng',
+                errors: { username: ['Tên đăng nhập đã tồn tại'] }
             });
         }
 
-        // Kiểm tra email đã tồn tại
+        // 🔹 BƯỚC 5: CHECK EXISTING EMAIL
         const existingEmail = await User.findByEmail(email);
         if (existingEmail) {
             return res.status(400).json({
                 success: false,
-                message: 'Email đã được sử dụng'
+                message: 'Email đã được sử dụng',
+                errors: { email: ['Email đã được đăng ký'] }
             });
         }
 
+        // 🔹 BƯỚC 6: CREATE USER
         const user = new User({
             username,
-            fullName,
+            fullName: fullName || username,
             email,
             phone,
             password
@@ -114,10 +139,16 @@ exports.register = async (req, res) => {
         res.status(201).json({
             success: true,
             message: 'Đăng ký thành công',
-            data: newUser
+            data: {
+                id: newUser.id,
+                username: newUser.username,
+                email: newUser.email,
+                fullName: newUser.full_name,
+                role: newUser.role
+            }
         });
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('[REGISTER] Error:', error);
         res.status(500).json({
             success: false,
             message: 'Đã xảy ra lỗi khi đăng ký',
@@ -126,67 +157,85 @@ exports.register = async (req, res) => {
     }
 };
 
+/**
+ * ✅ LOGIN WITH VALIDATION
+ */
 exports.login = async (req, res) => {
-  try {
-    const { username, password } = req.body;
+    try {
+        // 🔹 BƯỚC 1: SANITIZE INPUT
+        const sanitizedData = sanitizers.sanitizeLoginData(req.body);
+        
+        // 🔹 BƯỚC 2: VALIDATE
+        const { error } = validateLogin(sanitizedData);
+        
+        if (error) {
+            const errors = {};
+            error.details.forEach(detail => {
+                const key = detail.path[0];
+                if (!errors[key]) {
+                    errors[key] = [];
+                }
+                errors[key].push(detail.message);
+            });
 
-    if (!username || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        message: 'Vui lòng cung cấp username và password'
-      });
+            return res.status(400).json({
+                success: false,
+                message: 'Dữ liệu không hợp lệ',
+                errors
+            });
+        }
+
+        const { username, password } = sanitizedData;
+
+        // 🔹 BƯỚC 3: FIND USER
+        const user = await User.findByUsername(username);
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Thông tin đăng nhập không chính xác',
+                errors: { username: ['Tên đăng nhập hoặc mật khẩu không đúng'] }
+            });
+        }
+
+        // 🔹 BƯỚC 4: VERIFY PASSWORD
+        const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+        if (!isPasswordValid) {
+            return res.status(401).json({
+                success: false,
+                message: 'Thông tin đăng nhập không chính xác',
+                errors: { password: ['Tên đăng nhập hoặc mật khẩu không đúng'] }
+            });
+        }
+
+        // 🔹 BƯỚC 5: GENERATE TOKEN
+        const token = jwt.sign(
+            { id: user.id, role: user.role },
+            jwtConfig.secret,
+            { expiresIn: jwtConfig.expiresIn }
+        );
+
+        res.status(200).json({
+            success: true,
+            message: 'Đăng nhập thành công',
+            data: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                fullName: user.full_name,
+                phone: user.phone,
+                role: user.role,
+                avatar: user.avatar
+            },
+            token
+        });
+    } catch (error) {
+        console.error('[LOGIN] Error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi khi đăng nhập',
+            error: error.message
+        });
     }
-
-    const user = await User.findByUsername(username); // Đảm bảo User.findByUsername lấy cả trường avatar
-    if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Thông tin đăng nhập không chính xác'
-      });
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
-    if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Thông tin đăng nhập không chính xác'
-      });
-    }
-
-    const token = jwt.sign(
-      { 
-        id: user.id, 
-        role: user.role 
-      },
-      jwtConfig.secret,
-      { 
-        expiresIn: jwtConfig.expiresIn 
-      }
-    );
-
-    res.status(200).json({
-      success: true,
-      message: 'Đăng nhập thành công',
-      data: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        fullName: user.full_name, // Hoặc user.fullName tùy theo model của bạn
-        phone: user.phone,
-        role: user.role,
-        avatar: user.avatar // <<< THÊM DÒNG NÀY
-      },
-      token
-    });
-
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Đã xảy ra lỗi khi đăng nhập',
-      error: error.message
-    });
-  }
 };
 
 exports.getProfile = async (req, res) => {
@@ -198,13 +247,22 @@ exports.getProfile = async (req, res) => {
     if (!user) {
       return res.status(404).json({ 
         success: false, 
-        message: 'Không tìm thấy thông tin người dùng'
+        message: 'Không tìm thấy người dùng' 
       });
     }
 
+    // Trả về thông tin user (không trả password)
     res.status(200).json({
       success: true,
-      data: user
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        fullName: user.full_name,
+        phone: user.phone,
+        role: user.role,
+        avatar: user.avatar
+      }
     });
   } catch (error) {
     console.error('Get profile error:', error);

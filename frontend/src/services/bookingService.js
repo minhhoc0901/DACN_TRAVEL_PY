@@ -76,7 +76,7 @@ export const bookingService = {
         const token = getAuthToken();
         const response = await fetch(`${API_BASE_URL}/bookings/my-booking/hide/${bookingId}`, {
             method: 'PUT',
-            headers: {  
+            headers: {
                 'Authorization': `Bearer ${token}`
             }
         });
@@ -85,8 +85,44 @@ export const bookingService = {
             throw new Error(result.message || 'Không thể xóa đơn đặt tour.');
         }
         return result;
-    }
-    ,
+    },
+
+    /**
+     * HỦY BOOKING ĐÃ THANH TOÁN VỚI CHÍNH SÁCH HOÀN TIỀN
+     */
+
+    async cancelPaidBooking(bookingId, data) { 
+        const token = getAuthToken();
+        
+        console.log('[cancelPaidBooking] Request:', { bookingId, data });
+
+        if (!data || !data.refund_method) {
+            console.error('[cancelPaidBooking] ❌ Missing refund_method!');
+            throw new Error('Phương thức hoàn tiền không được để trống');
+        }
+
+        const response = await fetch(`${API_BASE_URL}/bookings/my-bookings/${bookingId}/cancel-paid`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                refund_method: data.refund_method 
+            }) 
+        });
+
+        const result = await response.json();
+        
+        console.log('[cancelPaidBooking] Response:', result);
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Không thể hủy booking đã thanh toán.');
+        }
+        return result;
+    },
+
+
     async deleteBooking(bookingId) {
         const token = getAuthToken();
         const response = await fetch(`${API_BASE_URL}/bookings/my-bookings/delete/${bookingId}`, {

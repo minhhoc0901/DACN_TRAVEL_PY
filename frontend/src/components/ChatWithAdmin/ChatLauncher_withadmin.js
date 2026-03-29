@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { ChatWithAdminProvider } from '../../contexts/ChatWithAdminContext';
+import { ChatWithAdminProvider, useChatWithAdmin } from '../../contexts/ChatWithAdminContext';
 import ChatWithAdminBox from './ChatWithAdminBox';
 import '../../styles/user/ChatLauncher_WithAdmin.css';
 
-const ChatLauncher_WithAdmin = () => {
+const ChatLauncherContent = () => {
     const { isAuthenticated } = useAuth();
-    const [isChatOpen, setIsChatOpen] = useState(false);
+    const { isChatOpen, setIsChatOpen } = useChatWithAdmin();
 
-    // Chỉ hiển thị khi user đã đăng nhập
     if (!isAuthenticated) {
         return null;
     }
@@ -23,14 +22,17 @@ const ChatLauncher_WithAdmin = () => {
                 {isChatOpen ? '✕' : '💬'}
             </button>
 
-            {isChatOpen && (
-                // Bọc ChatWithAdminBox trong Provider của chính nó
-                // để đảm bảo context được tạo và hủy đúng cách khi hộp chat đóng/mở
-                <ChatWithAdminProvider>
-                    <ChatWithAdminBox onClose={toggleChat} />
-                </ChatWithAdminProvider>
-            )}
+            {isChatOpen && <ChatWithAdminBox onClose={() => setIsChatOpen(false)} />}
         </>
+    );
+};
+
+
+const ChatLauncher_WithAdmin = () => {
+    return (
+        <ChatWithAdminProvider>
+            <ChatLauncherContent />
+        </ChatWithAdminProvider>
     );
 };
 

@@ -1,37 +1,6 @@
 const Promotion = require('../models/Promotions');
 
-
-const validate = (body, isUpdate = false) => {
-    const errors = [];
-    const required = ['code','discount_type','discount_value','start_date','end_date'];
-    if (!isUpdate) {
-        for (const f of required) if (!body[f]) errors.push(`${f} required`);
-    }
-    if (body.code && String(body.code).length > 50) errors.push('code too long');
-    if (body.discount_type && !['percentage','fixed_amount'].includes(body.discount_type))
-        errors.push('discount_type invalid');
-    const dv = Number(body.discount_value);
-    if (Number.isNaN(dv) || dv < 0) errors.push('discount_value invalid');
-    if (body.max_usage != null) {
-        const mu = Number(body.max_usage);
-        if (Number.isNaN(mu) || mu < 0) errors.push('max_usage invalid');
-    }
-    if (body.start_date && body.end_date && new Date(body.start_date) >= new Date(body.end_date))
-        errors.push('start_date must < end_date');
-    if (errors.length) throw new Error(errors.join(', '));
-    return {
-        code: body.code,
-        description: body.description,
-        discount_type: body.discount_type,
-        discount_value: dv,
-        start_date: body.start_date,
-        end_date: body.end_date,
-        max_usage: body.max_usage ?? null,
-        is_active: body.is_active !== undefined ? !!body.is_active : true
-    };
-};
-
-// GET /api/promotions/active
+// ===== LIST ACTIVE =====
 exports.listActive = async (req, res) => {
     try {
         const data = await Promotion.listActive();
@@ -41,7 +10,7 @@ exports.listActive = async (req, res) => {
     }
 };
 
-// GET /api/promotions (admin)
+// ===== LIST ALL (ADMIN) =====
 exports.listAll = async (req, res) => {
     try {
         const data = await Promotion.listAll();
@@ -51,7 +20,7 @@ exports.listAll = async (req, res) => {
     }
 };
 
-// GET /api/promotions/:id
+// ===== GET ONE =====
 exports.getOne = async (req, res) => {
     try {
         const item = await Promotion.findById(req.params.id);
@@ -62,92 +31,153 @@ exports.getOne = async (req, res) => {
     }
 };
 
-// POST /api/promotions
+// ===== CREATE =====
 exports.create = async (req, res) => {
     try {
-        const payload = validate(req.body);
-        if (await Promotion.findByCode(payload.code)) throw new Error('code exists');
+        // ✅ req.body đã được validate bởi middleware, dùng trực tiếp
+        const payload = req.body;
+        
+        // ✅ Kiểm tra business logic (code trùng)
+        const existing = await Promotion.findByCode(payload.code);
+        if (existing) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi đã tồn tại' 
+            });
+        }
+        
         const created = await Promotion.create(payload);
         res.status(201).json({ success: true, data: created });
     } catch (e) {
-        res.status(e.message === 'FORBIDDEN' ? 403 : 400).json({ success: false, message: e.message });
+        console.error('[CREATE PROMOTION] Error:', e);
+        res.status(400).json({ success: false, message: e.message });
     }
 };
 
-// PUT /api/promotions/:id
+// ===== UPDATE =====
 exports.update = async (req, res) => {
     try {
-        const existing = await Promotion.findById(req.params.id);
-        if (!existing) return res.status(404).json({ success: false, message: 'Not found' });
-        const payload = validate({ ...existing, ...req.body }, true);
-        if (payload.code !== existing.code) {
-            if (await Promotion.findByCode(payload.code)) throw new Error('code exists');
+        const { id } = req.params;
+        
+        // ✅ Kiểm tra promotion tồn tại
+        const existing = await Promotion.findById(id);
+        if (!existing) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Không tìm thấy promotion' 
+            });
         }
-        const updated = await Promotion.update(existing.id, payload);
+        
+        // ✅ req.body đã được validate, merge với existing
+        const payload = { ...existing, ...req.body };
+        
+        // ✅ Kiểm tra code trùng (nếu thay đổi code)
+        if (payload.code !== existing.code) {
+            const duplicate = await Promotion.findByCode(payload.code);
+            if (duplicate) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Mã khuyến mãi đã tồn tại' 
+                });
+            }
+        }
+        
+        const updated = await Promotion.update(id, payload);
         res.json({ success: true, data: updated });
     } catch (e) {
-        res.status(e.message === 'FORBIDDEN' ? 403 : 400).json({ success: false, message: e.message });
+        console.error('[UPDATE PROMOTION] Error:', e);
+        res.status(400).json({ success: false, message: e.message });
     }
 };
 
-// DELETE /api/promotions/:id
+// ===== DELETE =====
 exports.remove = async (req, res) => {
     try {
-        const existing = await Promotion.findById(req.params.id);
-        if (!existing) return res.status(404).json({ success: false, message: 'Not found' });
-        await Promotion.remove(existing.id);
-        res.json({ success: true });
+        const { id } = req.params;
+        
+        const existing = await Promotion.findById(id);
+        if (!existing) {
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Không tìm thấy promotion' 
+            });
+        }
+        
+        await Promotion.remove(id);
+        res.json({ success: true, message: 'Đã xóa promotion' });
     } catch (e) {
-        res.status(e.message === 'FORBIDDEN' ? 403 : 400).json({ success: false, message: e.message });
+        console.error('[DELETE PROMOTION] Error:', e);
+        res.status(400).json({ success: false, message: e.message });
     }
 };
+
+// ===== VALIDATE PROMOTION CODE =====
 exports.validatePromotion = async (req, res) => {
-    const { code, originalAmount } = req.body;
-
-    if (!code) {
-        return res.status(400).json({ success: false, message: 'Vui lòng nhập mã khuyến mãi.' });
-    }
-    if (typeof originalAmount !== 'number' || originalAmount <= 0) {
-        return res.status(400).json({ success: false, message: 'Giá trị đơn hàng không hợp lệ.' });
-    }
-
     try {
-        const promotion = await Promotion.findByCode( code);
+        // ✅ req.body đã được validate bởi middleware
+        const { code, originalAmount } = req.body;
+
+        const promotion = await Promotion.findByCode(code);
 
         if (!promotion) {
-            return res.status(404).json({ success: false, message: 'Mã khuyến mãi không hợp lệ hoặc đã hết hạn.' });
+            return res.status(404).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi không tồn tại' 
+            });
         }
 
-        // Kiểm tra ngày hết hạn
+        // ✅ Kiểm tra trạng thái
+        if (!promotion.is_active) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi không còn hiệu lực' 
+            });
+        }
+
+        // ✅ Kiểm tra thời gian
         const now = new Date();
-        if (now < new Date(promotion.start_date)) {
-            return res.status(400).json({ success: false, message: 'Mã khuyến mãi chưa bắt đầu.' });
-        }
-        if (now > new Date(promotion.end_date)) {
-            return res.status(400).json({ success: false, message: 'Mã khuyến mãi đã hết hạn.' });
+        const startDate = new Date(promotion.start_date);
+        const endDate = new Date(promotion.end_date);
+
+        if (now < startDate) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi chưa bắt đầu' 
+            });
         }
 
-        // Kiểm tra số lượt sử dụng tối đa
-        if (promotion.max_usage != null && promotion.usage_count >= promotion.max_usage) {
-            return res.status(400).json({ success: false, message: 'Mã khuyến mãi đã hết lượt sử dụng.' });
+        if (now > endDate) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi đã hết hạn' 
+            });
         }
 
-        // Kiểm tra giá trị đơn hàng tối thiểu (nếu có)
-        if (promotion.min_order_value != null && originalAmount < promotion.min_order_value) {
-            return res.status(400).json({ success: false, message: `Đơn hàng phải từ ${promotion.min_order_value}đ mới được áp dụng mã.` });
+        // ✅ Kiểm tra lượt sử dụng
+        if (promotion.max_usage && promotion.usage_count >= promotion.max_usage) {
+            return res.status(400).json({ 
+                success: false, 
+                message: 'Mã khuyến mãi đã hết lượt sử dụng' 
+            });
         }
 
+        // ✅ Tính toán giảm giá
         let discountAmount = 0;
+        
         if (promotion.discount_type === 'percentage') {
             discountAmount = (originalAmount * promotion.discount_value) / 100;
-            // Nếu có giới hạn giảm tối đa
-            if (promotion.max_discount_value != null && discountAmount > promotion.max_discount_value) {
+            
+            // Giới hạn giảm tối đa (nếu có)
+            if (promotion.max_discount_value && discountAmount > promotion.max_discount_value) {
                 discountAmount = promotion.max_discount_value;
             }
         } else if (promotion.discount_type === 'fixed_amount') {
             discountAmount = promotion.discount_value;
+            
             // Không giảm quá giá trị đơn hàng
-            if (discountAmount > originalAmount) discountAmount = originalAmount;
+            if (discountAmount > originalAmount) {
+                discountAmount = originalAmount;
+            }
         }
 
         res.status(200).json({
@@ -155,13 +185,18 @@ exports.validatePromotion = async (req, res) => {
             message: 'Áp dụng mã khuyến mãi thành công!',
             data: {
                 code: promotion.code,
+                discount_type: promotion.discount_type,
+                discount_value: promotion.discount_value,
                 discountAmount: discountAmount,
                 finalAmount: originalAmount - discountAmount
             }
         });
 
     } catch (error) {
-        console.error('Error validating promotion:', error);
-        res.status(500).json({ success: false, message: 'Lỗi hệ thống khi kiểm tra mã.' });
+        console.error('[VALIDATE PROMOTION] Error:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Lỗi hệ thống khi kiểm tra mã' 
+        });
     }
 };

@@ -1,0 +1,414 @@
+.ai-itinerary-section {
+    padding: 120px 0;
+    background: linear-gradient(135deg, #0072bb 0%, #005a94 100%); /* ✅ Đổi sang xanh dương */
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+/* Background Decoration */
+.ai-bg-decoration {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+}
+
+.ai-circle {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.ai-circle-1 {
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    top: -200px;
+    right: -200px;
+    animation: ai-float 20s ease-in-out infinite;
+}
+
+.ai-circle-2 {
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(255,158,27,0.2) 0%, transparent 70%); /* ✅ Cam nhạt */
+    bottom: -100px;
+    left: -100px;
+    animation: ai-float 15s ease-in-out infinite reverse;
+}
+
+@keyframes ai-float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -30px) scale(1.1); }
+}
+
+.ai-grid-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+/* Header */
+.ai-section-header {
+    text-align: center;
+    margin-bottom: 60px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-radius: 50px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.ai-badge i {
+    font-size: 1.2rem;
+    animation: ai-sparkle 2s ease-in-out infinite;
+}
+
+@keyframes ai-sparkle {
+    0%, 100% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+}
+
+.ai-section-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    line-height: 1.2;
+}
+
+.ai-highlight {
+    position: relative;
+    color: #ff9e1b; /* ✅ Đổi sang cam (secondary color) */
+}
+
+.ai-highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 158, 27, 0.3); /* ✅ Cam nhạt */
+    z-index: -1;
+    border-radius: 10px;
+}
+
+.ai-section-subtitle {
+    font-size: 1.15rem;
+    max-width: 700px;
+    margin: 0 auto;
+    opacity: 0.95;
+    line-height: 1.7;
+}
+
+/* Features Grid */
+.ai-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-bottom: 80px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-feature-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    padding: 35px 25px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.ai-feature-card:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.ai-feature-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.ai-feature-card:hover .ai-feature-icon {
+    transform: rotateY(360deg);
+    background: linear-gradient(135deg, #ff9e1b, #e88c00); /* ✅ Cam gradient */
+}
+
+.ai-feature-icon i {
+    font-size: 2.2rem;
+}
+
+.ai-feature-card h3 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.ai-feature-card p {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* How It Works */
+.ai-how-it-works {
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border-radius: 30px;
+    padding: 50px 40px;
+    margin-bottom: 60px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+}
+
+.ai-how-title {
+    text-align: center;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 50px;
+}
+
+.ai-steps-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+
+.ai-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    position: relative;
+}
+
+.ai-step-number {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #ff9e1b, #e88c00); /* ✅ Cam gradient */
+    color: white; /* ✅ Chữ trắng thay vì tím */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(255, 158, 27, 0.4); /* ✅ Shadow cam */
+    border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.ai-step-content {
+    text-align: center;
+}
+
+.ai-step-content h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.ai-step-content p {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin: 0;
+}
+
+.ai-step-arrow {
+    position: absolute;
+    right: -30px;
+    top: 25px;
+    font-size: 2rem;
+    opacity: 0.5;
+}
+
+/* CTA Section */
+.ai-cta-section {
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.1)); /* ✅ TĂNG OPACITY */
+    backdrop-filter: blur(20px); /* ✅ TĂNG BLUR */
+    border: 2px solid rgba(255, 255, 255, 0.4); /* ✅ TĂNG OPACITY BORDER */
+    border-radius: 30px;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25); /* ✅ TĂNG SHADOW */
+    position: relative;
+    z-index: 1;
+}
+
+.ai-cta-content {
+    text-align: center;
+}
+
+.ai-cta-content h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: #ffffff; /* ✅ TRẮNG TINH */
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* ✅ THÊM TEXT SHADOW */
+}
+
+.ai-cta-content p {
+    font-size: 1.1rem;
+    opacity: 0.95; /* ✅ TĂNG OPACITY */
+    margin: 0;
+    color: rgba(255, 255, 255, 0.95); /* ✅ ĐẢM BẢO MÀU TRẮNG */
+}
+
+/* ✅ FIX: BUTTONS COLOR CONTRAST */
+.ai-cta-buttons {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.ai-cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 40px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 50px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border: none;
+    cursor: pointer;
+}
+
+/* ✅ PRIMARY BUTTON - CAM SÁNG */
+.ai-cta-button.primary {
+    background: linear-gradient(135deg, #ff9e1b 0%, #ff7b00 100%); /* ✅ CAM SÁNG HƠN */
+    color: #ffffff;
+    box-shadow: 0 10px 30px rgba(255, 123, 0, 0.5); /* ✅ SHADOW CAM */
+}
+
+.ai-cta-button.primary:hover {
+    background: linear-gradient(135deg, #ffb347 0%, #ff9e1b 100%);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 123, 0, 0.6);
+    color: #ffffff;
+}
+
+/* ✅ SECONDARY BUTTON - TRẮNG */
+.ai-cta-button.secondary {
+    background: #ffffff; /* ✅ NỀN TRẮNG */
+    color: #0072bb; /* ✅ CHỮ XANH */
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.3);
+}
+
+.ai-cta-button.secondary:hover {
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-3px);
+    box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+    color: #005a94; /* ✅ XANH ĐẬM HƠN KHI HOVER */
+}
+
+/* ✅ RESPONSIVE */
+@media (max-width: 991px) {
+    .ai-section-title {
+        font-size: 2.5rem;
+    }
+
+    .ai-steps-container {
+        flex-direction: column;
+    }
+
+    .ai-step-arrow {
+        display: none;
+    }
+
+    .ai-cta-section {
+        padding: 40px 30px;
+    }
+    
+    .ai-cta-buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .ai-cta-button {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .ai-itinerary-section {
+        padding: 80px 0;
+    }
+
+    .ai-section-title {
+        font-size: 2rem;
+    }
+
+    .ai-features-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .ai-how-it-works {
+        padding: 30px 20px;
+    }
+
+    .ai-cta-section {
+        padding: 35px 25px;
+    }
+
+    .ai-cta-content h3 {
+        font-size: 1.5rem;
+    }
+
+    .ai-cta-content p {
+        font-size: 0.95rem;
+    }
+
+    .ai-cta-button {
+        width: 100%;
+        justify-content: center;
+        padding: 15px 30px;
+        font-size: 1rem;
+    }
+}

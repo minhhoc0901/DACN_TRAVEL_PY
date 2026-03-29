@@ -1,0 +1,148 @@
+/* Styles consistent with existing admin look; adjust variables if needed */
+
+.promotion-page {
+  padding: 20px;
+  background: var(--admin-content-bg, #f7fbfc);
+}
+
+.page-title {
+  margin: 0 0 18px 0;
+  font-size: 1.5rem;
+  color: var(--admin-sidebar-active-text, #32325d);
+}
+
+.promo-form-section {
+  margin-bottom: 18px;
+}
+
+.promo-form {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: auto auto;
+  gap: 12px;
+  align-items: center;
+}
+
+/* first row full-width inputs */
+.promo-form input[name="code"],
+.promo-form input[name="description"] {
+  grid-column: 1 / -1;
+}
+
+/* second row layout (adjust spans as needed) */
+.promo-form select[name="discount_type"] { grid-column: 1 / 2; }
+.promo-form input[name="discount_value"] { grid-column: 2 / 3; }
+.promo-form input[name="start_date"] { grid-column: 3 / 4; }
+.promo-form input[name="end_date"] { grid-column: 4 / 5; }
+.promo-form input[name="max_usage"] { grid-column: 5 / 6; }
+.promo-form .form-checkbox { grid-column: 6 / 7; align-self: center; }
+.promo-form .form-actions { grid-column: 7 / 9; justify-self: end; }
+
+/* smaller screens: stack vertically */
+@media (max-width: 768px) {
+  .promo-form {
+    grid-template-columns: 1fr;
+  }
+  .promo-form select[name="discount_type"],
+  .promo-form input[name="discount_value"],
+  .promo-form input[name="start_date"],
+  .promo-form input[name="end_date"],
+  .promo-form input[name="max_usage"],
+  .promo-form .form-checkbox,
+  .promo-form .form-actions {
+    grid-column: 1 / -1;
+  }
+}
+
+.form-control {
+  padding: 8px 10px;
+  border: 1px solid var(--admin-sidebar-border-color, #e9ecef);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--admin-sidebar-text-color, #525f7f);
+  min-width: 160px;
+  box-sizing: border-box;
+}
+
+.small-input { width: 140px; }
+
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--admin-sidebar-text-color, #525f7f);
+}
+
+/* Actions */
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Button variants (simple) */
+.btn {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #ffffff;
+  color: var(--admin-sidebar-active-text, #32325d);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: none;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--admin-sidebar-text-color, #525f7f);
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-danger {
+  background: #ff6b6b;
+  color: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.btn-sm {
+  padding: 6px 8px;
+  font-size: 0.85rem;
+}
+
+/* Table */
+.table-responsive { overflow-x: auto; }
+
+.promotion-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.promotion-table th,
+.promotion-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--admin-sidebar-border-color, #e9ecef);
+  color: var(--admin-sidebar-text-color, #525f7f);
+  font-size: 0.95rem;
+}
+
+.promotion-table thead th {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--admin-sidebar-section-title-color, #8898aa);
+  background: transparent;
+  font-weight: 700;
+}
+
+/* responsive smaller screens */
+@media (max-width: 768px) {
+  .promo-form { gap: 8px; }
+  .form-control { min-width: 120px; }
+  .small-input { width: 110px; }
+  .promotion-table th, .promotion-table td { padding: 8px; font-size: 0.85rem; }
+}

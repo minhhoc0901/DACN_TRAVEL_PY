@@ -1,0 +1,283 @@
+.table-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Loading state */
+.table-loading {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.table-loading .spinner-border {
+    width: 3rem;
+    height: 3rem;
+    margin-bottom: 1rem;
+}
+
+.table-loading p {
+    color: #6c757d;
+    margin: 0;
+}
+
+/* Empty state */
+.table-empty {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: #6c757d;
+}
+
+.table-empty i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.3;
+}
+
+.table-empty p {
+    margin: 0;
+    font-size: 1.125rem;
+}
+
+/* Table responsive wrapper */
+.table-responsive {
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+}
+
+/* Table styles */
+.refund-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.refund-table thead {
+    background: #f8f9fa;
+}
+
+.refund-table th {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    white-space: nowrap;
+}
+
+.refund-table td {
+    padding: 1rem 0.75rem;
+    border-bottom: 1px solid #f1f3f5;
+    vertical-align: middle;
+}
+
+.refund-table tbody tr {
+    transition: background-color 0.2s;
+}
+
+.refund-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+/* Cell content styling */
+.refund-id {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.booking-info strong {
+    display: block;
+    color: #495057;
+    margin-bottom: 0.25rem;
+}
+
+.customer-info {
+    min-width: 150px;
+}
+
+.customer-info strong {
+    display: block;
+    color: #212529;
+    margin-bottom: 0.125rem;
+}
+
+.customer-info small {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+.tour-info {
+    max-width: 200px;
+}
+
+.tour-info span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.refund-percent {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.refund-amount {
+    color: #30cfd0;
+    font-size: 1rem;
+}
+
+.text-danger {
+    color: #dc3545;
+}
+
+.text-muted {
+    color: #6c757d;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.badge-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.badge-info {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.badge-success {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.badge-danger {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.badge-secondary {
+    background: #e2e3e5;
+    color: #41464b;
+}
+
+/* Action buttons */
+.btn {
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+}
+
+.btn-primary:active {
+    transform: scale(0.95);
+}
+
+/* Pagination */
+.table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.pagination-info {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.pagination-controls .btn {
+    min-width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+}
+
+.pagination-controls .btn-secondary {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.pagination-controls .btn-secondary:hover:not(:disabled) {
+    background: #dee2e6;
+}
+
+.pagination-controls .btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.pagination-controls .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pagination-controls span {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .refund-table {
+        font-size: 0.8rem;
+    }
+    
+    .refund-table th,
+    .refund-table td {
+        padding: 0.75rem 0.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .table-pagination {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .pagination-controls {
+        width: 100%;
+        justify-content: center;
+    }
+}

@@ -7,6 +7,8 @@ const LocationForm = ({
   onSubmit,
   onCancel,
   selectedLocation = null,
+  // availableLocations = [],
+  availableHotels = []
 }) => {
   const [availableLocations, setAvailableLocations] = useState([]);
   const [previewImages, setPreviewImages] = useState({});
@@ -257,7 +259,6 @@ const LocationForm = ({
   // Form submission handler
   const handleSubmit = (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
     
     const locationFormData = new FormData();
 
@@ -275,73 +276,55 @@ const LocationForm = ({
     locationFormData.append('ticket_price', formData.ticket_price);
     locationFormData.append('tip', formData.tip);
 
-    // Process arrays and objects - filter out empty values
+    // ✅ CHUẨN HÓA VÀ THÊM CÁC MẢNG (CHỈ STRINGIFY MỘT LẦN TẠI ĐÂY)
     locationFormData.append('bestTimes', JSON.stringify(
-      formData.bestTimes.filter(time => time.trim())
+      (formData.bestTimes || []).filter(time => time && time.trim())
     ));
-
-    locationFormData.append('travelMethods', JSON.stringify({
-      fromTuyHoa: formData.travelMethods.fromTuyHoa.filter(m => m.trim()),
-      fromElsewhere: formData.travelMethods.fromElsewhere.filter(m => m.trim())
-    }));
-
-    // Process experiences with their existing images
-    locationFormData.append('experiences', JSON.stringify(
-      formData.experiences
-        .filter(exp => exp.text.trim())
-        .map(exp => ({
-          text: exp.text.trim(),
-          imageUrl: exp.imageUrl // Keep reference to existing image
-        }))
-    ));
-
-    // Process cuisines with their existing images
-    locationFormData.append('cuisines', JSON.stringify(
-      formData.cuisines
-        .filter(cuisine => cuisine.text.trim())
-        .map(cuisine => ({
-          text: cuisine.text.trim(),
-          imageUrl: cuisine.imageUrl // Keep reference to existing image
-        }))
-    ));
-
     locationFormData.append('tips', JSON.stringify(
-      formData.tips.filter(tip => tip.trim())
+      (formData.tips || []).filter(tip => tip && tip.trim())
     ));
-
     locationFormData.append('nearby', JSON.stringify(
-      formData.nearby.filter(id => id)
+      (formData.nearby || []).filter(id => id)
+    ));
+    locationFormData.append('hotel_ids', JSON.stringify(
+      formData.hotel_ids || []
+    ));
+    locationFormData.append('travelMethods', JSON.stringify(formData.travelMethods || {}));
+
+    // Thêm experiences và cuisines (chỉ text)
+    locationFormData.append('experiences', JSON.stringify(
+      (formData.experiences || []).map(exp => ({ text: exp.text }))
+    ));
+    locationFormData.append('cuisines', JSON.stringify(
+      (formData.cuisines || []).map(cuisine => ({ text: cuisine.text }))
     ));
 
-    // Handle file uploads
-    if (formData.images.introduction instanceof File) {
+    // Handle file uploads for main images
+    if (formData.images?.introduction instanceof File) {
       locationFormData.append('introductionImage', formData.images.introduction);
     }
-    
-    if (formData.images.architecture instanceof File) {
+    if (formData.images?.architecture instanceof File) {
       locationFormData.append('architectureImage', formData.images.architecture);
     }
 
     // Handle experience images
-    formData.experiences.forEach((exp, index) => {
+    (formData.experiences || []).forEach((exp, index) => {
       if (exp.image instanceof File) {
         locationFormData.append(`experienceImage_${index}`, exp.image);
       }
     });
 
     // Handle cuisine images
-    formData.cuisines.forEach((cuisine, index) => {
+    (formData.cuisines || []).forEach((cuisine, index) => {
       if (cuisine.image instanceof File) {
         locationFormData.append(`cuisineImage_${index}`, cuisine.image);
       }
     });
 
-    // Submit the form
-    onSubmit(e, locationFormData)
-      .finally(() => {
-        setIsSubmitting(false);
-      });
+    // Gọi hàm onSubmit từ component cha với FormData đã được chuẩn bị
+    onSubmit(e, locationFormData);
   };
+
 
   
 
@@ -375,8 +358,9 @@ const LocationForm = ({
               <option value="Thiên nhiên">Thiên nhiên</option>
               <option value="Bãi biển">Bãi biển</option>
               <option value="Văn hóa">Văn hóa</option>
-              <option value="Di tích lịch sử">Di tích lịch sử</option>
+              <option value="di tích">Di tích</option>
             </select>
+            
           </div>
           <div className="form-group">
             <label className="form-label">Mô tả ngắn</label>
@@ -892,6 +876,31 @@ const LocationForm = ({
                 </option>
               ))}
           </select>
+        </div>
+
+
+        <div className="form-section">
+          <h3 className="section-title-manager">Khách sạn liên kết</h3>
+          <select
+            multiple
+            value={(formData.hotel_ids || []).map(String)} // Đảm bảo value là mảng string
+            onChange={(e) => {
+              const values = Array.from(
+                e.target.selectedOptions,
+                (option) => option.value
+              );
+              setFormData((prev) => ({ ...prev, hotel_ids: values.map(Number) })); // Lưu lại dưới dạng số
+            }}
+            className="form-input"
+            size={5}
+          >
+            {availableHotels.map((hotel) => (
+              <option key={hotel.id} value={hotel.id}>
+                {hotel.name}
+              </option>
+            ))}
+          </select>
+          <small>Giữ phím Ctrl (hoặc Cmd trên Mac) để chọn nhiều khách sạn.</small>
         </div>
 
         <div className="modal-footer">

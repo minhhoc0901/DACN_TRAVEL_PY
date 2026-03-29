@@ -7,7 +7,7 @@ import avatar3 from '../../assets/images/dev2.jpg';
 const team = [
   {
     name: "Nguyễn Thành Nam",
-    role: "Developer, designer",
+    role: "Developer, Designer",
     img: avatar1,
     socials: {
       facebook: "#",
@@ -17,7 +17,7 @@ const team = [
   },
   {
     name: "Lê Minh Học",
-    role: "Developer, Thiết kế cơ sở dữ liệu",
+    role: "Developer, Database Designer",
     img: avatar2,
     socials: {
       facebook: "#",
@@ -27,7 +27,7 @@ const team = [
   },
   {
     name: "Trần Vũ Huy",
-    role: "Developer, Quản lý dự án",
+    role: "Developer, Project Manager",
     img: avatar3,
     socials: {
       facebook: "#",
@@ -38,45 +38,50 @@ const team = [
 ];
 
 const AboutTeam = () => (
-  <section className="aboutteam-modern-section">
+  <section className="pyat-section">
     <div className="container">
-      <div className="aboutteam-header text-center">
-        <span className="aboutteam-badge">Đội ngũ sáng tạo</span>
-        <h2 className="aboutteam-title">
-          Gặp gỡ <span className="highlight">Team Phú Yên Travel</span>
-        </h2>
-        <p className="aboutteam-desc">
-          Đội ngũ trẻ trung, nhiệt huyết và đầy sáng tạo – luôn đồng hành cùng bạn trên mọi hành trình.
+      {/* Header */}
+      <div className="pyat-header">
+        <span className="pyat-badge">Đội ngũ của chúng tôi</span>
+        <h2 className="pyat-title">Gặp Gỡ Đội Ngũ</h2>
+        <p className="pyat-subtitle">
+          Những người đam mê du lịch và công nghệ, luôn nỗ lực mang đến trải nghiệm tốt nhất
         </p>
       </div>
-      <div className="aboutteam-grid">
-        {team.map((member, idx) => (
-          <div className="aboutteam-card" key={idx}>
-            <div className="aboutteam-avatar-wrap">
-              <img src={member.img} alt={member.name} className="aboutteam-avatar" />
-              <div className="aboutteam-socials">
-                <a href={member.socials.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-                  <i className="bi bi-facebook"></i>
-                </a>
-                <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                  <i className="bi bi-linkedin"></i>
-                </a>
-                <a href={member.socials.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                  <i className="bi bi-instagram"></i>
-                </a>
+
+      {/* Team Grid */}
+      <div className="pyat-team-grid">
+        {team.map((member, index) => (
+          <div key={index} className="pyat-team-card">
+            <div className="pyat-team-image">
+              <img src={member.img} alt={member.name} />
+              <div className="pyat-team-overlay">
+                <div className="pyat-social-links">
+                  <a href={member.socials.facebook} target="_blank" rel="noopener noreferrer">
+                    <i className="bi bi-facebook"></i>
+                  </a>
+                  <a href={member.socials.linkedin} target="_blank" rel="noopener noreferrer">
+                    <i className="bi bi-linkedin"></i>
+                  </a>
+                  <a href={member.socials.instagram} target="_blank" rel="noopener noreferrer">
+                    <i className="bi bi-instagram"></i>
+                  </a>
+                </div>
               </div>
             </div>
-            <div className="aboutteam-info">
-              <h3 className="aboutteam-name">{member.name}</h3>
-              <span className="aboutteam-role">{member.role}</span>
+            <div className="pyat-team-info">
+              <h3>{member.name}</h3>
+              <p>{member.role}</p>
             </div>
           </div>
         ))}
       </div>
-      <div className="aboutteam-cta text-center">
+
+      {/* CTA */}
+      <div className="pyat-cta">
         <h3>Bạn muốn đồng hành cùng chúng tôi?</h3>
-        <a href="#careers" className="aboutteam-btn">
-          Gia nhập team <i className="bi bi-arrow-right"></i>
+        <a href="#careers" className="pyat-btn">
+          Tham gia đội ngũ <i className="bi bi-arrow-right"></i>
         </a>
       </div>
     </div>

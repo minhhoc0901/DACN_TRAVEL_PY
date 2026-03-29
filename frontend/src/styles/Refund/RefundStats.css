@@ -1,0 +1,483 @@
+.stats-section {
+    margin-bottom: 2rem;
+}
+
+.stats-loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    flex-shrink: 0;
+}
+
+.stat-content {
+    flex: 1;
+}
+
+.stat-content h3 {
+    font-size: 0.875rem;
+    color: #6c757d;
+    margin: 0 0 0.5rem 0;
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem 0;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Màu sắc cho từng loại stat */
+.stat-total .stat-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.stat-total .stat-value {
+    color: #667eea;
+}
+
+.stat-pending .stat-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.stat-pending .stat-value {
+    color: #f5576c;
+}
+
+.stat-completed .stat-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.stat-completed .stat-value {
+    color: #4facfe;
+}
+
+.stat-rejected .stat-icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.stat-rejected .stat-value {
+    color: #fa709a;
+}
+
+.stat-amount .stat-icon {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    color: white;
+}
+
+.stat-amount .stat-value {
+    color: #30cfd0;
+    font-size: 1.5rem;
+}
+
+.stat-avg .stat-icon {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.stat-avg .stat-value {
+    color: #5a6c7d;
+    font-size: 1.3rem;
+}
+
+.stat-credit .stat-icon {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #ff6b6b;
+}
+
+.stat-credit .stat-value {
+    color: #ff6b6b;
+}
+
+.stat-bank .stat-icon {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    color: #ff6b9d;
+}
+
+.stat-bank .stat-value {
+    color: #ff6b9d;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ================================
+   STATS SECTION
+   ================================ */
+.refund_stats_section {
+    padding: 1.5rem 2rem;
+    background: #f8f9fa;
+}
+
+.refund_stats_grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.25rem;
+}
+
+/* ================================
+   STAT CARD
+   ================================ */
+.refund_stat_card {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.refund_stat_card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Primary cards with colored borders */
+.refund_stat_card.refund_stat_primary {
+    border-color: #667eea;
+}
+
+.refund_stat_card.refund_stat_success {
+    border-color: #4facfe;
+}
+
+.refund_stat_card.refund_stat_warning {
+    border-color: #fa709a;
+}
+
+.refund_stat_card.refund_stat_danger {
+    border-color: #ff6b6b;
+}
+
+.refund_stat_card.refund_stat_info {
+    border-color: #30cfd0;
+}
+
+/* ================================
+   STAT ICON
+   ================================ */
+.refund_stat_icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+/* Icon backgrounds */
+.refund_stat_total .refund_stat_icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.refund_stat_pending .refund_stat_icon {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #ff6b6b;
+}
+
+.refund_stat_approved .refund_stat_icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.refund_stat_rejected .refund_stat_icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+/* ================================
+   STATS SECTION
+   ================================ */
+.run_ad_stats_section {
+    padding: 0;
+    background: transparent;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+
+}
+
+.run_ad_stats_grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.25rem;
+}
+
+/* ================================
+   STAT CARD
+   ================================ */
+.run_ad_stat_card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.run_ad_stat_card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Colored borders */
+.run_ad_stat_total {
+    border-left-color: #667eea;
+}
+
+.run_ad_stat_pending {
+    border-left-color: #ffc107;
+}
+
+.run_ad_stat_completed {
+    border-left-color: #4facfe;
+}
+
+.run_ad_stat_rejected {
+    border-left-color: #fa709a;
+}
+
+.run_ad_stat_amount {
+    border-left-color: #30cfd0;
+}
+
+.run_ad_stat_avg {
+    border-left-color: #a8edea;
+}
+
+.run_ad_stat_credit {
+    border-left-color: #ff6b6b;
+}
+
+.run_ad_stat_bank {
+    border-left-color: #ff6b9d;
+}
+
+/* ================================
+   STAT ICON
+   ================================ */
+.run_ad_stat_icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+/* Icon backgrounds */
+.run_ad_stat_total .run_ad_stat_icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.run_ad_stat_pending .run_ad_stat_icon {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #ff6b6b;
+}
+
+.run_ad_stat_completed .run_ad_stat_icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.run_ad_stat_rejected .run_ad_stat_icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.run_ad_stat_amount .run_ad_stat_icon {
+    background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+    color: white;
+}
+
+.run_ad_stat_avg .run_ad_stat_icon {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+.run_ad_stat_credit .run_ad_stat_icon {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    color: #ff6b6b;
+}
+
+.run_ad_stat_bank .run_ad_stat_icon {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    color: #ff6b9d;
+}
+
+/* ================================
+   STAT CONTENT
+   ================================ */
+.run_ad_stat_content {
+    flex: 1;
+    min-width: 0;
+}
+
+.run_ad_stat_label {
+    font-size: 0.8125rem;
+    color: #6c757d;
+    margin: 0 0 0.375rem 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.run_ad_stat_value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.run_ad_stat_sublabel {
+    font-size: 0.75rem;
+    color: #adb5bd;
+    margin: 0.25rem 0 0 0;
+}
+
+/* Value colors */
+.run_ad_stat_total .run_ad_stat_value {
+    color: #667eea;
+}
+
+.run_ad_stat_pending .run_ad_stat_value {
+    color: #ffc107;
+}
+
+.run_ad_stat_completed .run_ad_stat_value {
+    color: #4facfe;
+}
+
+.run_ad_stat_rejected .run_ad_stat_value {
+    color: #fa709a;
+}
+
+.run_ad_stat_amount .run_ad_stat_value {
+    color: #30cfd0;
+    font-size: 1.375rem;
+}
+
+.run_ad_stat_avg .run_ad_stat_value {
+    color: #5a6c7d;
+    font-size: 1.25rem;
+}
+
+.run_ad_stat_credit .run_ad_stat_value {
+    color: #ff6b6b;
+}
+
+.run_ad_stat_bank .run_ad_stat_value {
+    color: #ff6b9d;
+}
+
+/* Loading state */
+.run_ad_stats_loading {
+    text-align: center;
+    padding: 2rem;
+    color: #6c757d;
+}
+
+.run_ad_stats_loading i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 1400px) {
+    .run_ad_stats_grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .run_ad_stats_grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .run_ad_stats_grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .run_ad_stat_card {
+        padding: 1rem;
+    }
+
+    .run_ad_stat_icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+
+    .run_ad_stat_value {
+        font-size: 1.25rem;
+    }
+
+    .run_ad_stat_amount .run_ad_stat_value {
+        font-size: 1.125rem;
+    }
+}

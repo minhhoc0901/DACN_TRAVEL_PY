@@ -1,4 +1,3 @@
-
 const Location = require('../models/Location');
 const path = require('path');
 const fs = require('fs');
@@ -88,7 +87,8 @@ exports.createLocation = async (req, res) => {
             experiences: JSON.parse(data.experiences || '[]'),
             cuisines: JSON.parse(data.cuisines || '[]'),
             tips: JSON.parse(data.tips || '[]'),
-            nearby: JSON.parse(data.nearby || '[]')
+            nearby: JSON.parse(data.nearby || '[]'),
+            hotel_ids: JSON.parse(data.hotel_ids || '[]') 
         };
 
         // Create location first
@@ -277,7 +277,7 @@ exports.updateLocation = async (req, res) => {
       let parsedData = { ...data };
       
       // Parse JSON strings - handling all fields consistently
-      const fieldsToProcess = ['bestTimes', 'tips', 'experiences', 'travelMethods', 'nearby', 'cuisines'];
+      const fieldsToProcess = ['bestTimes', 'tips', 'experiences', 'travelMethods', 'nearby', 'cuisines', 'hotel_ids']; // ✅ THÊM MỚI 'hotel_ids'
       
       for (const field of fieldsToProcess) {
         if (typeof data[field] === 'string') {
@@ -568,19 +568,6 @@ exports.removeNearbyLocation = async (req, res) => {
     }
 };
 
-// exports.getLocationByName = async (req, res) => {
-//     try {
-//       const name = req.params.name;
-//       const location = await Location.getLocationByName(name);
-//       if (!location) {
-//         return res.status(404).json({ error: 'Không tìm thấy địa điểm' });
-//       }
-//       res.status(200).json(location);
-//     } catch (error) {
-//       console.error('Lỗi khi lấy thông tin địa điểm:', error.message);
-//       res.status(500).json({ error: 'Lỗi server' });
-//     }
-// };
 
 exports.getLocationByName = async (req, res) => {
     try {

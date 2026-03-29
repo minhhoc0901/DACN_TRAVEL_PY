@@ -70,3 +70,13 @@ exports.remove = async (req, res) => {
         res.status(e.message === 'Forbidden' ? 403 : 400).json({ success: false, message: e.message });
     }
 };
+// Thêm hàm trả về tất cả bản ghi tour prices
+exports.listAll = async (req, res) => {
+  try {
+    const rows = await TourPrice.listAll();
+    return res.json(rows);
+  } catch (err) {
+    console.error('[tourPriceController] listAll error', err);
+    return res.status(500).json({ message: err.message || 'Server error' });
+  }
+};

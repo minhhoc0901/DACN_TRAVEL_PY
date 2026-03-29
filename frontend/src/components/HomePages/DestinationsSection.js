@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/HomePageCSS/DestinationsSection.css';
-import axios from 'axios'; // Thêm axios
+import axios from 'axios';
 
 const DestinationsSection = () => {
     const [activeTab, setActiveTab] = useState('all');
@@ -12,7 +12,6 @@ const DestinationsSection = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Placeholder cho ảnh nếu API không trả về
     const placeholderImage = 'https://via.placeholder.com/400x300?text=Không+có+ảnh';
 
     useEffect(() => {
@@ -38,22 +37,17 @@ const DestinationsSection = () => {
         { id: 'thiên nhiên', name: 'Thiên nhiên', icon: 'bi-tree' },
         { id: 'bãi biển', name: 'Bãi biển', icon: 'bi-water' },
         { id: 'văn hóa', name: 'Văn hóa', icon: 'bi-bank' },
-        // Thay đổi 'id' để khớp với giá trị 'type' từ API (ví dụ: 'di tích')
-        // Giữ 'name' để hiển thị cho người dùng.
         { id: 'di tích', name: 'Di tích lịch sử', icon: 'bi-landmark' } 
     ];
     
-    // Lọc các địa điểm theo category (type từ API)
     const filteredDestinations = activeTab === 'all' 
         ? locations 
         : locations.filter(item => {
-            if (!item.type) return false; // Bỏ qua nếu địa điểm không có type
-            // So sánh không phân biệt chữ hoa/thường và loại bỏ khoảng trắng thừa
+            if (!item.type) return false;
             return item.type.trim().toLowerCase() === activeTab.toLowerCase();
           });
 
     useEffect(() => {
-        // Animation khi chuyển tab
         if (activeTab) {
             setAnimateOut(true);
             const timer = setTimeout(() => {
@@ -63,11 +57,10 @@ const DestinationsSection = () => {
         }
     }, [activeTab]);
 
-    // Render sao đánh giá
     const renderStars = (rating) => {
-        const numRating = parseFloat(rating) || 0; // Đảm bảo rating là số
+        const numRating = parseFloat(rating) || 0;
         return (
-            <div className="stars-rating">
+            <div className="pydes-stars">
                 {[...Array(5)].map((_, i) => (
                     <i 
                         key={i} 
@@ -81,10 +74,11 @@ const DestinationsSection = () => {
 
     if (loading) {
         return (
-            <section className="destinations-section">
+            <section className="pydes-section">
                 <div className="container">
-                    <div className="destinations-loading" style={{ textAlign: 'center', padding: '50px' }}>
-                        Đang tải các điểm đến...
+                    <div className="pydes-loading">
+                        <div className="pydes-spinner"></div>
+                        <p>Đang tải các điểm đến...</p>
                     </div>
                 </div>
             </section>
@@ -93,10 +87,11 @@ const DestinationsSection = () => {
 
     if (error) {
         return (
-            <section className="destinations-section">
+            <section className="pydes-section">
                 <div className="container">
-                    <div className="destinations-error" style={{ textAlign: 'center', padding: '50px', color: 'red' }}>
-                        Lỗi: {error}
+                    <div className="pydes-error">
+                        <i className="bi bi-exclamation-triangle"></i>
+                        <p>{error}</p>
                     </div>
                 </div>
             </section>
@@ -104,115 +99,129 @@ const DestinationsSection = () => {
     }
 
     return (
-        <section className="destinations-section">
-            <div className="destinations-decor">
-                <div className="decor-circle decor-circle-1"></div>
-                <div className="decor-circle decor-circle-2"></div>
-                <div className="decor-line"></div>
+        <section className="pydes-section">
+            {/* Background Decoration */}
+            <div className="pydes-bg-shapes">
+                <div className="pydes-shape pydes-shape-1"></div>
+                <div className="pydes-shape pydes-shape-2"></div>
+                <div className="pydes-shape pydes-shape-3"></div>
             </div>
             
-            <div className="container">
-                <div className="destinations-header">
-                    <div className="destinations-header-content">
-                        <div className="section-subtitle">Khám phá Phú Yên</div>
-                        <h2 className="section-title">Điểm Đến <span className="highlight-text">Nổi Bật</span></h2>
-                        <p className="section-desc">
-                            Khám phá những địa điểm du lịch tuyệt vời nhất tại Phú Yên, từ bãi biển hoang sơ đến các di tích lịch sử văn hóa đặc sắc
-                        </p>
+            <div className="container position-relative">
+                {/* ========== HEADER ========== */}
+                <div 
+                    className="pydes-header"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                >
+                    <span className="pydes-badge">Điểm đến nổi bật</span>
+                    <h2 className="pydes-title">
+                        Khám phá <span className="pydes-highlight">Phú Yên</span>
+                    </h2>
+                    <div className="pydes-separator">
+                        <span></span>
+                        <i className="bi bi-geo-alt-fill"></i>
+                        <span></span>
                     </div>
+                    <p className="pydes-subtitle">
+                        Khám phá những địa điểm du lịch tuyệt vời nhất tại Phú Yên, từ bãi biển hoang sơ đến các di tích lịch sử văn hóa đặc sắc
+                    </p>
                 </div>
 
-                <div className="destinations-tabs">
-                    <div className="destinations-tabs-wrapper">
-                        {categories.map(category => (
-                            <button 
-                                key={category.id}
-                                className={`tab-button ${activeTab === category.id ? 'active' : ''}`}
-                                onClick={() => setActiveTab(category.id)}
-                            >
-                                <i className={`bi ${category.icon}`}></i>
-                                <span>{category.name}</span>
-                            </button>
-                        ))}
-                    </div>
+                {/* ========== TABS ========== */}
+                <div 
+                    className="pydes-tabs"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    data-aos-delay="200"
+                >
+                    {categories.map(category => (
+                        <button 
+                            key={category.id}
+                            className={`pydes-tab ${activeTab === category.id ? 'active' : ''}`}
+                            onClick={() => setActiveTab(category.id)}
+                        >
+                            <i className={`bi ${category.icon}`}></i>
+                            <span>{category.name}</span>
+                        </button>
+                    ))}
                 </div>
 
-                <div className={`destinations-grid ${animateOut ? 'animate-out' : ''}`}>
-                    {filteredDestinations.slice(0, 6).map(destination => (
+                {/* ========== GRID ========== */}
+                <div className={`pydes-grid ${animateOut ? 'fade-out' : ''}`}>
+                    {filteredDestinations.slice(0, 6).map((destination, index) => (
                         <div 
                             key={destination.id} 
-                            className={`destination-card ${activeCard === destination.id ? 'active' : ''}`}
+                            className="pydes-card"
+                            data-aos="fade-up"
+                            data-aos-duration="600"
+                            data-aos-delay={index * 100}
                             onMouseEnter={() => setActiveCard(destination.id)}
                             onMouseLeave={() => setActiveCard(null)}
                         >
-                            <div className="destination-card-inner">
-                                <div className="destination-image">
-                                    <img 
-                                        src={destination.introduction?.image ? `http://localhost:5000${destination.introduction.image}` : placeholderImage} 
-                                        alt={destination.title} 
-                                    />
-                                    <div className="destination-rating">
-                                        {renderStars(destination.average_rating || 0)} {/* Sử dụng average_rating nếu có, nếu không thì 0 */}
-                                        <div className="rating-text">
-                                            <span>({destination.review_count || 0} đánh giá)</span> {/* Sử dụng review_count nếu có */}
-                                        </div>
-                                    </div>
-                                    {/* featured hiện không có từ API, có thể ẩn hoặc để false */}
-                                    {/* {destination.featured && (
-                                        <div className="destination-featured">
-                                            <i className="bi bi-bookmark-star-fill"></i>
-                                            <span>Nổi bật</span>
-                                        </div>
-                                    )} */}
-                                    <div className="destination-actions">
-                                        <Link to={`/locations/${destination.id}`} className="btn-circle">
-                                            <i className="bi bi-eye-fill"></i>
-                                        </Link>
-                                        <button className="btn-circle btn-favorite">
-                                            <i className="bi bi-heart"></i>
-                                        </button>
-                                    </div>
+                            {/* Image */}
+                            <div className="pydes-card-image">
+                                <img 
+                                    src={destination.introduction?.image ? `http://localhost:5000${destination.introduction.image}` : placeholderImage} 
+                                    alt={destination.title} 
+                                />
+                                <div className="pydes-overlay"></div>
+                                
+                                {/* Rating */}
+                                <div className="pydes-rating">
+                                    {renderStars(destination.average_rating || 0)}
+                                    <span className="pydes-rating-text">
+                                        ({destination.review_count || 0})
+                                    </span>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="pydes-actions">
+                                    <Link to={`/locations/${destination.id}`} className="pydes-action-btn">
+                                        <i className="bi bi-eye-fill"></i>
+                                    </Link>
+                                    <button className="pydes-action-btn pydes-favorite">
+                                        <i className="bi bi-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            {/* Content */}
+                            <div className="pydes-card-content">
+                                <div className="pydes-location">
+                                    <i className="bi bi-geo-alt-fill"></i>
+                                    <span>{destination.subtitle || destination.type || 'Phú Yên'}</span>
                                 </div>
                                 
-                                <div className="destination-content">
-                                    <div className="destination-location">
-                                        <i className="bi bi-geo-alt-fill"></i>
-                                        <span>{destination.subtitle || destination.type || 'Phú Yên'}</span>
-                                    </div>
-                                    
-                                    <h3 className="destination-title">
-                                        <Link to={`/locations/${destination.id}`}>{destination.title}</Link>
-                                    </h3>
-                                    
-                                    <p className="destination-desc">{destination.description ? destination.description.substring(0, 100) + '...' : 'Không có mô tả.'}</p>
-                                    
-                                    {/* tags hiện không có từ API, có thể ẩn hoặc để trống */}
-                                    {/* <div className="destination-tags">
-                                        {destination.tags.map((tag, index) => (
-                                            <span key={index} className="destination-tag">{tag}</span>
-                                        ))}
-                                    </div> */}
-                                    
-                                    <div className="destination-footer">
-                                        <Link to={`/locations/${destination.id}`} className="btn-explore">
-                                            <span>Khám phá ngay</span>
-                                            <svg viewBox="0 0 24 24" width="24" height="24">
-                                                <path d="M5 12h14M12 5l7 7-7 7"></path>
-                                            </svg>
-                                        </Link>
-                                    </div>
-                                </div>
+                                <h3 className="pydes-card-title">
+                                    <Link to={`/locations/${destination.id}`}>
+                                        {destination.title}
+                                    </Link>
+                                </h3>
+                                
+                                <p className="pydes-card-desc">
+                                    {destination.description ? destination.description.substring(0, 100) + '...' : 'Không có mô tả.'}
+                                </p>
+                                
+                                <Link to={`/locations/${destination.id}`} className="pydes-explore-btn">
+                                    <span>Khám phá ngay</span>
+                                    <i className="bi bi-arrow-right"></i>
+                                </Link>
                             </div>
                         </div>
                     ))}
                 </div>
-                
-                <div className="destinations-more">
-                    <Link to="/locations" className="btn-view-all">
-                        <span>Xem tất cả điểm đến</span>
-                        <svg viewBox="0 0 24 24" width="24" height="24">
-                            <path d="M5 12h14M12 5l7 7-7 7"></path>
-                        </svg>
+
+                {/* ========== VIEW ALL BUTTON ========== */}
+                <div 
+                    className="pydes-view-all"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                    data-aos-delay="400"
+                >
+                    <Link to="/locations" className="pydes-btn-view-all">
+                        <span>Xem tất cả địa điểm</span>
+                        <i className="bi bi-arrow-right-circle-fill"></i>
                     </Link>
                 </div>
             </div>

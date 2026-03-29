@@ -1,0 +1,609 @@
+/* ========== VARIABLES ========== */
+:root {
+    --v2-primary: #0072bb;
+    --v2-primary-dark: #005a94;
+    --v2-success: #28a745;
+    --v2-danger: #dc3545;
+    --v2-warning: #ffc107;
+    --v2-info: #17a2b8;
+    --v2-light: #f3f4f6;
+    --v2-dark: #1f2937;
+    --v2-text-light: #6c757d;
+    --v2-border: #e5e7eb;
+}
+
+/* ========== CONTAINER ========== */
+.v2-my-bookings-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    min-height: 100vh;
+    background: #f8f9fa;
+}
+
+/* ========== PAGE HEADER ========== */
+.v2-page-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--v2-border);
+}
+
+.v2-page-header h1 {
+    font-size: 2rem;
+    color: var(--v2-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.v2-page-header h1 i {
+    font-size: 1.8rem;
+}
+
+.v2-page-subtitle {
+    color: var(--v2-text-light);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ========== COMPACT BOOKING CARD ========== */
+.v2-bookings-list-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.v2-booking-card-compact {
+    display: grid;
+    grid-template-columns: 180px 1fr 160px;
+    gap: 1.5rem;
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.v2-booking-card-compact:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    border-color: var(--v2-primary);
+}
+
+/* ========== THUMBNAIL ========== */
+.v2-booking-thumbnail {
+    position: relative;
+    width: 180px;
+    height: 140px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.v2-booking-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ✅ SỬA STATUS BADGE - KHÔNG BỊ ĐÈ CHỮ */
+.v2-status-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: white !important; /* ✅ Force màu trắng */
+    text-transform: uppercase;
+    backdrop-filter: blur(10px);
+    z-index: 10;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3); /* ✅ Shadow để chữ rõ hơn */
+}
+
+.v2-status-badge.status-pending_payment { 
+    background: rgba(255, 193, 7, 0.95); 
+    color: #212529 !important; /* ✅ Chữ đen cho màu vàng */
+}
+.v2-status-badge.status-confirmed { 
+    background: rgba(40, 167, 69, 0.95); 
+}
+.v2-status-badge.status-cancelled { 
+    background: rgba(220, 53, 69, 0.95); 
+}
+.v2-status-badge.status-completed { 
+    background: rgba(23, 162, 184, 0.95); 
+}
+.v2-status-badge.status-pending_cancellation { 
+    background: rgba(255, 152, 0, 0.95); 
+}
+
+/* ========== INFO SECTION ========== */
+.v2-booking-info-compact {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0; /* ✅ Cho phép text wrap */
+}
+
+.v2-booking-header-compact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.v2-booking-header-compact h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--v2-primary);
+    font-weight: 700;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.v2-booking-id-badge {
+    background: var(--v2-light);
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--v2-dark);
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+/* Countdown Wrapper */
+.v2-countdown-wrapper {
+    margin: 0.5rem 0;
+}
+
+/* Pending Notice */
+.v2-pending-notice {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: #856404;
+}
+
+.v2-pending-notice i {
+    flex-shrink: 0;
+}
+
+/* Meta Info */
+.v2-booking-meta-compact {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.v2-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--v2-text-light);
+}
+
+.v2-meta-item i {
+    color: var(--v2-primary);
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+/* Details Tags */
+.v2-booking-details-compact {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.v2-detail-tag {
+    background: var(--v2-light);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    color: var(--v2-dark);
+    font-weight: 500;
+}
+
+/* ✅ SỬA PRICE - FORMAT ĐÚNG VND */
+.v2-booking-price-compact {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.v2-discount {
+    color: var(--v2-danger);
+    font-size: 0.9rem;
+    text-decoration: line-through;
+}
+
+.v2-total {
+    font-size: 1.3rem;
+    color: var(--v2-success);
+    font-weight: 700;
+}
+
+/* ========== ACTIONS - VERTICAL BUTTONS ========== */
+.v2-booking-actions-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    min-width: 160px;
+    max-width: 160px;
+    justify-content: flex-start;
+    flex-shrink: 0;
+}
+
+.v2-btn-compact {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: center;
+}
+
+.v2-btn-compact i {
+    font-size: 0.9rem;
+}
+
+.v2-btn-primary { 
+    background: linear-gradient(135deg, #0072bb 0%, #005a94 100%); 
+    color: white; 
+}
+.v2-btn-primary:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(0, 114, 187, 0.3); 
+}
+
+.v2-btn-info { 
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); 
+    color: white; 
+}
+.v2-btn-info:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(23, 162, 184, 0.3); 
+}
+
+.v2-btn-success { 
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%); 
+    color: white; 
+}
+.v2-btn-success:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); 
+}
+
+.v2-btn-warning { 
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%); 
+    color: #212529; 
+}
+.v2-btn-warning:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); 
+}
+
+.v2-btn-danger { 
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); 
+    color: white; 
+}
+.v2-btn-danger:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3); 
+}
+
+.v2-btn-secondary { 
+    background: var(--v2-light); 
+    color: var(--v2-dark); 
+    border: 2px solid var(--v2-border); 
+}
+.v2-btn-secondary:hover { 
+    background: #e5e7eb; 
+    border-color: #9ca3af; 
+}
+
+.v2-btn-disabled { 
+    background: #e9ecef; 
+    color: #6c757d; 
+    cursor: not-allowed; 
+    opacity: 0.7; 
+}
+
+/* ========== PAGINATION ========== */
+.v2-pagination-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid var(--v2-border);
+}
+
+.v2-pagination-btn {
+    padding: 10px 16px;
+    border: 2px solid var(--v2-border);
+    background: white;
+    color: var(--v2-dark);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    min-width: 44px;
+}
+
+.v2-pagination-btn:hover:not(:disabled) {
+    background: var(--v2-primary);
+    color: white;
+    border-color: var(--v2-primary);
+    transform: translateY(-2px);
+}
+
+.v2-pagination-btn.active {
+    background: var(--v2-primary);
+    color: white;
+    border-color: var(--v2-primary);
+}
+
+.v2-pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f3f4f6;
+}
+
+/* ========== NO BOOKINGS STATE ========== */
+.v2-no-bookings {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+}
+
+.v2-no-bookings i {
+    font-size: 4rem;
+    color: var(--v2-text-light);
+    margin-bottom: 1rem;
+}
+
+.v2-no-bookings p {
+    font-size: 1.1rem;
+    color: var(--v2-text-light);
+    margin-bottom: 1.5rem;
+}
+
+.v2-no-bookings .v2-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+}
+
+/* ========== LOADER ========== */
+.v2-loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid var(--v2-primary);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin: 50px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ========== ERROR MESSAGE ========== */
+.v2-error-message {
+    background: #fee;
+    color: #c00;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+}
+
+/* ========== MODAL STYLES (FIX LỖI GIAO DIỆN) ========== */
+.v2-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6); /* Màu nền tối mờ */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999; /* Đảm bảo luôn nổi lên trên cùng */
+    backdrop-filter: blur(4px); /* Hiệu ứng làm mờ nền phía sau */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.v2-modal-content {
+    background: white;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: slideIn 0.3s ease-out;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.v2-modal-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--v2-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.v2-modal-header h4 {
+    margin: 0;
+    color: var(--v2-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.v2-modal-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--v2-text-light);
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.v2-modal-close-btn:hover {
+    color: var(--v2-danger);
+}
+
+.v2-modal-body {
+    padding: 1.5rem;
+    color: var(--v2-dark);
+    font-size: 1rem;
+    line-height: 1.6;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.v2-modal-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--v2-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    background: #f8f9fa;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Modal */
+@media (max-width: 576px) {
+    .v2-modal-content {
+        width: 95%;
+        margin: 1rem;
+    }
+    
+    .v2-modal-footer {
+        flex-direction: column-reverse; /* Đảo ngược nút trên mobile để dễ bấm */
+    }
+    
+    .v2-modal-footer button {
+        width: 100%;
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 992px) {
+    .v2-booking-card-compact {
+        grid-template-columns: 150px 1fr 140px;
+        gap: 1rem;
+    }
+
+    .v2-booking-thumbnail {
+        width: 150px;
+        height: 120px;
+    }
+
+    .v2-booking-actions-vertical {
+        min-width: 140px;
+        max-width: 140px;
+    }
+}
+
+@media (max-width: 768px) {
+    .v2-booking-card-compact {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .v2-booking-thumbnail {
+        width: 100%;
+        height: 200px;
+    }
+
+    .v2-booking-actions-vertical {
+        flex-direction: row;
+        flex-wrap: wrap;
+        min-width: 100%;
+        max-width: 100%;
+    }
+
+    .v2-btn-compact {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .v2-pagination-wrapper {
+        flex-wrap: wrap;
+    }
+
+    .v2-booking-header-compact h3 {
+        font-size: 1rem;
+    }
+
+    .v2-total {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .v2-my-bookings-container {
+        padding: 1rem;
+    }
+
+    .v2-page-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .v2-booking-card-compact {
+        padding: 1rem;
+    }
+
+    .v2-booking-meta-compact {
+        gap: 1rem;
+    }
+
+    .v2-btn-compact {
+        padding: 8px 10px;
+        font-size: 0.8rem;
+    }
+}

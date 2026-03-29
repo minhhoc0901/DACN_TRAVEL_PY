@@ -12,7 +12,9 @@
           "scrollbar-color",
           "scrollbar-width: thin",
           "scrollbar-width: none",
-          "-webkit-overflow-scrolling"
+          "-webkit-overflow-scrolling",
+          "user-select",
+          "min-width: fit-content"
         ]
       }
     ],

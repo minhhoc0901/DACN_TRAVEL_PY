@@ -2,19 +2,22 @@ const express = require('express');
 const router = express.Router();
 const contactController = require('../controllers/contactController');
 const authMiddleware = require('../middlewares/autMiddleware');
+const { validate } = require('../middlewares/validationMiddleware');
+const { validateContact } = require('../utils/validators/contactValidator');
 
-// Route để gửi tin nhắn liên hệ (có thể là public hoặc chỉ cần user đăng nhập)
-// router.post('/send', contactController.createContactMessage); // Ví dụ
-router.post('/submit', contactController.submitContact); // Add this line
+// POST /api/contact/submit - Gửi tin nhắn liên hệ (validation)
+router.post(
+    '/submit', 
+    validate(validateContact),
+    contactController.submitContact
+);
 
-// Route để admin lấy tất cả tin nhắn liên hệ
+// GET /api/contact/messages - Admin lấy tất cả tin nhắn liên hệ
 router.get(
     '/messages',
     authMiddleware.verifyToken,
     authMiddleware.isAdmin,
     contactController.getContactMessages
 );
-
-// Các routes khác cho contact...
 
 module.exports = router;

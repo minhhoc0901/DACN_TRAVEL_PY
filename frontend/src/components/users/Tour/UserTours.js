@@ -206,7 +206,7 @@ const UserTours = () => {
                 </div>
                 
                 <div className="tour-actions">
-                  <Link to={`/itinerary/${tour.id}`} className="view-btn">
+                  <Link to={`/tours/${tour.id}`} className="view-btn">
                     Xem chi tiết
                   </Link>
                   
@@ -217,7 +217,7 @@ const UserTours = () => {
                   )}
                   
                   {tour.status === 'approved' && (
-                    <Link to={`/itinerary/${tour.id}`} className="public-view-btn">
+                    <Link to={`/tours/${tour.id}`} className="public-view-btn">
                       Xem công khai
                     </Link>
                   )}

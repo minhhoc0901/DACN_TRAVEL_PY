@@ -9,11 +9,12 @@ import { useAuth } from '../../contexts/AuthContext';
 import LocationList from '../../components/admin/Location/LocationList';
 import AddLocationModal from '../../components/admin/Location/AddLocationModal';
 import EditLocationModal from '../../components/admin/Location/EditLocationModal';
+import { hotelService } from '../../services/hotelService'; 
 
 const LocationManagement = () => {
   const navigate = useNavigate();
   const { logout, getToken } = useAuth();
-  const [token, setToken] = useState(() => localStorage.getItem('token') || sessionStorage.getItem('token'));
+  const [, setToken] = useState(() => localStorage.getItem('token') || sessionStorage.getItem('token'));
 
   const handleTokenExpired = useCallback(() => {
     toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
@@ -52,6 +53,7 @@ const LocationManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null);
+  const [availableHotels, setAvailableHotels] = useState([]);
 
   const initialFormData = {
     name: '',
@@ -75,6 +77,7 @@ const LocationManagement = () => {
     cuisines: [{ text: '', image: null }],
     tips: [''],
     nearby: [''],
+    hotel_ids: [],
     images: {
       introduction: null,
       architecture: null
@@ -113,6 +116,40 @@ const LocationManagement = () => {
   useEffect(() => {
     fetchLocations();
   }, [fetchLocations]);
+
+  // useEffect để tải danh sách khách sạn khi component được mount
+  useEffect(() => {
+    const fetchHotels = async () => {
+      try {
+        const hotelsData = await hotelService.getAllHotels();
+        setAvailableHotels(hotelsData);
+      } catch (err) {
+        console.error("Failed to fetch hotels:", err);
+        toast.error("Không thể tải danh sách khách sạn.");
+      }
+    };
+    fetchHotels();
+  }, []);
+
+  // LOCK BODY SCROLL KHI MODAL MỞ
+  useEffect(() => {
+    if (showAddModal || showEditModal) {
+      const scrollY = window.scrollY;
+      
+      document.body.style.overflow = 'hidden';
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+
+      return () => {
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [showAddModal, showEditModal]);
 
   const handleAddLocation = async (e) => {
     e.preventDefault();
@@ -182,6 +219,11 @@ const LocationManagement = () => {
             }
         });
 
+        locationFormData.append('hotel_ids', JSON.stringify(formData.hotel_ids || []));
+
+
+
+
         console.log('Sending data:', {
             formData: Object.fromEntries(locationFormData.entries())
         });
@@ -213,7 +255,7 @@ const LocationManagement = () => {
     }
 };
 
-const handleEditLocation = async (e) => {
+const handleEditLocation = async (e, locationFormData) => { // Nhận FormData đã được chuẩn bị
   e.preventDefault();
   try {
     const currentToken = getToken();
@@ -222,90 +264,14 @@ const handleEditLocation = async (e) => {
       return;
     }
 
-    // Display loading indicator
     toast.info('Đang cập nhật địa điểm...');
-
+    
     const locationId = selectedLocation.id;
-    const locationFormData = new FormData();
-
-    // Add basic fields
-    locationFormData.append('name', formData.name);
-    locationFormData.append('type', formData.type);
-    locationFormData.append('description', formData.description);
-    locationFormData.append('latitude', formData.latitude);
-    locationFormData.append('longitude', formData.longitude);
-    locationFormData.append('subtitle', formData.subtitle);
-    locationFormData.append('introduction', formData.introduction);
-    locationFormData.append('why_visit_architecture_title', formData.why_visit_architecture_title);
-    locationFormData.append('why_visit_architecture_text', formData.why_visit_architecture_text);
-    locationFormData.append('why_visit_culture', formData.why_visit_culture);
-    locationFormData.append('ticket_price', formData.ticket_price);
-    locationFormData.append('tip', formData.tip);
-
-    // Add arrays as JSON strings
-    locationFormData.append('bestTimes', JSON.stringify(
-      formData.bestTimes.filter(time => time.trim())
-    ));
-    
-    locationFormData.append('travelMethods', JSON.stringify({
-      fromTuyHoa: formData.travelMethods.fromTuyHoa.filter(m => m.trim()),
-      fromElsewhere: formData.travelMethods.fromElsewhere.filter(m => m.trim())
-    }));
-    
-    // Add experiences with text and existing image URLs
-    locationFormData.append('experiences', JSON.stringify(
-      formData.experiences.map(exp => ({
-        text: exp.text.trim(),
-        imageUrl: exp.imageUrl // Maintain existing image URL if no new image uploaded
-      })).filter(exp => exp.text)
-    ));
-
-    // Add cuisines with text and existing image URLs
-    locationFormData.append('cuisines', JSON.stringify(
-      formData.cuisines.map(cuisine => ({
-        text: cuisine.text.trim(),
-        imageUrl: cuisine.imageUrl // Maintain existing image URL if no new image uploaded
-      })).filter(cuisine => cuisine.text)
-    ));
-
-    // Add tips array
-    locationFormData.append('tips', JSON.stringify(
-      formData.tips.filter(tip => tip.trim())
-    ));
-
-    // Add nearby locations array
-    locationFormData.append('nearby', JSON.stringify(
-      formData.nearby.filter(id => id) // Filter out any empty IDs
-    ));
-
-    // Handle file uploads for main images
-    if (formData.images.introduction instanceof File) {
-      locationFormData.append('introductionImage', formData.images.introduction);
-    }
-    
-    if (formData.images.architecture instanceof File) {
-      locationFormData.append('architectureImage', formData.images.architecture);
-    }
-
-    // Handle experience images
-    formData.experiences.forEach((exp, index) => {
-      if (exp.image instanceof File) {
-        locationFormData.append(`experienceImage_${index}`, exp.image);
-      }
-    });
-
-    // Handle cuisine images
-    formData.cuisines.forEach((cuisine, index) => {
-      if (cuisine.image instanceof File) {
-        locationFormData.append(`cuisineImage_${index}`, cuisine.image);
-      }
-    });
-
     console.log('Sending update data for location ID:', locationId);
 
     const response = await axios.put(
       `http://localhost:5000/api/locations/${locationId}`,
-      locationFormData,
+      locationFormData, // Gửi trực tiếp FormData đã nhận
       {
         headers: {
           'Authorization': `Bearer ${currentToken}`,
@@ -318,7 +284,7 @@ const handleEditLocation = async (e) => {
       toast.success('Cập nhật địa điểm thành công');
       setShowEditModal(false);
       setSelectedLocation(null);
-      await fetchLocations(); // Refresh the locations list
+      await fetchLocations();
       resetForm();
     } else {
       toast.error(response.data.message || 'Cập nhật địa điểm thất bại');
@@ -335,59 +301,7 @@ const handleEditLocation = async (e) => {
     }
   }
 };
-  // Helper function to prepare form data for editing
-  const prepareEditForm = (location) => {
-    const formDataObj = {
-      name: location.name,
-      type: location.type,
-      description: location.description,
-      latitude: location.coordinates?.latitude || '',
-      longitude: location.coordinates?.longitude || '',
-      subtitle: location.subtitle || '',
-      introduction: location.introduction?.text || '',
-      why_visit_architecture_title: location.whyVisit?.architecture?.title || '',
-      why_visit_architecture_text: location.whyVisit?.architecture?.text || '',
-      why_visit_culture: location.whyVisit?.culture || '',
-      ticket_price: location.travelInfo?.ticketPrice || '',
-      tip: location.travelInfo?.tip || '',
-      images: {
-        introduction: null,
-        architecture: null
-      }
-    };
-  
-    // Handle arrays
-    formDataObj.bestTimes = location.bestTimes?.length ? location.bestTimes : [''];
-    formDataObj.tips = location.tips?.length ? location.tips : [''];
-    formDataObj.nearby = location.nearby?.length ? location.nearby : [''];
-  
-    // Handle travel methods
-    formDataObj.travelMethods = {
-      fromTuyHoa: location.travelMethods?.fromTuyHoa?.length ? location.travelMethods.fromTuyHoa : [''],
-      fromElsewhere: location.travelMethods?.fromElsewhere?.length ? location.travelMethods.fromElsewhere : ['']
-    };
-  
-    // Handle experiences with images
-    formDataObj.experiences = location.experiences?.length ? 
-      location.experiences.map(exp => ({
-        text: exp.text,
-        image: null,
-        imageUrl: exp.imageUrl // Store existing image URL
-      })) : 
-      [{ text: '', image: null }];
-  
-    // Handle cuisines with images
-    formDataObj.cuisines = location.cuisines?.length ? 
-      location.cuisines.map(cuisine => ({
-        text: cuisine.text,
-        image: null,
-        imageUrl: cuisine.imageUrl // Store existing image URL
-      })) : 
-      [{ text: '', image: null }];
-  
-    return formDataObj;
-  };
-
+ 
   const handleDeleteLocation = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa địa điểm này?')) return;
 
@@ -539,9 +453,11 @@ const handleEditLocation = async (e) => {
           formData={formData}
           setFormData={setFormData}
           onSubmit={handleAddLocation}
+          availableLocations={locations}
+          availableHotels={availableHotels}
         />
 
-        <EditLocationModal
+        {/* <EditLocationModal
           show={showEditModal}
           onClose={() => {
             setShowEditModal(false);
@@ -551,7 +467,15 @@ const handleEditLocation = async (e) => {
           setFormData={setFormData}
           selectedLocation={selectedLocation}
           onSubmit={handleEditLocation}
-        />
+        /> */}
+         <EditLocationModal
+        show={showEditModal}
+        onClose={() => { setShowEditModal(false); setSelectedLocation(null);  }}
+        selectedLocation={selectedLocation} // Chỉ cần truyền location được chọn
+        onSubmit={handleEditLocation}
+        availableLocations={locations}
+        availableHotels={availableHotels} // 
+      />
       </div>
       <ToastContainer />
     </>

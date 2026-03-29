@@ -129,17 +129,28 @@ const TestimonialsSection = () => {
                 <div className="shape shape-3"></div>
                 <div className="shape shape-4"></div>
             </div>
-            
-            <div className="container">
-                <div className="testimonial-header text-center">
-                    <span className="testimonial-subheading">Trải nghiệm</span>
-                    <h2 className="testimonial-heading">Khách hàng nói gì về chúng tôi</h2>
+
+            <div className="container position-relative">
+                {/* ✅ THÊM AOS CHO HEADER */}
+                <div 
+                    className="testimonial-header text-center"
+                    data-aos="fade-up"
+                    data-aos-duration="800"
+                >
+                    <span className="testimonial-subheading">Đánh giá từ khách hàng</span>
+                    <h2 className="testimonial-heading">Trải Nghiệm Của Du Khách</h2>
                     <p className="testimonial-desc">
-                        Hãy xem những đánh giá chân thực từ khách du lịch đã trải nghiệm vẻ đẹp và dịch vụ tại Phú Yên
+                        Những chia sẻ chân thật từ du khách đã có những chuyến du lịch tuyệt vời tại Phú Yên
                     </p>
                 </div>
-                
-                <div className="testimonials-wrapper">
+
+                {/* ✅ THÊM AOS CHO TESTIMONIAL WRAPPER */}
+                <div 
+                    className="testimonial-wrapper"
+                    data-aos="fade-up"
+                    data-aos-duration="1000"
+                    data-aos-delay="200"
+                >
                     <div className="testimonial-quote-icon">
                         <i className="bi bi-quote"></i>
                     </div>
@@ -188,21 +199,6 @@ const TestimonialsSection = () => {
                         <button className="testimonial-arrow next" onClick={handleNext} aria-label="Next">
                             <i className="bi bi-arrow-right"></i>
                         </button>
-                    </div>
-                </div>
-                
-                <div className="testimonial-stats">
-                    <div className="stat-item">
-                        <div className="stat-number">4.9<span className="stat-symbol">+</span></div>
-                        <div className="stat-label">Đánh giá trung bình</div>
-                    </div>
-                    <div className="stat-item">
-                        <div className="stat-number">150<span className="stat-symbol">+</span></div>
-                        <div className="stat-label">Khách hàng hài lòng</div>
-                    </div>
-                    <div className="stat-item">
-                        <div className="stat-number">30<span className="stat-symbol">+</span></div>
-                        <div className="stat-label">Điểm đến nổi tiếng</div>
                     </div>
                 </div>
             </div>

@@ -163,7 +163,7 @@ const ItineraryDetail = () => {
       <div className="error-container">
         <h2>Không tìm thấy thông tin tour</h2>
         <p>{error || `Tour với ID ${tourId} không tồn tại hoặc đã bị xóa.`}</p>
-        <Link to="/Itinerary" className="back-button">Quay lại danh sách tour</Link>
+        <Link to="/plan" className="back-button">Quay lại danh sách tour</Link>
       </div>
     );
   }

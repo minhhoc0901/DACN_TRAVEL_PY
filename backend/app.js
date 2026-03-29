@@ -1,4 +1,3 @@
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -9,6 +8,8 @@ const http = require('http');
 const socketIo = require('socket.io');
 const fs = require('fs');
 const cron = require('node-cron');
+const Booking = require('./models/Booking');
+
 // Cấu hình dotenv
 dotenv.config();
 
@@ -30,7 +31,12 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const tourPriceRoutes = require('./routes/tourPriceRoutes');
 const itineraryRoutes = require('./routes/itineraryRoutes');
 const tourDepartureRoutes = require('./routes/tourDepartureRoutes');
-
+const locationCommentRoutes = require('./routes/locationCommentRoutes');
+const hotelRoutes = require('./routes/hotelRoutes');
+const creditRoutes = require('./routes/creditRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const Promotion = require('./models/Promotions');
+const refundRoutes = require('./routes/refundRoutes');
 const { checkConnection } = require('./config/db');
 
 // --- Khởi tạo Express App và HTTP Server ---
@@ -101,11 +107,21 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/tour-prices', tourPriceRoutes);
 app.use('/api/itineraries', itineraryRoutes);
 app.use('/api/tour-departures', tourDepartureRoutes);
-
+app.use('/api/location-comments', locationCommentRoutes);
+app.use('/api/hotels', hotelRoutes);
+app.use('/api/credits', creditRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/refunds', refundRoutes);
 // --- Cấu hình Socket.IO ---
 const io = socketIo(server, {
     cors: corsOptions // Sử dụng lại cấu hình CORS đã định nghĩa ở trên
 });
+
+// LƯU SOCKET.IO INSTANCE VÀO APP ĐỂ CONTROLLERS CÓ THỂ TRUY CẬP
+
+// Lưu instance với tên 'io' để dùng trong tourController và reviewController
+app.set('io', io);
+console.log('[Socket.IO] Instance saved to app as "io"');
 
 // Gắn các handler cho Socket.IO
 const setupChatSocket = require('./socket/chatSocket');
@@ -115,14 +131,52 @@ const setupChatSocketWithAdmin = require('./socket/chatSocketWithAdmin');
 setupChatSocketWithAdmin(io);
 
 // --- Cấu hình Cron Job ---
-const Booking = require('./models/Booking');
-// Cron job để tự động hủy booking quá 15 phút
-// Chạy mỗi phút ('* * * * *')
+/**
+ * CRON JOB 1: Hủy booking quá hạn (MỖI PHÚT)
+ */
 cron.schedule('* * * * *', async () => {
     console.log('[CRON] Running job to cancel expired bookings...');
-    await Booking.cancelExpiredBookings();
+    try {
+        const count = await Booking.cancelExpiredBookings(io); // ✅ TRUYỀN io
+        if (count > 0) {
+            console.log(`[CRON] Cancelled ${count} expired bookings.`);
+        }
+    } catch (error) {
+        console.error('[CRON] Error in cancelExpiredBookings:', error);
+    }
 });
 
+/**
+ * CRON JOB 2: Đánh dấu booking hoàn thành (MỖI NGÀY LÚC 00:00)
+ */
+cron.schedule('0 0 * * *', async () => {
+    console.log('[CRON] Checking for completed bookings...');
+    try {
+        const count = await Booking.markCompletedBookings(io); // ✅ TRUYỀN io
+        if (count > 0) {
+            console.log(`[CRON] Successfully marked ${count} bookings as completed.`);
+        }
+    } catch (error) {
+        console.error('[CRON] Error marking completed bookings:', error);
+    }
+});
+
+/**
+ * CRON JOB 3: Đánh dấu promotions hết hạn (MỖI GIỜ)
+ */
+cron.schedule('0 * * * *', async () => {
+    console.log('[CRON] Updating promotion statuses...');
+    try {
+        const expired = await Promotion.markExpiredPromotions();
+        const activated = await Promotion.activateScheduledPromotions();
+        
+        if (expired > 0 || activated > 0) {
+            console.log(`[CRON] Promotions updated: ${expired} expired, ${activated} activated`);
+        }
+    } catch (error) {
+        console.error('[CRON] Error updating promotions:', error);
+    }
+});
 
 // --- Khởi động Server ---
 const PORT = process.env.PORT || 5000;

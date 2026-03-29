@@ -11,6 +11,8 @@ const tocItems = [
   { label: "Trải nghiệm tại địa điểm", sectionId: "gallery", icon: "bi-images" },
   { label: "Ẩm thực đặc sắc", sectionId: "food", icon: "bi-egg-fried" },
   { label: "Lưu ý khi tham quan", sectionId: "tips", icon: "bi-exclamation-triangle" },
+  { label: "Bình luận địa điểm", sectionId: "comments", icon: "bi-chat-dots" } 
+
 ];
 
 const Sidebar = ({ location, scrollToSection }) => (
@@ -55,26 +57,47 @@ const Sidebar = ({ location, scrollToSection }) => (
       </div>
     )}
 
-    <div>
-      <h3 className="text-lg font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-300 flex items-center">
-        <i className="bi bi-building-check mr-3 text-amber-500"></i>
-        Top khách sạn
-      </h3>
-      <ul className="list-none p-0 m-0 space-y-1">
-        {[
-          { name: "Sala Tuy Hòa Beach Resort", id: "sala-tuy-hoa" }, // Example: could link to hotel pages if available
-          { name: "Stella Beach Resort", id: "stella-beach" },
-          { name: "CenDeluxe Hotel", id: "cendeluxe" },
-          { name: "Hồng Ngọc Hotel Phú Yên", id: "hong-ngoc" },
-        ].map((hotel) => (
-          <li key={hotel.id} className="flex items-center p-2 rounded-md text-slate-700 hover:bg-slate-200 transition-colors duration-150 group">
-            <i className="bi bi-star mr-3 text-base text-slate-500 group-hover:text-amber-600"></i>
-            {/* Placeholder for link if hotel details page exists */}
-            <span className="text-slate-700 group-hover:text-amber-600">{hotel.name}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
+    {/* ✅ SỬA LẠI TOÀN BỘ PHẦN NÀY */}
+    {location.nearbyHotels && location.nearbyHotels.length > 0 && (
+      <div>
+        <h3 className="text-lg font-semibold text-slate-800 mb-3 pb-2 border-b border-slate-300 flex items-center">
+          <i className="bi bi-building-check mr-3 text-amber-500"></i>
+          Khách sạn liên kết
+        </h3>
+        <ul className="list-none p-0 m-0 space-y-1">
+          {location.nearbyHotels.map((hotel) => {
+            
+            const ratingAsNumber = parseFloat(hotel.rating);
+
+            return (
+              <li key={hotel.id}>
+                <a
+                  href={hotel.website || '#'}
+
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hotel-link-item"
+                >
+                  <i className="bi bi-building hotel-icon"></i>
+                  <div className="flex-grow">
+                    <span className="hotel-name">{hotel.name}</span>
+                    {ratingAsNumber > 0 && (
+                      <div className="hotel-rating-display">
+                        {[...Array(5)].map((_, i) => (
+                          <i key={i} className={`bi ${i < Math.floor(ratingAsNumber) ? 'bi-star-fill' : i < ratingAsNumber ? 'bi-star-half' : 'bi-star'}`}></i>
+                        ))}
+                        
+                        <span className="rating-value">({ratingAsNumber.toFixed(2)})</span>
+                      </div>
+                    )}
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    )}
     
   </div>
 );
@@ -90,6 +113,15 @@ Sidebar.propTypes = {
         })
       ])
     ), // Made nearby optional as we check for its existence before rendering
+    //  Thêm prop type cho nearbyHotels
+    nearbyHotels: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+        rating: PropTypes.number,
+        website: PropTypes.string,
+      })
+    ),
   }).isRequired,
   scrollToSection: PropTypes.func.isRequired,
 };

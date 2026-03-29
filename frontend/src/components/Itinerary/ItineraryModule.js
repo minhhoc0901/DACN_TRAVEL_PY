@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../../styles/itineraryCSS/Itinerary.css'; 
@@ -10,29 +10,72 @@ const ItineraryModule = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 6; // Số lượng lịch trình mỗi trang
 
+  // search state + refs for debounce + abort
+  const [searchTerm, setSearchTerm] = useState('');
+  const searchTimeoutRef = useRef(null);
+  const abortRef = useRef(null);
+
+  // reusable fetch function (supports abort via AbortController)
+  const fetchTours = async (query = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // cancel previous in-flight request
+      if (abortRef.current) {
+        try { abortRef.current.abort(); } catch (_) {}
+      }
+      abortRef.current = new AbortController();
+      const signal = abortRef.current.signal;
+
+      const url = query
+        ? `http://localhost:5000/api/tours/search?query=${encodeURIComponent(query)}`
+        : 'http://localhost:5000/api/tours';
+
+      const response = await axios.get(url, { signal });
+      const data = response.data && (response.data.tours || response.data || []);
+      const list = Array.isArray(data) ? data : (data.tours || data || []);
+      const approvedTours = Array.isArray(list)
+        ? list.filter(t => t.status === 'approved')
+        : [];
+      setTours(approvedTours);
+      setLoading(false);
+    } catch (err) {
+      if (axios.isCancel?.(err) || err.name === 'CanceledError') {
+        // request was cancelled, ignore
+        return;
+      }
+      setError(err.response?.data?.message || err.message || 'Lỗi khi tải tours');
+      setLoading(false);
+    }
+  };
+
+  // initial load
   useEffect(() => {
-    const fetchTours = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/tours');
-        if (response.data.success) {
-          const approvedTours = response.data.tours.filter(
-            tour => tour.status === 'approved'
-          );
-          setTours(approvedTours);
-        } else {
-          throw new Error(response.data.message || 'Không thể tải dữ liệu tour');
-        }
-      } catch (err) {
-        console.error('Error fetching tours:', err);
-        setError(err.message || 'Có lỗi xảy ra khi tải dữ liệu');
-      } finally {
-        setLoading(false);
+    fetchTours();
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+      if (abortRef.current) {
+        try { abortRef.current.abort(); } catch (_) {}
       }
     };
-
-    fetchTours();
   }, []);
+ 
+  // debounce search
+  useEffect(() => {
+    // reset to first page on new query
+    setCurrentPage(1);
+
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    searchTimeoutRef.current = setTimeout(() => {
+      fetchTours(searchTerm.trim());
+    }, 400);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchTerm]);
 
   // Tính toán lịch trình cho trang hiện tại
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -121,6 +164,7 @@ const ItineraryModule = () => {
 
   return (
     <div className="itinerary-page-container">
+      
       <div className="itinerary-header">
         <h1 className="itinerary-page-title">Khám Phá Lịch Trình Phú Yên</h1>
         <p className="itinerary-page-subtitle">
@@ -130,10 +174,29 @@ const ItineraryModule = () => {
           <Link to="/create-itinerary" className="itinerary-btn itinerary-btn-primary">
             <i className="bi bi-plus-circle-fill"></i> Tạo Lịch Trình Mới
           </Link>
+          <Link to="/itinerary-planner" className="itinerary-btn itinerary-btn-ai">
+            <i className="bi bi-stars"></i> Gợi ý lịch trình thông minh
+          </Link>
           <Link to="/user/my-tours" className="itinerary-btn itinerary-btn-secondary">
             <i className="bi bi-person-badge"></i> Lịch Trình Của Tôi
           </Link>
         </div>
+      </div>
+
+      <div className="itinerary-search">
+        <input
+          type="itinerary-search"
+          placeholder="Tìm kiếm theo tên tour..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="itinerary-search-input"
+          aria-label="Tìm kiếm tour"
+        />
+        {searchTerm && (
+          <button className="clear-search" onClick={() => setSearchTerm('')} aria-label="Xóa tìm kiếm">
+            ✕
+          </button>
+        )}
       </div>
       
       {tours.length === 0 ? (
