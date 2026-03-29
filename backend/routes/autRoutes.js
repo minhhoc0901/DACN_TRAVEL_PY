@@ -53,27 +53,27 @@ router.get('/profile', authMiddleware.verifyToken, authController.getProfile);
 // POST /api/auth/send-otp - Gửi OTP (validation)
 router.post(
     '/send-otp', 
-    validate(validateRequestOtp),
+    // validate(validateRequestOtp),
     authController.sendOTP
 );
 
 router.post(
     '/forgot-password', 
-    validate(validateRequestOtp),
+    // validate(validateRequestOtp),
     authController.sendOTP
 );
 
 // POST /api/auth/verify-reset-otp - Verify OTP (validation)
 router.post(
     '/verify-reset-otp', 
-    validate(validateVerifyOtp),
+    // validate(validateVerifyOtp),
     authController.verifyResetOTP
 );
 
 // POST /api/auth/reset-password - Reset password (validation)
 router.post(
     '/reset-password', 
-    validate(validateResetPassword),
+    // validate(validateResetPassword),
     authController.resetPassword
 );
 

@@ -12,30 +12,23 @@ import '../styles/Booking/MyBookingsPage.css';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText }) => {
     if (!isOpen) return null;
-
     return (
-        <div className="mb-modal-overlay" onClick={onClose}>
-            <div className="mb-modal-box" onClick={e => e.stopPropagation()}>
-                <div className="mb-modal-header">
-                    <h3><i className="fas fa-exclamation-triangle"></i> {title}</h3>
-                    <button onClick={onClose} className="mb-modal-close">
-                        <i className="fas fa-times"></i>
-                    </button>
+        <div className="v2-modal-overlay" onClick={onClose}>
+            <div className="v2-modal-content" onClick={e => e.stopPropagation()}>
+                <div className="v2-modal-header">
+                    <h4>{title}</h4>
+                    <button onClick={onClose} className="v2-modal-close-btn">&times;</button>
                 </div>
-                <div className="mb-modal-body">
+                <div className="v2-modal-body">
                     {typeof message === 'string' ? (
-                        <p className="mb-modal-message">{message}</p>
+                        <p style={{ whiteSpace: 'pre-wrap' }}>{message}</p>
                     ) : (
                         <div>{message}</div>
                     )}
                 </div>
-                <div className="mb-modal-footer">
-                    <button onClick={onClose} className="mb-btn mb-btn-secondary">
-                        <i className="fas fa-times"></i> Hủy
-                    </button>
-                    <button onClick={onConfirm} className="mb-btn mb-btn-danger">
-                        <i className="fas fa-check"></i> {confirmText}
-                    </button>
+                <div className="v2-modal-footer">
+                    <button onClick={onClose} className="v2-btn v2-btn--secondary">Hủy bỏ</button>
+                    <button onClick={onConfirm} className="v2-btn v2-btn--danger">{confirmText}</button>
                 </div>
             </div>
         </div>
@@ -48,11 +41,11 @@ const MyBookingsPage = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    // ✅ PHÂN TRANG STATE
+    // ✅ THÊM STATE PHÂN TRANG
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage] = useState(6);
+    const itemsPerPage = 3; // Số booking mỗi trang
 
-    // State cho modal
+    // State cho modal xác nhận
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', confirmText: 'Xác nhận' });
     const [onConfirmAction, setOnConfirmAction] = useState(null);
@@ -69,6 +62,7 @@ const MyBookingsPage = () => {
     const [selectedBookingForCancel, setSelectedBookingForCancel] = useState(null);
     const [refundAmount, setRefundAmount] = useState(0);
     const [refundPercent, setRefundPercent] = useState(0);
+    const [submittingRefund, setSubmittingRefund] = useState(false);
 
     // STATE CHO PAYMENT METHOD MODAL
     const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -76,39 +70,30 @@ const MyBookingsPage = () => {
     const [processingPayment, setProcessingPayment] = useState(false);
 
     useEffect(() => {
-        loadBookings();
+        bookingService.getMyBookings()
+            .then(response => setBookings(response))
+            .catch(err => setError(err.message || 'Không thể kết nối đến máy chủ.'))
+            .finally(() => setLoading(false));
     }, []);
 
-    const loadBookings = async () => {
-        try {
-            setLoading(true);
-            const data = await bookingService.getMyBookings();
-            setBookings(data);
-        } catch (err) {
-            setError(err.message || 'Không thể tải danh sách đặt tour');
-            toast.error('Không thể tải danh sách đặt tour');
-        } finally {
-            setLoading(false);
-        }
+    // ✅ TÍNH TOÁN PHÂN TRANG
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentBookings = bookings.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(bookings.length / itemsPerPage);
+
+    const paginate = (pageNumber) => {
+        setCurrentPage(pageNumber);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const getStatusText = (status, paymentStatus) => {
-        if (status === 'pending_payment') return paymentStatus === 'success' ? 'Đã thanh toán' : 'Chờ thanh toán';
-        if (status === 'confirmed') return 'Đã xác nhận';
-        if (status === 'completed') return 'Hoàn thành';
-        if (status === 'cancelled') return 'Đã hủy';
-        if (status === 'pending_cancellation') return 'Chờ duyệt hủy';
+    const getStatusText = (bookingStatus, paymentStatus) => {
+        if (bookingStatus === 'pending_cancellation') return 'Chờ duyệt hủy';
+        if (bookingStatus === 'cancelled') return 'Đã hủy';
+        if (bookingStatus === 'completed') return 'Đã hoàn thành';
+        if (paymentStatus === 'success') return 'Đã thanh toán';
         if (paymentStatus === 'failed') return 'Thanh toán thất bại';
         return 'Chờ thanh toán';
-    };
-
-    const getStatusIcon = (status, paymentStatus) => {
-        if (status === 'pending_payment' && paymentStatus !== 'success') return 'fas fa-clock';
-        if (status === 'confirmed' || paymentStatus === 'success') return 'fas fa-check-circle';
-        if (status === 'completed') return 'fas fa-flag-checkered';
-        if (status === 'cancelled') return 'fas fa-ban';
-        if (status === 'pending_cancellation') return 'fas fa-hourglass-half';
-        return 'fas fa-question-circle';
     };
 
     const translatePriceType = (type) => {
@@ -123,131 +108,103 @@ const MyBookingsPage = () => {
     };
 
     const handleConfirm = () => {
-        if (onConfirmAction) {
-            onConfirmAction();
-        }
+        if (onConfirmAction) onConfirmAction();
         setIsModalOpen(false);
     };
 
     const calculateRefund = (booking) => {
         const departureDate = new Date(booking.departure_date);
         const now = new Date();
-        const diffTime = departureDate - now;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-        let percent = 0;
-        if (diffDays >= 15) percent = 100;
-        else if (diffDays >= 7) percent = 70;
-        else if (diffDays >= 3) percent = 50;
-
-        const refund = (booking.final_amount * percent) / 100;
-        return { percent, refund };
-    };
-
-    const handlePayNow = (booking) => {
-        setSelectedBookingForPayment(booking);
-        setShowPaymentModal(true);
-    };
-
-    const handlePaymentSubmit = async (paymentMethod) => {
-        if (!selectedBookingForPayment) return;
-
-        try {
-            setProcessingPayment(true);
-            
-            if (paymentMethod === 'credit') {
-                const result = await paymentService.processPayment(
-                    selectedBookingForPayment.id,
-                    'credit',
-                    selectedBookingForPayment.final_amount
-                );
-
-                if (result.success) {
-                    toast.success('Thanh toán thành công bằng Credit!');
-                    await loadBookings();
-                    setShowPaymentModal(false);
-                }
-            } else {
-                const result = await paymentService.createPaymentUrl({ 
-                    bookingId: selectedBookingForPayment.id 
-                });
-                
-                if (result.success && result.paymentUrl) {
-                    window.location.href = result.paymentUrl;
-                }
-            }
-        } catch (error) {
-            toast.error(error.message || 'Lỗi khi xử lý thanh toán');
-        } finally {
-            setProcessingPayment(false);
-            setSelectedBookingForPayment(null);
-        }
+        const daysUntilDeparture = Math.ceil((departureDate - now) / (1000 * 60 * 60 * 24));
+        let refund_percent = 0;
+        if (daysUntilDeparture >= 15) refund_percent = 100;
+        else if (daysUntilDeparture >= 7) refund_percent = 80;
+        else if (daysUntilDeparture >= 3) refund_percent = 50;
+        const refund_amount = Math.round((booking.final_amount * refund_percent) / 100);
+        return { refund_percent, refund_amount, daysUntilDeparture };
     };
 
     const handleCancelUnpaidBooking = (bookingId) => {
         const action = async () => {
             try {
                 await bookingService.cancelBooking(bookingId);
-                await loadBookings();
-                toast.success('Đã hủy đặt tour thành công!');
+                toast.success('Hủy booking thành công!', { autoClose: 3000 });
+                const response = await bookingService.getMyBookings();
+                setBookings(response);
             } catch (err) {
-                toast.error(err.message || 'Không thể hủy đặt tour');
+                toast.error(err.message || 'Có lỗi xảy ra khi hủy booking');
             }
         };
-
-        openConfirmationModal(
-            'Xác nhận Hủy Đặt Tour',
-            'Bạn có chắc chắn muốn hủy đặt tour này không?',
-            'Xác nhận hủy',
-            action
-        );
+        openConfirmationModal('Xác nhận Hủy Booking', 'Bạn có chắc chắn muốn hủy đơn đặt tour này không?\nBooking chưa thanh toán sẽ được hủy miễn phí.', 'Đồng ý Hủy', action);
     };
 
     const handleCancelPaidBooking = (booking) => {
-        const { percent, refund } = calculateRefund(booking);
+        const { refund_percent, refund_amount, daysUntilDeparture } = calculateRefund(booking);
         
+        // ✅ LUÔN LUÔN MỞ REFUND METHOD MODAL (kể cả khi refund = 0%)
         setSelectedBookingForCancel(booking);
-        setRefundPercent(percent);
-        setRefundAmount(refund);
+        setRefundAmount(refund_amount);
+        setRefundPercent(refund_percent);
         setShowRefundModal(true);
     };
 
-    const handleRefundMethodSelected = async (method) => {
+    const handleConfirmRefund = async (refundMethod) => {
         if (!selectedBookingForCancel) return;
-
+        
         try {
-            await bookingService.cancelPaidBooking(selectedBookingForCancel.id, method);
-            await loadBookings();
-            setShowRefundModal(false);
-            setSelectedBookingForCancel(null);
+            setSubmittingRefund(true);
+            setShowRefundModal(false); // Đóng modal ngay khi bắt đầu xử lý
             
-            toast.success(
-                refundPercent >= 15 
-                    ? 'Yêu cầu hủy tour đã được gửi. Admin sẽ xử lý trong 24-48h!' 
-                    : 'Đã hủy tour thành công!'
+            const result = await bookingService.cancelPaidBooking(
+                selectedBookingForCancel.id, 
+                { refund_method: refundMethod }
             );
+            
+            if (result.success) {
+                // Nếu cần admin duyệt
+                if (result.requiresApproval) {
+                    toast.info(
+                        `⏳ ${result.message}\n\n` +
+                        `Số tiền hoàn dự kiến: ${refundAmount.toLocaleString('vi-VN')} VNĐ (${refundPercent}%)\n` +
+                        `Phương thức: ${refundMethod === 'credit' ? 'Hoàn vào ví Credit' : 'Chuyển khoản ngân hàng'}`,
+                        { autoClose: 7000 }
+                    );
+                } else {
+                    // Hủy thành công không cần duyệt hoặc không hoàn tiền
+                    const message = refundPercent === 0 
+                        ? 'Tour đã được hủy. Không được hoàn tiền do hủy muộn.'
+                        : result.message || 'Tour đã được hủy thành công';
+                    
+                    toast.warning(message, { autoClose: 5000 });
+                }
+                
+                // Cập nhật lại danh sách bookings
+                const response = await bookingService.getMyBookings();
+                setBookings(response);
+                setSelectedBookingForCancel(null);
+            }
         } catch (err) {
-            toast.error(err.message || 'Không thể hủy tour');
+            toast.error(err.message || 'Không thể hủy booking');
+        } finally {
+            setSubmittingRefund(false);
         }
     };
 
     const handleEditUnpaidBooking = (booking) => {
-        const action = () => {
-            navigate(`/booking/${booking.tour_id}`, {
-                state: { 
-                    prefillData: booking.details,
-                    editMode: true,
-                    bookingId: booking.id
-                }
-            });
+        const action = async () => {
+            try {
+                await bookingService.cancelBooking(booking.id);
+                toast.info('Đang chuyển hướng để sửa booking...', { autoClose: 2000 });
+                navigate(`/booking/${booking.tour_id}`, { state: { prefillData: booking.details, departureId: booking.tour_departure_id, specialRequests: booking.special_requests } });
+            } catch (err) {
+                toast.error(err.message || 'Không thể sửa booking');
+            }
         };
+        
+        // ✅ SỬA LỖI: Cập nhật cả modal sửa booking cho đồng bộ
+        const message = `Chỉnh sửa booking sẽ HỦY đơn hàng hiện tại và tạo một đơn mới với thông tin bạn thay đổi.\n\n📋 Thông tin booking:\n- Tour: ${booking.tour_name || booking.destination || 'N/A'}\n- Ngày khởi hành: ${new Date(booking.departure_date).toLocaleDateString('vi-VN')}\n- Tổng tiền: ${formatCurrency(booking.final_amount)}\n\nBạn có muốn tiếp tục?`;
 
-        openConfirmationModal(
-            'Xác nhận Chỉnh sửa',
-            `Chỉnh sửa booking sẽ HỦY đơn hàng hiện tại và tạo một đơn mới.\n\nBạn có muốn tiếp tục?`,
-            'Tiếp tục',
-            action
-        );
+        openConfirmationModal('⚠️ Xác nhận Sửa Booking', message, 'Tiếp tục Sửa', action);
     };
 
     const handleDeleteBooking = (bookingId) => {
@@ -260,21 +217,28 @@ const MyBookingsPage = () => {
                 toast.error(err.message || 'Không thể xóa booking');
             }
         };
-
-        openConfirmationModal(
-            'Xác nhận Xóa Booking',
-            'Hành động này sẽ xóa vĩnh viễn đơn đặt tour.\nBạn có chắc chắn?',
-            'Xóa',
-            action
-        );
+        openConfirmationModal('⚠️ Xác nhận Xóa Booking', 'Hành động này sẽ xóa vĩnh viễn đơn đặt tour khỏi danh sách của bạn.\nBạn có chắc chắn muốn tiếp tục?', 'Xóa vĩnh viễn', action);
     };
 
-    const handleViewInvoice = (bookingId) => {
-        navigate(`/bookings/invoice/${bookingId}`);
+    const handleViewInvoice = (bookingId) => navigate(`/bookings/invoice/${bookingId}`);
+
+    const handleDownloadInvoice = async (bookingId) => {
+        try {
+            const response = await bookingService.downloadInvoice(bookingId);
+            const url = window.URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `invoice_${bookingId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            link.parentNode.removeChild(link);
+        } catch (err) {
+            toast.error('Không thể tải hóa đơn');
+        }
     };
 
     const handleExpire = (bookingId) => {
-        loadBookings();
+        bookingService.getMyBookings().then(response => setBookings(response)).catch(err => setError(err.message || 'Không thể cập nhật danh sách đơn hàng.'));
     };
 
     const handleOpenReviewModal = (booking) => {
@@ -292,189 +256,97 @@ const MyBookingsPage = () => {
 
     const handleSubmitReview = async () => {
         if (!selectedBookingForReview) return;
-
         const formData = new FormData();
         formData.append('tour_id', selectedBookingForReview.tour_id);
         formData.append('booking_id', selectedBookingForReview.id);
         formData.append('rating', rating);
         formData.append('comment', reviewText);
-
-        selectedReviewFiles.forEach(file => {
-            formData.append('images', file);
-        });
-
+        selectedReviewFiles.forEach(file => formData.append('reviewImages', file));
         try {
-            await bookingService.submitReview(formData);
-            toast.success('Cảm ơn bạn đã đánh giá!');
-            handleCloseReviewModal();
+            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const response = await fetch('http://localhost:5000/api/reviews', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const result = await response.json();
+            if (result.success) {
+                toast.success('Đánh giá của bạn đã được gửi thành công!');
+                handleCloseReviewModal();
+            } else {
+                toast.error(result.message || 'Không thể gửi đánh giá');
+            }
         } catch (err) {
             toast.error(err.message || 'Không thể gửi đánh giá');
         }
     };
 
-    // ✅ TÍNH TOÁN PHÂN TRANG
-    const totalPages = Math.ceil(bookings.length / itemsPerPage);
-    const indexOfLastItem = currentPage * itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentBookings = bookings.slice(indexOfFirstItem, indexOfLastItem);
-
-    // ✅ XỬ LÝ CHUYỂN TRANG
-    const paginate = (pageNumber) => {
-        if (pageNumber >= 1 && pageNumber <= totalPages) {
-            setCurrentPage(pageNumber);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+    const handleOpenPaymentModal = (booking) => {
+        setSelectedBookingForPayment(booking);
+        setShowPaymentModal(true);
     };
 
-    // ✅ TẠO DANH SÁCH SỐ TRANG
-    const renderPageNumbers = () => {
-        const pages = [];
-        const maxVisible = 5;
-
-        if (totalPages <= maxVisible) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
-            }
-        } else {
-            if (currentPage <= 3) {
-                for (let i = 1; i <= 4; i++) pages.push(i);
-                pages.push('...');
-                pages.push(totalPages);
-            } else if (currentPage >= totalPages - 2) {
-                pages.push(1);
-                pages.push('...');
-                for (let i = totalPages - 3; i <= totalPages; i++) pages.push(i);
+    const handlePaymentConfirm = async (paymentMethod, bookingId) => {
+        try {
+            setProcessingPayment(true);
+            if (paymentMethod === 'credit') {
+                const result = await paymentService.payWithCredit(bookingId);
+                if (result.success) {
+                    toast.success(`Thanh toán thành công!\n\nSố dư còn lại: ${result.data.remainingBalance.toLocaleString('vi-VN')} VNĐ`, { autoClose: 5000 });
+                    const response = await bookingService.getMyBookings();
+                    setBookings(response);
+                    setShowPaymentModal(false);
+                }
             } else {
-                pages.push(1);
-                pages.push('...');
-                pages.push(currentPage - 1);
-                pages.push(currentPage);
-                pages.push(currentPage + 1);
-                pages.push('...');
-                pages.push(totalPages);
+                const result = await paymentService.createPaymentUrl({ bookingId });
+                if (result.success && result.paymentUrl) window.location.href = result.paymentUrl;
             }
+        } catch (error) {
+            toast.error('❌ ' + (error.message || 'Thanh toán thất bại'));
+        } finally {
+            setProcessingPayment(false);
         }
-
-        return pages.map((page, index) => {
-            if (page === '...') {
-                return <span key={`dots-${index}`} className="mb-pagination-dots">...</span>;
-            }
-            return (
-                <button
-                    key={page}
-                    className={`mb-page-btn ${page === currentPage ? 'active' : ''}`}
-                    onClick={() => paginate(page)}
-                >
-                    {page}
-                </button>
-            );
-        });
     };
 
-    if (loading) {
-        return (
-            <div className="mb-container">
-                <div className="mb-loading">
-                    <div className="mb-spinner"></div>
-                    <p>Đang tải dữ liệu...</p>
-                </div>
-            </div>
-        );
-    }
+    // ✅ Đảm bảo hàm này đã được khai báo trong component MyBookingsPage
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', {
+            style: 'currency',
+            currency: 'VND',
+            minimumFractionDigits: 0
+        }).format(amount || 0);
+    };
 
-    if (error) {
-        return (
-            <div className="mb-container">
-                <div className="mb-error">
-                    <i className="fas fa-exclamation-triangle"></i>
-                    <p>{error}</p>
-                    <button onClick={loadBookings} className="mb-btn mb-btn-primary">
-                        <i className="fas fa-sync-alt"></i> Thử lại
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    if (loading) return <div className="v2-my-bookings-container"><div className="v2-loader"></div></div>;
+    if (error) return <div className="v2-my-bookings-container"><p className="v2-error-message">{error}</p></div>;
 
     return (
         <>
-            <ToastContainer 
-                position="top-right"
-                autoClose={3000}
-                hideProgressBar={false}
-                newestOnTop
-                closeOnClick
-                pauseOnHover
-                theme="light"
-            />
+            <ToastContainer position="top-right" autoClose={3000} />
+            <ConfirmationModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onConfirm={handleConfirm} {...modalContent} />
+            <RefundMethodModal isOpen={showRefundModal} onClose={() => { setShowRefundModal(false); setSelectedBookingForCancel(null); }} onConfirm={handleConfirmRefund} booking={selectedBookingForCancel} refundAmount={refundAmount} refundPercent={refundPercent} submitting={submittingRefund} />
+            <PaymentMethodModal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)} onConfirm={handlePaymentConfirm} amount={selectedBookingForPayment?.final_amount || 0} bookingId={selectedBookingForPayment?.id} loading={processingPayment} />
+            <ReviewModal show={showReviewModal} onClose={handleCloseReviewModal} rating={rating} setRating={setRating} reviewText={reviewText} setReviewText={setReviewText} onSubmit={handleSubmitReview} selectedFiles={selectedReviewFiles} setSelectedFiles={setSelectedReviewFiles} />
 
-            <ConfirmationModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onConfirm={handleConfirm}
-                title={modalContent.title}
-                message={modalContent.message}
-                confirmText={modalContent.confirmText}
-            />
-
-            <PaymentMethodModal
-                isOpen={showPaymentModal}
-                onClose={() => setShowPaymentModal(false)}
-                onSubmit={handlePaymentSubmit}
-                amount={selectedBookingForPayment?.final_amount || 0}
-            />
-
-            <RefundMethodModal
-                isOpen={showRefundModal}
-                onClose={() => setShowRefundModal(false)}
-                onSubmit={handleRefundMethodSelected}
-                refundAmount={refundAmount}
-                refundPercent={refundPercent}
-            />
-
-            <ReviewModal
-                isOpen={showReviewModal}
-                onClose={handleCloseReviewModal}
-                booking={selectedBookingForReview}
-                rating={rating}
-                setRating={setRating}
-                reviewText={reviewText}
-                setReviewText={setReviewText}
-                onSubmit={handleSubmitReview}
-                selectedFiles={selectedReviewFiles}
-                setSelectedFiles={setSelectedReviewFiles}
-            />
-
-            <div className="mb-container">
-                {/* ========== PAGE HEADER ========== */}
-                <div className="mb-header">
-                    <div className="mb-header-content">
-                        <h1 className="mb-title">
-                            <i className="fas fa-ticket-alt"></i>
-                            Lịch sử đặt tour của tôi
-                        </h1>
-                        <p className="mb-subtitle">
-                            Quản lý và theo dõi các chuyến du lịch
-                        </p>
-                    </div>
-                    <button onClick={loadBookings} className="mb-refresh-btn">
-                        <i className="fas fa-sync-alt"></i>
-                        <span>Làm mới</span>
-                    </button>
+            <div className="v2-my-bookings-container">
+                {/* ✅ PAGE HEADER */}
+                <div className="v2-page-header">
+                    <h1><i className="fas fa-history"></i> Lịch sử đặt tour</h1>
+                    <p className="v2-page-subtitle">Quản lý và theo dõi các chuyến đi của bạn ({bookings.length} booking)</p>
                 </div>
 
                 {bookings.length === 0 ? (
-                    <div className="mb-empty">
+                    <div className="v2-no-bookings">
                         <i className="fas fa-inbox"></i>
-                        <p>Bạn chưa có đơn đặt tour nào</p>
-                        <Link to="/tours" className="mb-btn mb-btn-primary">
-                            <i className="fas fa-compass"></i> Khám phá các tour
+                        <p>Bạn chưa có đơn đặt tour nào.</p>
+                        <Link to="/tours" className="v2-btn v2-btn--primary">
+                            <i className="fas fa-search"></i> Khám phá các tour
                         </Link>
                     </div>
                 ) : (
                     <>
-                        {/* ========== BOOKINGS GRID ========== */}
-                        <div className="mb-grid">
+                        {/* ✅ BOOKINGS LIST - COMPACT DESIGN */}
+                        <div className="v2-bookings-list-compact">
                             {currentBookings.map(booking => {
                                 const localDate = new Date(booking.created_at.replace(' ', 'T'));
                                 const utcTimestamp = localDate.getTime();
@@ -485,220 +357,175 @@ const MyBookingsPage = () => {
                                 const isPendingCancellation = booking.status === 'pending_cancellation';
 
                                 return (
-                                    <div key={booking.id} className={`mb-card status-${booking.status}`}>
-                                        {/* Image */}
-                                        <div className="mb-card-image">
-                                            <img 
-                                                src={`http://localhost:5000${booking.tour_image}`} 
-                                                alt={booking.tour_name}
-                                            />
-                                            <div className={`mb-status-badge status-${booking.status} payment-${booking.payment_status}`}>
-                                                <i className={getStatusIcon(booking.status, booking.payment_status)}></i>
-                                                <span>
-                                                    {booking.status === 'pending_payment' && isExpired
-                                                        ? 'Hết hạn'
-                                                        : getStatusText(booking.status, booking.payment_status)}
-                                                </span>
-                                            </div>
+                                    <div key={booking.id} className={`v2-booking-card-compact status-${booking.status}`}>
+                                        {/* THUMBNAIL */}
+                                        <div className="v2-booking-thumbnail">
+                                            <img src={`http://localhost:5000${booking.tour_image}`} alt={booking.tour_name} />
+                                            <span className={`v2-status-badge status-${booking.status} payment-${booking.payment_status}`}>
+                                                {booking.status === 'pending_payment' && isExpired ? 'Hết hạn' : getStatusText(booking.status, booking.payment_status)}
+                                            </span>
                                         </div>
 
-                                        {/* Content */}
-                                        <div className="mb-card-content">
-                                            <h3 className="mb-card-title">{booking.tour_name}</h3>
-                                            
-                                            {/* Countdown */}
+                                        {/* BOOKING INFO */}
+                                        <div className="v2-booking-info-compact">
+                                            <div className="v2-booking-header-compact">
+                                                <h3>{booking.tour_name}</h3>
+                                                <span className="v2-booking-id-badge">#{booking.id}</span>
+                                            </div>
+
+                                            {/* COUNTDOWN TIMER */}
                                             {booking.status === 'pending_payment' && !isExpired && (
-                                                <div className="mb-countdown-wrapper">
-                                                    <CountdownTimer
-                                                        expiryTimestamp={expiryTime}
-                                                        onExpire={() => handleExpire(booking.id)}
-                                                    />
+                                                <div className="v2-countdown-wrapper">
+                                                    <CountdownTimer expiryTimestamp={expiryTime} onExpire={() => handleExpire(booking.id)} />
                                                 </div>
                                             )}
 
-                                            {/* Info */}
-                                            <div className="mb-card-info">
-                                                <div className="mb-info-item">
-                                                    <i className="fas fa-hashtag"></i>
-                                                    <span>Mã: <strong>#{booking.id}</strong></span>
+                                            {/* PENDING CANCELLATION NOTICE */}
+                                            {isPendingCancellation && (
+                                                <div className="v2-pending-notice">
+                                                    <i className="fas fa-clock"></i>
+                                                    <span>Yêu cầu hủy đang chờ admin xem xét (24-48h)</span>
                                                 </div>
-                                                <div className="mb-info-item">
+                                            )}
+
+                                            {/* META INFO */}
+                                            <div className="v2-booking-meta-compact">
+                                                <div className="v2-meta-item">
                                                     <i className="fas fa-calendar-alt"></i>
-                                                    <span>{new Date(booking.departure_date).toLocaleDateString('vi-VN')}</span>
+                                                    <span>Khởi hành: {new Date(booking.departure_date).toLocaleDateString('vi-VN')}</span>
                                                 </div>
-                                                <div className="mb-info-item">
-                                                    <i className="fas fa-users"></i>
-                                                    <span>
-                                                        {Array.isArray(booking.details) && booking.details.map((detail, index) => (
-                                                            <span key={index}>
-                                                                {detail.quantity} {translatePriceType(detail.price_type)}
-                                                                {index < booking.details.length - 1 ? ', ' : ''}
-                                                            </span>
-                                                        ))}
-                                                    </span>
-                                                </div>
-                                                <div className="mb-info-item">
+                                                <div className="v2-meta-item">
                                                     <i className="fas fa-user"></i>
                                                     <span>{booking.contact_name}</span>
                                                 </div>
-                                                
                                                 {/* ✅ THÊM EMAIL */}
-                                                <div className="mb-info-item">
+                                                <div className="v2-meta-item">
                                                     <i className="fas fa-envelope"></i>
                                                     <span>{booking.contact_email}</span>
                                                 </div>
-                                                
-                                                {/* ✅ THÊM SỐ ĐIỆN THOẠI */}
-                                                <div className="mb-info-item">
+                                                <div className="v2-meta-item">
                                                     <i className="fas fa-phone"></i>
                                                     <span>{booking.contact_phone}</span>
                                                 </div>
                                             </div>
 
-                                            {/* Pending Notice */}
-                                            {isPendingCancellation && (
-                                                <div className="mb-pending-notice">
-                                                    <i className="fas fa-clock"></i>
-                                                    <span>Đang chờ admin duyệt hủy (24-48h)</span>
-                                                </div>
+                                            {/* DETAILS COMPACT */}
+                                            <div className="v2-booking-details-compact">
+                                                {Array.isArray(booking.details) && booking.details.map((detail, index) => (
+                                                    <span key={index} className="v2-detail-tag">
+                                                        {translatePriceType(detail.price_type)}: {detail.quantity}
+                                                    </span>
+                                                ))}
+                                            </div>
+
+                                            {/* PRICE */}
+                                            <div className="v2-booking-price-compact">
+                                                {booking.discount_amount > 0 && (
+                                                    <span className="v2-discount">
+                                                        {formatCurrency(booking.discount_amount)}
+                                                    </span>
+                                                )}
+                                                <span className="v2-total">
+                                                    {formatCurrency(booking.final_amount)}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* ACTIONS - VERTICAL */}
+                                        <div className="v2-booking-actions-vertical">
+                                            {booking.status === 'pending_payment' && !isExpired && (
+                                                <>
+                                                    <button onClick={() => handleOpenPaymentModal(booking)} className="v2-btn-compact v2-btn-primary">
+                                                        <i className="fas fa-credit-card"></i> Thanh toán
+                                                    </button>
+                                                    <button onClick={() => handleEditUnpaidBooking(booking)} className="v2-btn-compact v2-btn-info">
+                                                        <i className="fas fa-edit"></i> Sửa
+                                                    </button>
+                                                    <button onClick={() => handleCancelUnpaidBooking(booking.id)} className="v2-btn-compact v2-btn-danger">
+                                                        <i className="fas fa-times"></i> Hủy
+                                                    </button>
+                                                </>
                                             )}
 
-                                            {/* Total */}
-                                            <div className="mb-card-total">
-                                                <span>Tổng tiền:</span>
-                                                <strong>{booking.final_amount.toLocaleString('vi-VN')} VNĐ</strong>
-                                            </div>
-
-                                            {/* Actions */}
-                                            <div className="mb-card-actions">
-                                                {/* PENDING PAYMENT */}
-                                                {booking.status === 'pending_payment' && !isExpired && !isPaid && (
-                                                    <>
-                                                        <button 
-                                                            onClick={() => handlePayNow(booking)} 
-                                                            className="mb-btn mb-btn-primary mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-credit-card"></i> Thanh toán
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleEditUnpaidBooking(booking)} 
-                                                            className="mb-btn mb-btn-info mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-edit"></i> Sửa
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleCancelUnpaidBooking(booking.id)} 
-                                                            className="mb-btn mb-btn-danger mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-times"></i> Hủy
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* CONFIRMED */}
-                                                {canCancelPaid && (
-                                                    <>
-                                                        <Link 
-                                                            to={`/tours/${booking.tour_id}`} 
-                                                            className="mb-btn mb-btn-secondary mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-eye"></i> Chi tiết
-                                                        </Link>
-                                                        <button 
-                                                            onClick={() => handleViewInvoice(booking.id)} 
-                                                            className="mb-btn mb-btn-info mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-file-invoice"></i> Hóa đơn
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleCancelPaidBooking(booking)} 
-                                                            className="mb-btn mb-btn-warning mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-ban"></i> Hủy
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* COMPLETED */}
-                                                {booking.status === 'completed' && (
-                                                    <>
-                                                        <button 
-                                                            onClick={() => handleViewInvoice(booking.id)} 
-                                                            className="mb-btn mb-btn-info mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-file-invoice"></i> Hóa đơn
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleOpenReviewModal(booking)} 
-                                                            className="mb-btn mb-btn-success mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-star"></i> Đánh giá
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* CANCELLED */}
-                                                {booking.status === 'cancelled' && (
-                                                    <>
-                                                        <Link 
-                                                            to={`/booking/${booking.tour_id}`} 
-                                                            state={{ prefillData: booking.details }} 
-                                                            className="mb-btn mb-btn-secondary mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-redo"></i> Đặt lại
-                                                        </Link>
-                                                        <button 
-                                                            onClick={() => handleDeleteBooking(booking.id)} 
-                                                            className="mb-btn mb-btn-danger mb-btn-sm"
-                                                        >
-                                                            <i className="fas fa-trash"></i> Xóa
-                                                        </button>
-                                                    </>
-                                                )}
-
-                                                {/* PENDING CANCELLATION */}
-                                                {isPendingCancellation && (
-                                                    <button disabled className="mb-btn mb-btn-disabled mb-btn-sm">
-                                                        <i className="fas fa-clock"></i> Chờ duyệt
+                                            {canCancelPaid && (
+                                                <>
+                                                    <Link to={`/tours/${booking.tour_id}`} className="v2-btn-compact v2-btn-secondary">
+                                                        <i className="fas fa-eye"></i> Chi tiết
+                                                    </Link>
+                                                    <button onClick={() => handleViewInvoice(booking.id)} className="v2-btn-compact v2-btn-info">
+                                                        <i className="fas fa-file-invoice"></i> Hóa đơn
                                                     </button>
-                                                )}
-                                            </div>
+                                                    <button onClick={() => handleCancelPaidBooking(booking)} className="v2-btn-compact v2-btn-warning">
+                                                        <i className="fas fa-ban"></i> Hủy tour
+                                                    </button>
+                                                    <button onClick={() => handleDownloadInvoice(booking.id)} className="v2-btn-compact v2-btn-success">
+                                                        <i className="fas fa-download"></i> Tải PDF
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {booking.status === 'completed' && (
+                                                <>
+                                                    <button onClick={() => handleViewInvoice(booking.id)} className="v2-btn-compact v2-btn-info">
+                                                        <i className="fas fa-file-invoice"></i> Hóa đơn
+                                                    </button>
+                                                    <button onClick={() => handleOpenReviewModal(booking)} className="v2-btn-compact v2-btn-success">
+                                                        <i className="fas fa-star"></i> Đánh giá
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {booking.status === 'cancelled' && (
+                                                <>
+                                                    <Link to={`/booking/${booking.tour_id}`} state={{ prefillData: booking.details }} className="v2-btn-compact v2-btn-secondary">
+                                                        <i className="fas fa-redo"></i> Đặt lại
+                                                    </Link>
+                                                    <button onClick={() => handleDeleteBooking(booking.id)} className="v2-btn-compact v2-btn-danger">
+                                                        <i className="fas fa-trash"></i> Xóa
+                                                    </button>
+                                                </>
+                                            )}
+
+                                            {isPendingCancellation && (
+                                                <button disabled className="v2-btn-compact v2-btn-disabled">
+                                                    <i className="fas fa-clock"></i> Chờ duyệt
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        {/* ========== PAGINATION ========== */}
+                        {/* ✅ PAGINATION */}
                         {totalPages > 1 && (
-                            <>
-                                <nav className="mb-pagination">
-                                    <button 
-                                        className={`mb-pagination-btn ${currentPage === 1 ? 'disabled' : ''}`}
-                                        onClick={() => paginate(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                    >
-                                        <i className="bi bi-chevron-left"></i>
-                                    </button>
-                                    
-                                    <div className="mb-pagination-numbers">
-                                        {renderPageNumbers()}
-                                    </div>
+                            <div className="v2-pagination-wrapper">
+                                <button 
+                                    onClick={() => paginate(currentPage - 1)} 
+                                    disabled={currentPage === 1}
+                                    className="v2-pagination-btn v2-pagination-prev"
+                                >
+                                    <i className="fas fa-chevron-left"></i>
+                                </button>
 
-                                    <button 
-                                        className={`mb-pagination-btn ${currentPage === totalPages ? 'disabled' : ''}`}
-                                        onClick={() => paginate(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
+                                {[...Array(totalPages)].map((_, index) => (
+                                    <button
+                                        key={index + 1}
+                                        onClick={() => paginate(index + 1)}
+                                        className={`v2-pagination-btn ${currentPage === index + 1 ? 'active' : ''}`}
                                     >
-                                        <i className="bi bi-chevron-right"></i>
+                                        {index + 1}
                                     </button>
-                                </nav>
+                                ))}
 
-                                <div className="mb-pagination-info">
-                                    Hiển thị {indexOfFirstItem + 1} - {Math.min(indexOfLastItem, bookings.length)} 
-                                    {' '}trong tổng số {bookings.length} booking
-                                </div>
-                            </>
+                                <button 
+                                    onClick={() => paginate(currentPage + 1)} 
+                                    disabled={currentPage === totalPages}
+                                    className="v2-pagination-btn v2-pagination-next"
+                                >
+                                    <i className="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
                         )}
                     </>
                 )}

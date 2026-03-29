@@ -175,7 +175,7 @@ const ItineraryModule = () => {
             <i className="bi bi-plus-circle-fill"></i> Tạo Lịch Trình Mới
           </Link>
           <Link to="/itinerary-planner" className="itinerary-btn itinerary-btn-ai">
-            <i className="bi bi-stars"></i> Lịch trình AI thông minh
+            <i className="bi bi-stars"></i> Gợi ý lịch trình thông minh
           </Link>
           <Link to="/user/my-tours" className="itinerary-btn itinerary-btn-secondary">
             <i className="bi bi-person-badge"></i> Lịch Trình Của Tôi

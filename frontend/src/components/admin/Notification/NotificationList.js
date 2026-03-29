@@ -3,117 +3,107 @@ import React from 'react';
 const NotificationList = ({ notifications, onDelete }) => {
   const getNotificationIcon = (type) => {
     const icons = {
-      tour_pending: 'bi-clock-history text-warning', 
-      tour_approved: 'bi-check-circle-fill text-success',
-      tour_rejected: 'bi-x-circle-fill text-danger',
-      booking_created: 'bi-cart-plus-fill text-info', 
-      booking_confirmed: 'bi-calendar-check-fill text-info',
-      booking_cancelled: 'bi-calendar-x-fill text-danger',
-      booking_completed: 'bi-check-circle-fill text-success', 
-      payment_success: 'bi-credit-card-fill text-success',
-      new_review: 'bi-star-fill text-warning',
-      new_message: 'bi-chat-dots-fill text-primary',
-      new_location_comment: 'bi-chat-square-text-fill text-info',
-      system: 'bi-info-circle-fill text-secondary'
+      'booking_confirmed': 'bi-calendar-check',
+      'booking_cancelled': 'bi-x-circle',
+      'payment_success': 'bi-credit-card',
+      'tour_approved': 'bi-check-circle',
+      'tour_rejected': 'bi-x-circle'
     };
-    return icons[type] || 'bi-bell-fill';
-};
-  const getTypeLabel = (type) => {
-    const labels = {
-      tour_pending: 'Tour chờ duyệt', 
-      tour_approved: 'Tour được duyệt',
-      tour_rejected: 'Tour bị từ chối',
-      booking_created: 'Booking mới', 
-      booking_confirmed: 'Đặt tour',
-      booking_cancelled: 'Hủy tour',
-      booking_completed: 'Tour hoàn thành', 
-      payment_success: 'Thanh toán',
-      new_review: 'Đánh giá mới',
-      new_message: 'Tin nhắn Admin',
-      new_location_comment: 'Bình luận địa điểm',
-      system: 'Hệ thống'
-    };
-    return labels[type] || type;
-};
+    return icons[type] || 'bi-bell';
+  };
 
-  const formatDateTime = (dateString) => {
+  const getIconClass = (type) => {
+    if (type?.includes('booking')) return 'type-booking';
+    if (type?.includes('tour')) return 'type-tour';
+    if (type?.includes('payment')) return 'type-payment';
+    return 'type-system';
+  };
+
+  const getNotificationType = (type) => {
+    const types = {
+      'booking_confirmed': 'Xác nhận booking',
+      'booking_cancelled': 'Hủy tour',
+      'payment_success': 'Thanh toán',
+      'tour_approved': 'Duyệt tour',
+      'tour_rejected': 'Từ chối tour'
+    };
+    return types[type] || type;
+  };
+
+  const formatTime = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffMs = now - date;
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
 
-    if (diffMins < 1) return 'Vừa xong';
-    if (diffMins < 60) return `${diffMins} phút trước`;
-    if (diffHours < 24) return `${diffHours} giờ trước`;
-    if (diffDays < 7) return `${diffDays} ngày trước`;
-    
-    return date.toLocaleDateString('vi-VN', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (minutes < 1) return 'Vừa xong';
+    if (minutes < 60) return `${minutes} phút trước`;
+    if (hours < 24) return `${hours} giờ trước`;
+    return `${days} ngày trước`;
   };
 
   if (notifications.length === 0) {
     return (
-      <div className="admin-notif-empty-state">
-        <i className="bi bi-inbox"></i>
-        <h3>Không có thông báo nào</h3>
-        <p>Chưa có thông báo nào được tạo</p>
+      <div className="qltb-notification-list-section">
+        <div className="qltb-empty-state">
+          <div className="qltb-empty-icon">
+            <i className="bi bi-bell-slash"></i>
+          </div>
+          <h3>Không có thông báo</h3>
+          <p>Chưa có thông báo nào trong hệ thống</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="admin-notif-list">
-      {notifications.map(notif => (
-        <div 
-          key={notif.id} 
-          className={`admin-notif-item ${!notif.is_read ? 'unread' : ''}`}
-        >
-          <div className="admin-notif-item-icon">
-            <i className={`bi ${getNotificationIcon(notif.type)}`}></i>
-          </div>
-
-          <div className="admin-notif-item-content">
-            <div className="admin-notif-item-header">
-              <span className="admin-notif-type-badge">{getTypeLabel(notif.type)}</span>
-              <span className="admin-notif-time">
-                {formatDateTime(notif.created_at)}
-              </span>
+    <div className="qltb-notification-list-section">
+      <div className="qltb-notification-list">
+        {notifications.map(notification => (
+          <div 
+            key={notification.id}
+            className={`qltb-notification-item ${!notification.is_read ? 'unread' : ''}`}
+          >
+            <div className={`qltb-notification-icon-wrapper ${getIconClass(notification.type)}`}>
+              <i className={`bi ${getNotificationIcon(notification.type)}`}></i>
             </div>
-
-            <p className="admin-notif-message">{notif.message}</p>
-
-            {(notif.username || notif.full_name) && (
-              <div className="admin-notif-user-info">
-                <i className="bi bi-person-circle"></i>
-                <span>{notif.full_name || notif.username}</span>
+            
+            <div className="qltb-notification-content">
+              <div className="qltb-notification-header">
+                <span className="qltb-notification-type">
+                  {getNotificationType(notification.type)}
+                </span>
+                <span className="qltb-notification-time">
+                  {formatTime(notification.created_at)}
+                </span>
               </div>
-            )}
-
-            {notif.action_url && (
-              <a href={notif.action_url} className="admin-notif-action-link">
-                <i className="bi bi-arrow-right-circle"></i> Xem chi tiết
-              </a>
-            )}
+              
+              <p className="qltb-notification-message">
+                {notification.message}
+              </p>
+              
+              {(notification.username || notification.full_name) && (
+                <div className="qltb-notification-user">
+                  <i className="bi bi-person"></i>
+                  <span>{notification.full_name || notification.username}</span>
+                </div>
+              )}
+            </div>
+            
+            <div className="qltb-notification-actions">
+              <button 
+                className="qltb-notification-delete-btn"
+                onClick={() => onDelete(notification.id)}
+                title="Xóa"
+              >
+                <i className="bi bi-trash"></i>
+              </button>
+            </div>
           </div>
-
-          <div className="admin-notif-item-actions">
-            <button
-              onClick={() => onDelete(notif.id)}
-              className="admin-notif-btn-delete"
-              title="Xóa thông báo"
-            >
-              <i className="bi bi-trash"></i>
-            </button>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

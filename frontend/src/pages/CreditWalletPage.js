@@ -4,54 +4,176 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../styles/CreditWalletPage.css';
 
+// ========== DANH SÁCH NGÂN HÀNG ==========
+const BANKS = [
+    { code: 'VCB', name: 'Vietcombank - Ngân hàng TMCP Ngoại Thương Việt Nam' },
+    { code: 'TCB', name: 'Techcombank - Ngân hàng TMCP Kỹ Thương Việt Nam' },
+    { code: 'MB', name: 'MB Bank - Ngân hàng TMCP Quân Đội' },
+    { code: 'VTB', name: 'Vietinbank - Ngân hàng TMCP Công Thương Việt Nam' },
+    { code: 'ACB', name: 'ACB - Ngân hàng TMCP Á Châu' },
+    { code: 'BIDV', name: 'BIDV - Ngân hàng TMCP Đầu Tư và Phát Triển Việt Nam' },
+    { code: 'AGR', name: 'Agribank - Ngân hàng Nông nghiệp và Phát triển Nông thôn' },
+    { code: 'SCB', name: 'Sacombank - Ngân hàng TMCP Sài Gòn Thương Tín' },
+    { code: 'VPB', name: 'VPBank - Ngân hàng TMCP Việt Nam Thịnh Vượng' },
+    { code: 'TPB', name: 'TPBank - Ngân hàng TMCP Tiên Phong' }
+];
+
 // ========== WITHDRAWAL MODAL COMPONENT ==========
 const WithdrawalModal = ({ isOpen, onClose, balance, onSubmit }) => {
-    const [amount, setAmount] = useState('');
-    const [bankName, setBankName] = useState('');
-    const [accountNumber, setAccountNumber] = useState('');
-    const [accountName, setAccountName] = useState('');
+    const [formData, setFormData] = useState({
+        amount: '',
+        bankName: '',
+        accountNumber: '',
+        accountName: ''
+    });
+    const [errors, setErrors] = useState({});
     const [submitting, setSubmitting] = useState(false);
 
     const MIN_WITHDRAWAL = 50000;
 
+    // Reset form khi đóng modal
+    useEffect(() => {
+        if (!isOpen) {
+            setFormData({
+                amount: '',
+                bankName: '',
+                accountNumber: '',
+                accountName: ''
+            });
+            setErrors({});
+            setSubmitting(false);
+        }
+    }, [isOpen]);
+
+    // ✅ SỬA LẠI VALIDATE FORM - LOG ĐỂ DEBUG
+    const validateForm = () => {
+        const newErrors = {};
+        const withdrawAmount = parseFloat(formData.amount.toString().replace(/\./g, '')); // ✅ Xóa dấu chấm trước khi parse
+
+        console.log('[validateForm] Form Data:', formData);
+        console.log('[validateForm] Withdraw Amount:', withdrawAmount);
+
+        // Validate amount
+        if (!formData.amount) {
+            newErrors.amount = 'Vui lòng nhập số tiền muốn rút';
+        } else if (isNaN(withdrawAmount) || withdrawAmount <= 0) {
+            newErrors.amount = 'Số tiền phải lớn hơn 0';
+        } else if (withdrawAmount < MIN_WITHDRAWAL) {
+            newErrors.amount = `Số tiền rút tối thiểu là ${MIN_WITHDRAWAL.toLocaleString('vi-VN')} VNĐ`;
+        } else if (withdrawAmount > balance) {
+            newErrors.amount = `Số dư không đủ. Tối đa: ${balance.toLocaleString('vi-VN')} VNĐ`;
+        }
+
+        // ✅ Validate bank - KIỂM TRA KỸ HƠN
+        const bankValue = formData.bankName?.trim();
+        console.log('[validateForm] Bank Value:', bankValue);
+        
+        if (!bankValue || bankValue === '' || bankValue === '-- Chọn ngân hàng --') {
+            newErrors.bankName = 'Vui lòng chọn ngân hàng';
+        }
+
+        // ✅ Validate account number - KIỂM TRA KỸ HƠN
+        const accountNum = formData.accountNumber?.trim();
+        console.log('[validateForm] Account Number:', accountNum);
+        
+        if (!accountNum || accountNum === '') {
+            newErrors.accountNumber = 'Vui lòng nhập số tài khoản';
+        } else if (!/^\d{9,14}$/.test(accountNum)) {
+            newErrors.accountNumber = 'Số tài khoản phải từ 9-14 chữ số';
+        }
+
+        // ✅ Validate account name - KIỂM TRA KỸ HƠN
+        const accountName = formData.accountName?.trim();
+        console.log('[validateForm] Account Name:', accountName);
+        
+        if (!accountName || accountName === '') {
+            newErrors.accountName = 'Vui lòng nhập tên chủ tài khoản';
+        } else if (accountName.length < 2) {
+            newErrors.accountName = 'Tên chủ tài khoản quá ngắn';
+        }
+
+        console.log('[validateForm] Errors:', newErrors);
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    // Handle input change
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        
+        console.log('[handleInputChange]', name, '=', value); // ✅ LOG để debug
+        
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        
+        // Clear error khi user nhập
+        if (errors[name]) {
+            setErrors(prev => ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+
+    // Handle amount input (chỉ cho phép số)
+    const handleAmountChange = (e) => {
+        const value = e.target.value.replace(/[^\d]/g, ''); // ✅ Chỉ giữ lại số
+        
+        console.log('[handleAmountChange] Raw value:', e.target.value);
+        console.log('[handleAmountChange] Cleaned value:', value);
+        
+        setFormData(prev => ({
+            ...prev,
+            amount: value
+        }));
+        
+        if (errors.amount) {
+            setErrors(prev => ({
+                ...prev,
+                amount: ''
+            }));
+        }
+    };
+
+    // Format currency for display
+    const formatCurrency = (value) => {
+        if (!value) return '';
+        return new Intl.NumberFormat('vi-VN').format(value);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const withdrawAmount = parseFloat(amount);
+        console.log('[handleSubmit] Starting submission...');
+        console.log('[handleSubmit] Current formData:', formData);
 
-        if (!amount || withdrawAmount < MIN_WITHDRAWAL) {
-            toast.error(`Số tiền rút tối thiểu là ${MIN_WITHDRAWAL.toLocaleString('vi-VN')} VNĐ`);
-            return;
-        }
-
-        if (withdrawAmount > balance) {
-            toast.error('Số dư không đủ để thực hiện giao dịch');
-            return;
-        }
-
-        if (!bankName || !accountNumber || !accountName) {
-            toast.error('Vui lòng điền đầy đủ thông tin ngân hàng');
+        if (!validateForm()) {
+            console.log('[handleSubmit] Validation failed!');
+            toast.error('Vui lòng kiểm tra lại thông tin!');
             return;
         }
 
         try {
             setSubmitting(true);
-            await onSubmit({
-                amount: withdrawAmount,
-                bank_name: bankName,
-                account_number: accountNumber,
-                account_name: accountName
-            });
+            
+            // ✅ GỬI VỚI TÊN FIELD SNAKE_CASE (như code cũ)
+            const submitData = {
+                amount: parseFloat(formData.amount.toString().replace(/\./g, '')),
+                bankName: formData.bankName.trim(),      // ✅ Giữ nguyên camelCase
+                accountNumber: formData.accountNumber.trim(),  // ✅ Giữ nguyên camelCase
+                accountName: formData.accountName.trim()      // ✅ Giữ nguyên camelCase
+            };
+
+            console.log('[handleSubmit] Submit Data:', submitData);
+            
+            await onSubmit(submitData);
             
             toast.success('Yêu cầu rút tiền đã được gửi thành công!');
             onClose();
-            
-            // Reset form
-            setAmount('');
-            setBankName('');
-            setAccountNumber('');
-            setAccountName('');
         } catch (error) {
+            console.error('[handleSubmit] Error:', error);
             toast.error(error.message || 'Không thể tạo yêu cầu rút tiền');
         } finally {
             setSubmitting(false);
@@ -64,83 +186,139 @@ const WithdrawalModal = ({ isOpen, onClose, balance, onSubmit }) => {
         <div className="cv-modal-overlay" onClick={onClose}>
             <div className="cv-modal-content" onClick={e => e.stopPropagation()}>
                 <div className="cv-modal-header">
-                    <h3><i className="fas fa-money-bill-wave"></i> Rút tiền về ngân hàng</h3>
-                    <button onClick={onClose} className="cv-modal-close">
+                    <div className="cv-modal-header-icon">
+                        <i className="fas fa-money-bill-wave"></i>
+                    </div>
+                    <h3>Rút tiền về ngân hàng</h3>
+                    <button onClick={onClose} className="cv-modal-close" disabled={submitting}>
                         <i className="fas fa-times"></i>
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="cv-modal-body">
+                    {/* Amount Field */}
                     <div className="cv-form-group">
                         <label className="cv-form-label">
-                            <i className="fas fa-coins"></i> Số tiền rút (VNĐ) *
+                            <i className="fas fa-coins"></i> Số tiền rút (VNĐ) <span className="cv-required">*</span>
                         </label>
                         <input
-                            type="number"
-                            className="cv-form-input"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
+                            type="text"
+                            name="amount"
+                            className={`cv-form-input ${errors.amount ? 'cv-input-error' : ''}`}
+                            value={formData.amount ? formatCurrency(formData.amount) : ''}
+                            onChange={handleAmountChange}
                             placeholder="Nhập số tiền muốn rút"
-                            min={MIN_WITHDRAWAL}
-                            max={balance}
-                            required
+                            disabled={submitting}
                         />
+                        {errors.amount && (
+                            <span className="cv-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {errors.amount}
+                            </span>
+                        )}
                         <small className="cv-form-hint">
                             Số dư khả dụng: <strong>{balance.toLocaleString('vi-VN')} VNĐ</strong>
                         </small>
                     </div>
 
+                    {/* Bank Select */}
                     <div className="cv-form-group">
                         <label className="cv-form-label">
-                            <i className="fas fa-university"></i> Tên ngân hàng *
+                            <i className="fas fa-university"></i> Ngân hàng <span className="cv-required">*</span>
                         </label>
-                        <input
-                            type="text"
-                            className="cv-form-input"
-                            value={bankName}
-                            onChange={(e) => setBankName(e.target.value)}
-                            placeholder="VD: Vietcombank"
-                            required
-                        />
+                        <select
+                            name="bankName"
+                            className={`cv-form-input cv-form-select ${errors.bankName ? 'cv-input-error' : ''}`}
+                            value={formData.bankName}
+                            onChange={handleInputChange}
+                            disabled={submitting}
+                        >
+                            <option value="">-- Chọn ngân hàng --</option>
+                            {BANKS.map(bank => (
+                                <option key={bank.code} value={bank.name}>
+                                    {bank.name}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.bankName && (
+                            <span className="cv-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {errors.bankName}
+                            </span>
+                        )}
                     </div>
 
+                    {/* Account Number */}
                     <div className="cv-form-group">
                         <label className="cv-form-label">
-                            <i className="fas fa-credit-card"></i> Số tài khoản *
+                            <i className="fas fa-credit-card"></i> Số tài khoản <span className="cv-required">*</span>
                         </label>
                         <input
                             type="text"
-                            className="cv-form-input"
-                            value={accountNumber}
-                            onChange={(e) => setAccountNumber(e.target.value)}
-                            placeholder="Nhập số tài khoản"
-                            required
+                            name="accountNumber"
+                            className={`cv-form-input ${errors.accountNumber ? 'cv-input-error' : ''}`}
+                            value={formData.accountNumber}
+                            onChange={handleInputChange}
+                            placeholder="Nhập số tài khoản (9-14 chữ số)"
+                            maxLength="14"
+                            disabled={submitting}
                         />
+                        {errors.accountNumber && (
+                            <span className="cv-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {errors.accountNumber}
+                            </span>
+                        )}
                     </div>
 
+                    {/* Account Name */}
                     <div className="cv-form-group">
                         <label className="cv-form-label">
-                            <i className="fas fa-user"></i> Tên chủ tài khoản *
+                            <i className="fas fa-user"></i> Tên chủ tài khoản <span className="cv-required">*</span>
                         </label>
                         <input
                             type="text"
-                            className="cv-form-input"
-                            value={accountName}
-                            onChange={(e) => setAccountName(e.target.value)}
+                            name="accountName"
+                            className={`cv-form-input ${errors.accountName ? 'cv-input-error' : ''}`}
+                            value={formData.accountName}
+                            onChange={handleInputChange}
                             placeholder="Nhập tên chủ tài khoản"
-                            required
+                            disabled={submitting}
                         />
+                        {errors.accountName && (
+                            <span className="cv-error-message">
+                                <i className="fas fa-exclamation-circle"></i>
+                                {errors.accountName}
+                            </span>
+                        )}
+                        <small className="cv-form-hint">
+                            Tên phải khớp với thông tin trên tài khoản ngân hàng
+                        </small>
                     </div>
 
+                    {/* Action Buttons */}
                     <div className="cv-modal-footer">
-                        <button type="button" onClick={onClose} className="cv-btn cv-btn-secondary">
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="cv-btn cv-btn-cancel"
+                            disabled={submitting}
+                        >
                             <i className="fas fa-times"></i> Hủy
                         </button>
-                        <button type="submit" disabled={submitting} className="cv-btn cv-btn-primary">
+                        <button 
+                            type="submit" 
+                            disabled={submitting} 
+                            className="cv-btn cv-btn-submit"
+                        >
                             {submitting ? (
-                                <><i className="fas fa-spinner fa-spin"></i> Đang xử lý...</>
+                                <>
+                                    <i className="fas fa-spinner fa-spin"></i> Đang xử lý...
+                                </>
                             ) : (
-                                <><i className="fas fa-check"></i> Xác nhận rút tiền</>
+                                <>
+                                    <i className="fas fa-check"></i> Xác nhận rút tiền
+                                </>
                             )}
                         </button>
                     </div>

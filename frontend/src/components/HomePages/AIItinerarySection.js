@@ -6,8 +6,8 @@ const AIItinerarySection = () => {
     const features = [
         {
             icon: 'bi-robot',
-            title: 'AI Thông Minh',
-            description: 'Thuật toán AI tối ưu hóa lộ trình dựa trên vị trí, thời gian và sở thích của bạn'
+            title: 'Gợi Ý Hợp Lý',
+            description: 'Thuật toán tối ưu hóa lộ trình dựa trên vị trí, thời gian và sở thích của bạn'
         },
         {
             icon: 'bi-geo-alt-fill',
@@ -27,7 +27,7 @@ const AIItinerarySection = () => {
     ];
 
     const steps = [
-        { number: '01', title: 'Chọn điểm xuất phát', desc: 'Chọn vị trí bắt đầu hành trình của bạn' },
+        { number: '01', title: 'Chọn điểm xuất phát', desc: 'Chọn vị trí bắt đầu lịch trình của bạn' },
         { number: '02', title: 'Đặt thời gian', desc: 'Thiết lập thời gian và thời lượng tham quan' },
         { number: '03', title: 'Chọn sở thích', desc: 'Chọn loại địa điểm yêu thích của bạn' },
         { number: '04', title: 'Nhận lộ trình', desc: 'AI tạo lịch trình tối ưu ngay lập tức' }
@@ -50,13 +50,13 @@ const AIItinerarySection = () => {
                 >
                     <div className="ai-badge">
                         <i className="bi bi-stars"></i>
-                        <span>Công nghệ AI</span>
+                        <span> Gợi ý lịch trình thông minh</span>
                     </div>
                     <h2 className="ai-section-title">
-                        Lịch Trình <span className="ai-highlight">AI Thông Minh</span>
+                        Lịch trình<span className="ai-highlight"> du lịch phù hợp với bạn</span>
                     </h2>
                     <p className="ai-section-subtitle">
-                        Để AI lên kế hoạch cho bạn - Nhanh chóng, thông minh, và hoàn toàn tự động
+                        Hệ thống hỗ trợ xây dựng lịch trình du lịch dựa trên thời gian, sở thích và địa điểm mong muốn – nhanh chóng, hợp lý và dễ sử dụng.
                     </p>
                 </div>
 
@@ -124,7 +124,7 @@ const AIItinerarySection = () => {
                     <div className="ai-cta-buttons">
                         <Link to="/itinerary-planner" className="ai-cta-button primary">
                             <i className="bi bi-magic"></i>
-                            <span>Tạo lịch trình AI</span>
+                            <span>Gợi ý lịch trình thông minh</span>
                         </Link>
                         <Link to="/plan" className="ai-cta-button secondary">
                             <i className="bi bi-pencil-square"></i>

@@ -1,0 +1,375 @@
+/* ==================== ADMIN HEADER ==================== */
+/* ✅ ĐỔI TÊN CLASS: .admin-header -> .admin-top-header */
+.admin-top-header {
+  height: 70px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 !important;
+  margin: 0 !important;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  width: 100% !important;
+  box-sizing: border-box;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Container bên trong chịu trách nhiệm padding */
+.admin-header-container {
+  width: 100%;
+  height: 100%; /* ✅ Full chiều cao */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px; /* ✅ Padding nội dung nằm ở đây */
+  box-sizing: border-box;
+}
+
+/* ✅ ĐỔI TÊN: header-left → admin-header-left */
+.admin-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/* ✅ ĐỔI TÊN: breadcrumb → admin-breadcrumb */
+.admin-breadcrumb {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  list-style: none;
+}
+
+/* ✅ ĐỔI TÊN: breadcrumb-item → admin-breadcrumb-item */
+.admin-breadcrumb-item {
+  font-size: 0.9rem;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.admin-breadcrumb-item.active {
+  color: #1f2937;
+  font-weight: 600;
+}
+
+/* ==================== ADMIN NOTIFICATION SECTION ==================== */
+/* ✅ ĐỔI TÊN: header-right → admin-header-right */
+.admin-header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+/* ✅ ĐỔI TÊN: notification-wrapper → admin-notification-wrapper */
+.admin-notification-wrapper {
+  position: relative;
+}
+
+/* ✅ ĐỔI TÊN: notification-btn → admin-notification-btn */
+.admin-notification-btn {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border: none;
+  background: #f3f4f6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.admin-notification-btn:hover {
+  background: #e5e7eb;
+  transform: scale(1.05);
+}
+
+.admin-notification-btn i {
+  font-size: 1.25rem;
+  color: #374151;
+}
+
+/* ✅ ĐỔI TÊN: notification-badge → admin-notification-badge */
+.admin-notification-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  border: 2px solid white;
+  animation: adminNotificationPulse 2s infinite;
+}
+
+/* ✅ ĐỔI TÊN animation: pulse → adminNotificationPulse */
+@keyframes adminNotificationPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+/* ==================== ADMIN NOTIFICATION DROPDOWN ==================== */
+/* ✅ ĐỔI TÊN: notification-dropdown → admin-notification-dropdown */
+.admin-notification-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 380px;
+  max-height: 500px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  animation: adminNotificationSlideDown 0.2s ease;
+}
+
+/* ✅ ĐỔI TÊN animation: slideDown → adminNotificationSlideDown */
+@keyframes adminNotificationSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ✅ ĐỔI TÊN: notification-header → admin-notification-header */
+.admin-notification-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.admin-notification-header h6 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ✅ ĐỔI TÊN: notification-count → admin-notification-count */
+.admin-notification-count {
+  font-size: 0.85rem;
+  color: #6b7280;
+  background: #e5e7eb;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+/* ==================== ADMIN NOTIFICATION LIST ==================== */
+/* ✅ ĐỔI TÊN: notification-list → admin-notification-list */
+.admin-notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.admin-notification-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-notification-list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
+}
+
+/* ✅ ĐỔI TÊN: notification-empty → admin-notification-empty */
+.admin-notification-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: #9ca3af;
+}
+
+.admin-notification-empty i {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  opacity: 0.5;
+}
+
+.admin-notification-empty p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* ==================== ADMIN NOTIFICATION ITEM ==================== */
+/* ✅ ĐỔI TÊN: notification-item → admin-notification-item */
+.admin-notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.admin-notification-item:hover {
+  background: #f9fafb;
+}
+
+.admin-notification-item.unread {
+  background: #eff6ff;
+}
+
+.admin-notification-item.unread::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #3b82f6;
+}
+
+/* ✅ ĐỔI TÊN: notification-icon → admin-notification-icon */
+.admin-notification-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #dbeafe;
+}
+
+.admin-notification-item.unread .admin-notification-icon {
+  background: #3b82f6;
+}
+
+.admin-notification-icon i {
+  font-size: 1.1rem;
+  color: #3b82f6;
+}
+
+.admin-notification-item.unread .admin-notification-icon i {
+  color: white;
+}
+
+/* ✅ ĐỔI TÊN: notification-content → admin-notification-content */
+.admin-notification-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ✅ ĐỔI TÊN: notification-message → admin-notification-message */
+.admin-notification-message {
+  margin: 0 0 4px 0;
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.admin-notification-item.unread .admin-notification-message {
+  font-weight: 500;
+  color: #111827;
+}
+
+/* ✅ ĐỔI TÊN: notification-time → admin-notification-time */
+.admin-notification-time {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+/* ✅ ĐỔI TÊN: notification-delete → admin-notification-delete */
+.admin-notification-delete {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.admin-notification-item:hover .admin-notification-delete {
+  opacity: 1;
+}
+
+.admin-notification-delete:hover {
+  background: #fee2e2;
+}
+
+.admin-notification-delete i {
+  font-size: 1.1rem;
+  color: #ef4444;
+}
+
+/* ==================== ADMIN NOTIFICATION FOOTER ==================== */
+/* ✅ ĐỔI TÊN: notification-footer → admin-notification-footer */
+.admin-notification-footer {
+  padding: 12px 20px;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  text-align: center;
+}
+
+.admin-notification-footer button {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 500;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.admin-notification-footer button:hover {
+  background: #dbeafe;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .admin-header-container {
+    padding: 0 15px;
+  }
+  
+  .admin-notification-dropdown {
+    width: 320px;
+    right: -20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin-header-container {
+    padding: 0 10px;
+  }
+  
+  .admin-notification-dropdown {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    left: 10px;
+    width: auto;
+  }
+}

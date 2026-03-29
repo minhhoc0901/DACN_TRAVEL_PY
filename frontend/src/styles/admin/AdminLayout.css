@@ -1,11 +1,8 @@
-/* ==================== ADMIN LAYOUT ==================== */
-
+/* Admin Layout - Chuẩn hóa toàn bộ */
 .admin-wrapper {
   display: flex;
   min-height: 100vh;
-  background: #f5f6fa;
-  padding: 0 !important; /* ✅ XÓA PADDING */
-  margin: 0 !important; /* ✅ XÓA MARGIN */
+  background: #f5f8fa;
 }
 
 /* ==================== SIDEBAR STYLES ==================== */
@@ -94,8 +91,9 @@
 .admin-main {
   flex: 1;
   margin-left: 280px;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   padding-top: 0 !important; /* ✅ XÓA PADDING TOP */
   margin-top: 0 !important; /* ✅ XÓA MARGIN TOP */
@@ -160,6 +158,9 @@
   justify-content: space-between;
   padding: 0 30px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 999;
 }
 
 .header-left {
@@ -258,8 +259,10 @@
 
 /* ==================== CONTENT AREA ==================== */
 .admin-content {
-  padding: 24px; /* ✅ CHỈ PADDING BÊN TRONG, KHÔNG TOP */
-  min-height: 100vh;
+  flex: 1;
+  padding: 30px;
+  background: #f5f8fa;
+  overflow-y: auto;
   margin-top: 0 !important; /* ✅ XÓA MARGIN TOP */
 }
 
@@ -292,6 +295,91 @@
   font-size: 1rem;
 }
 
+/* ==================== CONTAINER CHUNG ==================== */
+.admin-page-container {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+/* ==================== HEADER CỦA TỪNG TRANG ==================== */
+.admin-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.admin-page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1a1c23;
+  margin: 0;
+}
+
+/* ==================== NÚT ACTION CHUNG ==================== */
+.admin-action-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-action-btn.primary {
+  background: #3699ff;
+  color: white;
+}
+
+.admin-action-btn.primary:hover {
+  background: #187de4;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(54, 153, 255, 0.3);
+}
+
+/* ==================== TABLE CHUNG ==================== */
+.admin-table-container {
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.admin-table thead {
+  background: #f8f9fa;
+}
+
+.admin-table th {
+  padding: 15px;
+  text-align: left;
+  font-weight: 600;
+  color: #1a1c23;
+  border-bottom: 2px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.admin-table td {
+  padding: 15px;
+  border-bottom: 1px solid #f0f0f0;
+  color: #6b7280;
+}
+
+.admin-table tbody tr:hover {
+  background: #f9fafb;
+}
+
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 991.98px) {
   .admin-sidebar {
@@ -303,19 +391,7 @@
   }
   
   .admin-main {
-    margin-left: 0;
-  }
-
-  .admin-main.expanded {
-    margin-left: 0;
-  }
-
-  .btn-toggle-sidebar {
-    left: 20px;
-  }
-
-  .admin-main.expanded .btn-toggle-sidebar {
-    left: 20px;
+    margin-left: 0 !important;
   }
 }
 

@@ -124,13 +124,23 @@ const NotificationManagement = () => {
   });
 
   return (
-    <div className="admin-notif-management">
-      <div className="admin-notif-page-header">
+    <div className="qltb-notification-page">
+      {/* Page Header */}
+      <div className="qltb-page-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '20px',
+        marginBottom: '20px'
+      }}>
         <div>
-          <h1 className="admin-notif-page-title">Quản lý Thông báo</h1>
-          <p className="admin-notif-page-subtitle">Xem và quản lý tất cả thông báo của hệ thống</p>
+          <h1 className="qltb-page-title">Quản lý Thông báo</h1>
+          <p className="qltb-page-subtitle">Xem và quản lý tất cả thông báo của hệ thống</p>
         </div>
-        <button onClick={() => setShowBulkModal(true)} className="admin-notif-btn-primary">
+        <button 
+          onClick={() => setShowBulkModal(true)} 
+          className="qltb-btn qltb-btn-primary"
+        >
           <i className="bi bi-megaphone"></i> Gửi thông báo hàng loạt
         </button>
       </div>
@@ -147,8 +157,8 @@ const NotificationManagement = () => {
 
       {/* List */}
       {loading ? (
-        <div className="admin-notif-loading-state">
-          <div className="admin-notif-spinner"></div>
+        <div className="qltb-loading">
+          <i className="bi bi-arrow-repeat"></i>
           <p>Đang tải...</p>
         </div>
       ) : (
@@ -160,15 +170,17 @@ const NotificationManagement = () => {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="admin-notif-pagination">
+            <div className="qltb-pagination">
               <button
+                className="qltb-pagination-btn"
                 disabled={currentPage === 1}
                 onClick={() => setCurrentPage(prev => prev - 1)}
               >
                 <i className="bi bi-chevron-left"></i> Trước
               </button>
-              <span>Trang {currentPage} / {totalPages}</span>
+              <span className="qltb-pagination-info">Trang {currentPage} / {totalPages}</span>
               <button
+                className="qltb-pagination-btn"
                 disabled={currentPage === totalPages}
                 onClick={() => setCurrentPage(prev => prev + 1)}
               >

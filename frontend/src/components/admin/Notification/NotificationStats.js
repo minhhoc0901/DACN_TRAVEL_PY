@@ -2,44 +2,44 @@ import React from 'react';
 
 const NotificationStats = ({ stats }) => {
   return (
-    <div className="admin-notif-stats-grid">
-      <div className="admin-notif-stat-card">
-        <div className="admin-notif-stat-icon blue">
+    <div className="qltb-stats-bar">
+      <div className="qltb-stat-item">
+        <div className="qltb-stat-icon total">
           <i className="bi bi-bell"></i>
         </div>
-        <div className="admin-notif-stat-content">
-          <h3>{stats.total?.toLocaleString() || 0}</h3>
-          <p>Tổng thông báo</p>
+        <div className="qltb-stat-content">
+          <div className="qltb-stat-label">Tổng thông báo</div>
+          <div className="qltb-stat-value">{stats.total || 0}</div>
         </div>
       </div>
-
-      <div className="admin-notif-stat-card">
-        <div className="admin-notif-stat-icon orange">
-          <i className="bi bi-envelope-open"></i>
+      
+      <div className="qltb-stat-item">
+        <div className="qltb-stat-icon unread">
+          <i className="bi bi-envelope"></i>
         </div>
-        <div className="admin-notif-stat-content">
-          <h3>{stats.unread?.toLocaleString() || 0}</h3>
-          <p>Chưa đọc</p>
+        <div className="qltb-stat-content">
+          <div className="qltb-stat-label">Chưa đọc</div>
+          <div className="qltb-stat-value">{stats.unread || 0}</div>
         </div>
       </div>
-
-      <div className="admin-notif-stat-card">
-        <div className="admin-notif-stat-icon green">
+      
+      <div className="qltb-stat-item">
+        <div className="qltb-stat-icon read">
           <i className="bi bi-check-circle"></i>
         </div>
-        <div className="admin-notif-stat-content">
-          <h3>{stats.read?.toLocaleString() || 0}</h3>
-          <p>Đã đọc</p>
+        <div className="qltb-stat-content">
+          <div className="qltb-stat-label">Đã đọc</div>
+          <div className="qltb-stat-value">{stats.read || 0}</div>
         </div>
       </div>
-
-      <div className="admin-notif-stat-card">
-        <div className="admin-notif-stat-icon purple">
+      
+      <div className="qltb-stat-item">
+        <div className="qltb-stat-icon today">
           <i className="bi bi-graph-up"></i>
         </div>
-        <div className="admin-notif-stat-content">
-          <h3>{stats.daily?.[0]?.count || 0}</h3>
-          <p>Hôm nay</p>
+        <div className="qltb-stat-content">
+          <div className="qltb-stat-label">Hôm nay</div>
+          <div className="qltb-stat-value">{stats.today || 0}</div>
         </div>
       </div>
     </div>

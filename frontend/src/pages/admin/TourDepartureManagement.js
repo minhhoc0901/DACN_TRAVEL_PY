@@ -272,151 +272,52 @@ const TourDepartureManagement = () => {
   function getStatusBadge(status) {
     switch (status) {
       case 'OPEN':
-        return <span className="status-badge status-open">Đang mở</span>;
+        return <span className="qlt-status-badge qlt-status-open">Đang mở</span>;
       case 'CLOSED':
-        return <span className="status-badge status-closed">Đã đóng</span>;
+        return <span className="qlt-status-badge qlt-status-closed">Đã đóng</span>;
       case 'FULL':
-        return <span className="status-badge status-full">Đã đầy</span>;
+        return <span className="qlt-status-badge qlt-status-full">Đã đầy</span>;
       default:
-        return <span className="status-badge">{status}</span>;
+        return <span className="qlt-status-badge">{status}</span>;
     }
   }
 
+  // Tính toán thống kê
+  const calculateStats = () => {
+    const totalDepartures = filteredDepartures.length;
+    const openDepartures = filteredDepartures.filter(d => d.status === 'OPEN').length;
+    const totalCapacity = filteredDepartures.reduce((sum, d) => sum + (d.capacity || 0), 0);
+    const totalBooked = filteredDepartures.reduce((sum, d) => sum + (d.slots_booked || 0), 0);
+    
+    return {
+      totalDepartures,
+      openDepartures,
+      totalCapacity,
+      totalBooked,
+      availableSlots: totalCapacity - totalBooked
+    };
+  };
+
+  const stats = calculateStats();
+
   return (
-    <div className="admin-page departure-page">
+    <div className="qlt-departure-page">
       <ToastContainer position="top-right" autoClose={3000} />
       
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h1 className="page-title">Quản lý lịch khởi hành</h1>
-        {!showForm && (
-          <button
-            className="btn btn-primary"
-            onClick={openCreate}
-          >
-            <i className="fas fa-plus"></i> Tạo lịch khởi hành mới
-          </button>
-        )}
-      </div>
+      <h1 className="qlt-page-title">Quản lý lịch khởi hành</h1>
 
-      {/* FILTERS SECTION */}
-      {!showForm && (
-        <div className="filters-section">
-          <div className="filters-row">
-            <div className="filter-col">
-              <label>TÌM KIẾM</label>
-              <input
-                type="text"
-                placeholder="ID, tên tour..."
-                value={filters.search}
-                onChange={(e) => handleFilterChange('search', e.target.value)}
-                className="form-control"
-              />
-            </div>
-
-            <div className="filter-col">
-              <label>TOUR</label>
-              <select
-                value={filters.tour_id}
-                onChange={(e) => handleFilterChange('tour_id', e.target.value)}
-                className="form-control"
-              >
-                <option value="">Tất cả</option>
-                {Object.entries(toursMap).map(([id, name]) => (
-                  <option key={id} value={id}>{name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-col">
-              <label>TRẠNG THÁI</label>
-              <select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="form-control"
-              >
-                <option value="">Tất cả</option>
-                <option value="OPEN">Đang mở</option>
-                <option value="CLOSED">Đã đóng</option>
-                <option value="FULL">Đã đầy</option>
-              </select>
-            </div>
-
-            <div className="filter-col">
-              <label>TÌNH TRẠNG CHỖ</label>
-              <select
-                value={filters.availability}
-                onChange={(e) => handleFilterChange('availability', e.target.value)}
-                className="form-control"
-              >
-                <option value="">Tất cả</option>
-                <option value="available">Còn chỗ</option>
-                <option value="full">Đã đầy</option>
-                <option value="almost_full">Sắp đầy (&lt;20%)</option>
-              </select>
-            </div>
-          </div>
-
-          <div className="filters-row">
-            <div className="filter-col">
-              <label>TỪ NGÀY</label>
-              <input
-                type="date"
-                value={filters.date_from}
-                onChange={(e) => handleFilterChange('date_from', e.target.value)}
-                className="form-control"
-              />
-            </div>
-
-            <div className="filter-col">
-              <label>ĐẾN NGÀY</label>
-              <input
-                type="date"
-                value={filters.date_to}
-                onChange={(e) => handleFilterChange('date_to', e.target.value)}
-                className="form-control"
-              />
-            </div>
-
-            <div className="filter-col">
-              <label>&nbsp;</label>
-              <button 
-                type="button"
-                onClick={handleResetFilters}
-                className="btn btn-light"
-                style={{width: '100%'}}
-              >
-                Đặt lại
-              </button>
-            </div>
-
-            <div className="filter-col">
-              <label>&nbsp;</label>
-              <button 
-                type="button"
-                onClick={() => filterDepartures()}
-                className="btn btn-primary"
-                style={{width: '100%'}}
-              >
-                <i className="fas fa-search"></i> Tìm kiếm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      
-
+      {/* FORM SECTION */}
       {showForm && (
-        <section className="top-form-section">
-          <form onSubmit={saveDeparture} className="top-form">
-            <div className="top-form-row">
-              <div className="top-col">
+        <section className="qlt-top-form-section">
+          <form onSubmit={saveDeparture}>
+            <div className="qlt-top-form-row">
+              <div className="qlt-top-col">
                 <label>Tour <span style={{ color: 'red' }}>*</span></label>
                 <select
                   name="tour_id"
                   value={form.tour_id}
                   onChange={handleChange}
-                  className="form-control"
+                  className="qlt-form-control"
                   required
                   disabled={form.id !== null}
                 >
@@ -427,40 +328,40 @@ const TourDepartureManagement = () => {
                 </select>
               </div>
 
-              <div className="top-col">
+              <div className="qlt-top-col">
                 <label>Ngày khởi hành <span style={{ color: 'red' }}>*</span></label>
                 <input
                   name="departure_date"
                   type="date"
                   value={form.departure_date}
                   onChange={handleChange}
-                  className="form-control"
+                  className="qlt-form-control"
                   min={new Date().toISOString().split('T')[0]}
                   required
                 />
               </div>
 
-              <div className="top-col">
+              <div className="qlt-top-col">
                 <label>Sức chứa <span style={{ color: 'red' }}>*</span></label>
                 <input
                   name="capacity"
                   type="number"
                   value={form.capacity}
                   onChange={handleChange}
-                  className="form-control"
+                  className="qlt-form-control"
                   placeholder="Số lượng chỗ"
                   min="1"
                   required
                 />
               </div>
 
-              <div className="top-col">
+              <div className="qlt-top-col">
                 <label>Trạng thái</label>
                 <select
                   name="status"
                   value={form.status}
                   onChange={handleChange}
-                  className="form-control"
+                  className="qlt-form-control"
                 >
                   <option value="OPEN">Đang mở</option>
                   <option value="CLOSED">Đã đóng</option>
@@ -468,12 +369,12 @@ const TourDepartureManagement = () => {
                 </select>
               </div>
 
-              <div className="top-col actions-col">
-                <label style={{ visibility: 'hidden' }}>Lưu</label>
-                <div className="top-actions">
+              <div className="qlt-top-col">
+                <label style={{ visibility: 'hidden' }}>Actions</label>
+                <div className="qlt-top-actions">
                   <button
                     type="button"
-                    className="btn btn-light"
+                    className="qlt-btn qlt-btn-light"
                     onClick={() => setShowForm(false)}
                     disabled={saving}
                   >
@@ -481,7 +382,7 @@ const TourDepartureManagement = () => {
                   </button>
                   <button
                     type="submit"
-                    className="btn btn-primary"
+                    className="qlt-btn qlt-btn-primary"
                     disabled={saving}
                   >
                     {saving ? 'Đang lưu...' : (form.id ? 'Cập nhật' : 'Tạo mới')}
@@ -493,12 +394,157 @@ const TourDepartureManagement = () => {
         </section>
       )}
 
-      <section className="departure-table-section">
+      {/* FILTERS SECTION */}
+      {!showForm && (
+        <div className="qlt-filters-section">
+          <div className="qlt-filters-row">
+            <div className="qlt-filter-col">
+              <label>Tìm kiếm</label>
+              <input
+                type="text"
+                placeholder="ID, tên tour..."
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+                className="qlt-form-control"
+              />
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>Tour</label>
+              <select
+                value={filters.tour_id}
+                onChange={(e) => handleFilterChange('tour_id', e.target.value)}
+                className="qlt-form-control"
+              >
+                <option value="">Tất cả</option>
+                {Object.entries(toursMap).map(([id, name]) => (
+                  <option key={id} value={id}>{name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>Trạng thái</label>
+              <select
+                value={filters.status}
+                onChange={(e) => handleFilterChange('status', e.target.value)}
+                className="qlt-form-control"
+              >
+                <option value="">Tất cả</option>
+                <option value="OPEN">Đang mở</option>
+                <option value="CLOSED">Đã đóng</option>
+                <option value="FULL">Đã đầy</option>
+              </select>
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>Tình trạng chỗ</label>
+              <select
+                value={filters.availability}
+                onChange={(e) => handleFilterChange('availability', e.target.value)}
+                className="qlt-form-control"
+              >
+                <option value="">Tất cả</option>
+                <option value="available">Còn chỗ</option>
+                <option value="full">Đã đầy</option>
+                <option value="almost_full">Sắp đầy (&lt;20%)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="qlt-filters-row">
+            <div className="qlt-filter-col">
+              <label>Từ ngày</label>
+              <input
+                type="date"
+                value={filters.date_from}
+                onChange={(e) => handleFilterChange('date_from', e.target.value)}
+                className="qlt-form-control"
+              />
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>Đến ngày</label>
+              <input
+                type="date"
+                value={filters.date_to}
+                onChange={(e) => handleFilterChange('date_to', e.target.value)}
+                className="qlt-form-control"
+              />
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>&nbsp;</label>
+              <button 
+                type="button"
+                onClick={handleResetFilters}
+                className="qlt-btn qlt-btn-light"
+                style={{width: '100%'}}
+              >
+                Đặt lại
+              </button>
+            </div>
+
+            <div className="qlt-filter-col">
+              <label>&nbsp;</label>
+              <button 
+                type="button"
+                onClick={() => filterDepartures()}
+                className="qlt-btn qlt-btn-primary"
+                style={{width: '100%'}}
+              >
+                <i className="fas fa-search"></i> Tìm kiếm
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* STATS BAR */}
+      {!showForm && (
+        <div className="qlt-stats-bar">
+          <div className="qlt-stat-item">
+            <span>Tổng lịch trình</span>
+            <strong>{stats.totalDepartures}</strong>
+          </div>
+          <div className="qlt-stat-item">
+            <span>Đang mở</span>
+            <strong>{stats.openDepartures}</strong>
+          </div>
+          <div className="qlt-stat-item">
+            <span>Tổng sức chứa</span>
+            <strong>{stats.totalCapacity}</strong>
+          </div>
+          <div className="qlt-stat-item">
+            <span>Đã đặt</span>
+            <strong>{stats.totalBooked}</strong>
+          </div>
+          <div className="qlt-stat-item">
+            <span>Còn trống</span>
+            <strong>{stats.availableSlots}</strong>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE BUTTON */}
+      {!showForm && (
+        <div style={{ padding: '0 20px', marginBottom: '20px', textAlign: 'right' }}>
+          <button
+            className="qlt-btn qlt-btn-primary"
+            onClick={openCreate}
+          >
+            <i className="fas fa-plus"></i> Tạo lịch khởi hành mới
+          </button>
+        </div>
+      )}
+
+      {/* TABLE SECTION */}
+      <section className="qlt-departure-table-section">
         {loading ? (
           <p>Đang tải...</p>
         ) : (
-          <div className="table-responsive">
-            <table className="table departure-table">
+          <div className="qlt-table-responsive">
+            <table className="qlt-departure-table">
               <thead>
                 <tr>
                   <th>ID</th>
@@ -555,19 +601,19 @@ const TourDepartureManagement = () => {
                       </td>
                       <td style={{ textAlign: 'center' }}>
                         <button
-                          className="btn btn-sm btn-secondary"
+                          className="qlt-btn qlt-btn-sm qlt-btn-secondary"
                           onClick={() => openEdit(dep)}
                           style={{ marginRight: 8 }}
                           title="Chỉnh sửa"
                         >
-                          <i className="fas fa-edit"></i> Sửa
+                          <i className="fas fa-edit qlt-icon"></i> Sửa
                         </button>
                         <button
-                          className="btn btn-sm btn-danger"
+                          className="qlt-btn qlt-btn-sm qlt-btn-danger"
                           onClick={() => deleteDeparture(id)}
                           title="Xóa"
                         >
-                          <i className="fas fa-trash"></i> Xóa
+                          <i className="fas fa-trash qlt-icon"></i> Xóa
                         </button>
                       </td>
                     </tr>
