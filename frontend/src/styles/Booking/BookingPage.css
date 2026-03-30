@@ -50,7 +50,8 @@
 }
 
 .v2-form-group.v2-full-width {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
 }
 
 .v2-form-group label {

@@ -1,5 +1,5 @@
 const Chat = require('../models/Chat');
-const ChatbotService = require('../utils/chatbotService');
+const ChatbotService = require('../utils/chatBotService');
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwt');
 

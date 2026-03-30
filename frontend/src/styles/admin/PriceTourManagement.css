@@ -82,7 +82,8 @@
 }
 
 .top-col.full { 
-  grid-column: 1 / -1; 
+  grid-column-start: 1;
+  grid-column-end: -1; 
 }
 
 .top-col.actions-col { 
@@ -388,11 +389,13 @@
   
   .top-col:nth-child(1),
   .top-col:nth-child(2) {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
   }
   
   .top-col.actions-col {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
     justify-content: flex-start;
   }
   
@@ -422,7 +425,8 @@
   }
   
   .top-col {
-    grid-column: 1 / -1 !important;
+    grid-column-start: 1 !important;
+    grid-column-end: -1 !important;
   }
   
   .form-control[multiple] {

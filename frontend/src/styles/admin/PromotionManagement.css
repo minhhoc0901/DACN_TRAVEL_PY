@@ -26,17 +26,18 @@
 /* first row full-width inputs */
 .promo-form input[name="code"],
 .promo-form input[name="description"] {
-  grid-column: 1 / -1;
+  grid-column-start: 1;
+  grid-column-end: -1;
 }
 
 /* second row layout (adjust spans as needed) */
-.promo-form select[name="discount_type"] { grid-column: 1 / 2; }
-.promo-form input[name="discount_value"] { grid-column: 2 / 3; }
-.promo-form input[name="start_date"] { grid-column: 3 / 4; }
-.promo-form input[name="end_date"] { grid-column: 4 / 5; }
-.promo-form input[name="max_usage"] { grid-column: 5 / 6; }
-.promo-form .form-checkbox { grid-column: 6 / 7; align-self: center; }
-.promo-form .form-actions { grid-column: 7 / 9; justify-self: end; }
+.promo-form select[name="discount_type"] { grid-column-start: 1; grid-column-end: 2; }
+.promo-form input[name="discount_value"] { grid-column-start: 2; grid-column-end: 3; }
+.promo-form input[name="start_date"] { grid-column-start: 3; grid-column-end: 4; }
+.promo-form input[name="end_date"] { grid-column-start: 4; grid-column-end: 5; }
+.promo-form input[name="max_usage"] { grid-column-start: 5; grid-column-end: 6; }
+.promo-form .form-checkbox { grid-column-start: 6; grid-column-end: 7; align-self: center; }
+.promo-form .form-actions { grid-column-start: 7; grid-column-end: 9; justify-self: end; }
 
 /* smaller screens: stack vertically */
 @media (max-width: 768px) {
@@ -50,7 +51,8 @@
   .promo-form input[name="max_usage"],
   .promo-form .form-checkbox,
   .promo-form .form-actions {
-    grid-column: 1 / -1;
+    grid-column-start: 1;
+    grid-column-end: -1;
   }
 }
 
