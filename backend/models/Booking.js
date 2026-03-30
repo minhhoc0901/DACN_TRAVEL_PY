@@ -3,7 +3,7 @@ const BookingDetail = require("./BookingDetail");
 const TourDeparture = require("./TourDeparture");
 const crypto = require('crypto');
 const UserCredit = require('./UserCredit');
-const NotificationService = require('../utils/notificationService'); 
+const NotificationService = require('../utils/notificationService');
 
 class Booking {
   static async create(
@@ -57,50 +57,6 @@ class Booking {
       [status, bookingId]
     );
   }
-  // static async findByUser(userId) {
-  //   const [rows] = await pool.query(
-  //     `SELECT 
-  //               b.*, 
-  //               t.destination AS tour_name, 
-  //               t.image AS tour_image,
-  //               latest_payment.payment_status,
-  //               (SELECT GROUP_CONCAT(
-  //                   JSON_OBJECT(
-  //                       'price_type', bd.price_type, 
-  //                       'quantity', bd.quantity, 
-  //                       'unit_price', bd.unit_price
-  //                   )
-  //               ) 
-  //               FROM booking_details bd 
-  //               WHERE bd.booking_id = b.id
-  //               ) AS details
-  //           FROM 
-  //               bookings b
-  //           JOIN 
-  //               tours t ON b.tour_id = t.id
-  //           LEFT JOIN 
-  //               (
-  //                   SELECT 
-  //                       booking_id, 
-  //                       payment_status,
-  //                       ROW_NUMBER() OVER(PARTITION BY booking_id ORDER BY updated_at DESC) as rn
-  //                   FROM 
-  //                       payments
-  //               ) AS latest_payment ON b.id = latest_payment.booking_id AND latest_payment.rn = 1
-  //           WHERE 
-  //               b.user_id = ? AND b.is_hidden = 0
-  //           ORDER BY 
-  //               b.created_at DESC`,
-  //     [userId]
-  //   );
-
-  //   // Chuyển đổi chuỗi JSON 'details' thành một mảng object
-  //   return rows.map((row) => ({
-  //     ...row,
-  //     details: row.details ? JSON.parse(`[${row.details}]`) : [],
-  //   }));
-  // }
-
 
   /**
    * LẤY BOOKING KÈM THEO TRẠNG THÁI 'COMPLETED'
@@ -211,18 +167,18 @@ class Booking {
   }
 
   static async hideCancelledBooking(bookingId, userId) {
-        const sql = `
+    const sql = `
             UPDATE bookings 
             SET is_hidden = 1 
             WHERE id = ? AND user_id = ? AND status = 'cancelled'
         `;
-        const [result] = await pool.execute(sql, [bookingId, userId]);
-        return result.affectedRows;
-    }
+    const [result] = await pool.execute(sql, [bookingId, userId]);
+    return result.affectedRows;
+  }
 
   // lấy thông tin để tạo hóa đơn
-  
- static async findByPk(id) {
+
+  static async findByPk(id) {
     const conn = await pool.getConnection();
     try {
       const [rows] = await conn.query(
@@ -280,14 +236,12 @@ class Booking {
       );
       booking.BookingDetails = details;
       return booking;
-      
-      return booking;
     } finally {
       conn.release();
     }
   }
 
-  
+
   // Hủy các booking quá hạn thanh toán và gửi thông báo
   static async cancelExpiredBookings(io = null) {
     // Lấy danh sách các đơn hàng hết hạn trước, không cần transaction ở đây.
@@ -318,7 +272,7 @@ class Booking {
 
         // Hoàn trả vé
         await TourDeparture.restoreSlots(booking.tour_departure_id, booking.total_slots, conn);
-        
+
         // Cập nhật trạng thái booking
         await Booking.updateStatus(booking.id, 'cancelled', conn);
 
@@ -326,7 +280,7 @@ class Booking {
         successCount++;
         console.log(`[CRON] Successfully cancelled booking #${booking.id}.`);
 
-        
+
         // GỬI THÔNG BÁO NGAY LẬP TỨC (NẾU CÓ io)
         if (io) {
           setImmediate(async () => {
@@ -354,14 +308,14 @@ class Booking {
 
   // Tìm booking bằng token xác thực
   static async findByVerificationToken(token) {
-        // Dùng lại hàm findByPk để lấy đầy đủ thông tin
-        const [rows] = await pool.query(`SELECT id FROM bookings WHERE verification_token = ?`, [token]);
-        if (rows.length === 0) {
-            return null;
-        }
-        // Gọi hàm findByPk đã có để lấy tất cả thông tin chi tiết
-        return this.findByPk(rows[0].id);
+    // Dùng lại hàm findByPk để lấy đầy đủ thông tin
+    const [rows] = await pool.query(`SELECT id FROM bookings WHERE verification_token = ?`, [token]);
+    if (rows.length === 0) {
+      return null;
     }
+    // Gọi hàm findByPk đã có để lấy tất cả thông tin chi tiết
+    return this.findByPk(rows[0].id);
+  }
 
   /**
    * ✅ [ADMIN] Lấy tất cả booking với filter và phân trang
@@ -616,7 +570,7 @@ class Booking {
    */
   static async updateStatusByAdmin(bookingId, status, reason = null) {
     const connection = await pool.getConnection();
-    
+
     try {
       await connection.beginTransaction();
 
@@ -631,11 +585,11 @@ class Booking {
           'SELECT SUM(quantity) as total FROM booking_details WHERE booking_id = ?',
           [bookingId]
         );
-        
+
         if (details[0].total > 0 && booking.tour_departure_id) {
           await TourDeparture.restoreSlots(
-            booking.tour_departure_id, 
-            details[0].total, 
+            booking.tour_departure_id,
+            details[0].total,
             connection
           );
         }
@@ -746,13 +700,13 @@ class Booking {
 
       // Hoàn trả slots
       const slotsToRestore = booking.BookingDetails.reduce(
-        (total, detail) => total + detail.quantity, 
+        (total, detail) => total + detail.quantity,
         0
       );
 
       await TourDeparture.restoreSlots(
-        booking.tour_departure_id, 
-        slotsToRestore, 
+        booking.tour_departure_id,
+        slotsToRestore,
         connection
       );
 
@@ -783,23 +737,23 @@ class Booking {
   }
 
 
-/**
- * HỦY BOOKING ĐÃ THANH TOÁN (CÓ KIỂM DUYỆT)
- * - Hủy ≥15 ngày: 100% → pending_cancellation → admin duyệt
- * - Hủy ≥7 ngày: 80% → pending_cancellation → admin duyệt
- * - Hủy 3-6 ngày: 50% → pending_cancellation → admin duyệt  
- * - Hủy <3 ngày: 0% → cancelled ngay
- */
-static async cancelPaidBooking(bookingId, userId, refundMethod = 'credit') {
-  const connection = await pool.getConnection();
-  
-  try {
-    await connection.beginTransaction();
+  /**
+   * HỦY BOOKING ĐÃ THANH TOÁN (CÓ KIỂM DUYỆT)
+   * - Hủy ≥15 ngày: 100% → pending_cancellation → admin duyệt
+   * - Hủy ≥7 ngày: 80% → pending_cancellation → admin duyệt
+   * - Hủy 3-6 ngày: 50% → pending_cancellation → admin duyệt  
+   * - Hủy <3 ngày: 0% → cancelled ngay
+   */
+  static async cancelPaidBooking(bookingId, userId, refundMethod = 'credit') {
+    const connection = await pool.getConnection();
 
-    console.log(`[cancelPaidBooking] Processing: Booking ${bookingId}, User ${userId}, Method: ${refundMethod}`);
+    try {
+      await connection.beginTransaction();
 
-    // LẤY THÔNG TIN BOOKING
-    const [bookings] = await connection.query(`
+      console.log(`[cancelPaidBooking] Processing: Booking ${bookingId}, User ${userId}, Method: ${refundMethod}`);
+
+      // LẤY THÔNG TIN BOOKING
+      const [bookings] = await connection.query(`
       SELECT 
         b.id,
         b.user_id,
@@ -833,211 +787,211 @@ static async cancelPaidBooking(bookingId, userId, refundMethod = 'credit') {
       FOR UPDATE
     `, [bookingId, userId]);
 
-    if (!bookings || bookings.length === 0) {
-      throw new Error('Không tìm thấy booking hoặc bạn không có quyền hủy booking này');
-    }
+      if (!bookings || bookings.length === 0) {
+        throw new Error('Không tìm thấy booking hoặc bạn không có quyền hủy booking này');
+      }
 
-    const booking = bookings[0];
+      const booking = bookings[0];
 
-    // VALIDATE TRẠNG THÁI
-    if (booking.status === 'cancelled') {
-      throw new Error('Booking đã bị hủy trước đó');
-    }
+      // VALIDATE TRẠNG THÁI
+      if (booking.status === 'cancelled') {
+        throw new Error('Booking đã bị hủy trước đó');
+      }
 
-    if (booking.status === 'pending_cancellation') {
-      throw new Error('Yêu cầu hủy đang được xử lý. Vui lòng chờ admin phản hồi trong 24-48h.');
-    }
+      if (booking.status === 'pending_cancellation') {
+        throw new Error('Yêu cầu hủy đang được xử lý. Vui lòng chờ admin phản hồi trong 24-48h.');
+      }
 
-    if (booking.status === 'completed') {
-      throw new Error('Không thể hủy tour đã hoàn thành');
-    }
+      if (booking.status === 'completed') {
+        throw new Error('Không thể hủy tour đã hoàn thành');
+      }
 
-    // KIỂM TRA THANH TOÁN
-    const actualPaymentStatus = booking.payment_status || booking.payment_table_status;
-    const actualPaidAmount = booking.paid_amount || booking.final_amount;
+      // KIỂM TRA THANH TOÁN
+      const actualPaymentStatus = booking.payment_status || booking.payment_table_status;
+      const actualPaidAmount = booking.paid_amount || booking.final_amount;
 
-    if (actualPaymentStatus !== 'success' || !actualPaidAmount) {
-      throw new Error('Booking chưa được thanh toán. Vui lòng sử dụng chức năng hủy thông thường.');
-    }
+      if (actualPaymentStatus !== 'success' || !actualPaidAmount) {
+        throw new Error('Booking chưa được thanh toán. Vui lòng sử dụng chức năng hủy thông thường.');
+      }
 
-    // TÍNH SỐ NGÀY CÒN LẠI
-    const departureDate = new Date(booking.departure_date);
-    const now = new Date();
-    const daysUntilDeparture = Math.ceil((departureDate - now) / (1000 * 60 * 60 * 24));
+      // TÍNH SỐ NGÀY CÒN LẠI
+      const departureDate = new Date(booking.departure_date);
+      const now = new Date();
+      const daysUntilDeparture = Math.ceil((departureDate - now) / (1000 * 60 * 60 * 24));
 
-    console.log(`[cancelPaidBooking] Days until departure: ${daysUntilDeparture}`);
+      console.log(`[cancelPaidBooking] Days until departure: ${daysUntilDeparture}`);
 
-    if (daysUntilDeparture < 0) {
-      throw new Error('Không thể hủy tour đã qua ngày khởi hành');
-    }
+      if (daysUntilDeparture < 0) {
+        throw new Error('Không thể hủy tour đã qua ngày khởi hành');
+      }
 
-    // TÍNH TOÁN REFUND THEO CHÍNH SÁCH
-    let refundPercent = 0;
-    let requiresApproval = false;
-    let refundReason = '';
+      // TÍNH TOÁN REFUND THEO CHÍNH SÁCH
+      let refundPercent = 0;
+      let requiresApproval = false;
+      let refundReason = '';
 
-    if (daysUntilDeparture >= 15) {
-      refundPercent = 100;
-      requiresApproval = true;
-      refundReason = `Hủy trước ${daysUntilDeparture} ngày (≥15 ngày), được hoàn 100% theo chính sách`;
-    } else if (daysUntilDeparture >= 7) {
-      refundPercent = 80;
-      requiresApproval = true;
-      refundReason = `Hủy trước ${daysUntilDeparture} ngày (7-14 ngày), được hoàn 80% theo chính sách`;
-    } else if (daysUntilDeparture >= 3) {
-      refundPercent = 50;
-      requiresApproval = true;
-      refundReason = `Hủy trước ${daysUntilDeparture} ngày (3-6 ngày), được hoàn 50% theo chính sách`;
-    } else {
-      refundPercent = 0;
-      requiresApproval = false;
-      refundReason = `Hủy muộn (${daysUntilDeparture} ngày trước khởi hành, dưới 3 ngày), không được hoàn tiền theo chính sách`;
-    }
+      if (daysUntilDeparture >= 15) {
+        refundPercent = 100;
+        requiresApproval = true;
+        refundReason = `Hủy trước ${daysUntilDeparture} ngày (≥15 ngày), được hoàn 100% theo chính sách`;
+      } else if (daysUntilDeparture >= 7) {
+        refundPercent = 80;
+        requiresApproval = true;
+        refundReason = `Hủy trước ${daysUntilDeparture} ngày (7-14 ngày), được hoàn 80% theo chính sách`;
+      } else if (daysUntilDeparture >= 3) {
+        refundPercent = 50;
+        requiresApproval = true;
+        refundReason = `Hủy trước ${daysUntilDeparture} ngày (3-6 ngày), được hoàn 50% theo chính sách`;
+      } else {
+        refundPercent = 0;
+        requiresApproval = false;
+        refundReason = `Hủy muộn (${daysUntilDeparture} ngày trước khởi hành, dưới 3 ngày), không được hoàn tiền theo chính sách`;
+      }
 
-    const refundAmount = Math.round((actualPaidAmount * refundPercent) / 100);
-    const processingFee = refundMethod === 'bank_transfer' ? Math.round(refundAmount * 0.02) : 0;
-    const finalRefundAmount = refundAmount - processingFee;
+      const refundAmount = Math.round((actualPaidAmount * refundPercent) / 100);
+      const processingFee = refundMethod === 'bank_transfer' ? Math.round(refundAmount * 0.02) : 0;
+      const finalRefundAmount = refundAmount - processingFee;
 
-    console.log(`[cancelPaidBooking] Refund calculation:`, {
-      refundPercent,
-      refundAmount,
-      processingFee,
-      finalRefundAmount,
-      requiresApproval,
-      refundReason
-    });
+      console.log(`[cancelPaidBooking] Refund calculation:`, {
+        refundPercent,
+        refundAmount,
+        processingFee,
+        finalRefundAmount,
+        requiresApproval,
+        refundReason
+      });
 
-    // XỬ LÝ THEO 2 TRƯỜNG HỢP
+      // XỬ LÝ THEO 2 TRƯỜNG HỢP
 
-    if (requiresApproval) {
-      // ⏳ CẦN ADMIN DUYỆT (≥3 ngày trước khởi hành)
+      if (requiresApproval) {
+        // ⏳ CẦN ADMIN DUYỆT (≥3 ngày trước khởi hành)
 
-      // A. Cập nhật booking → pending_cancellation
-      await connection.execute(
-        `UPDATE bookings 
+        // A. Cập nhật booking → pending_cancellation
+        await connection.execute(
+          `UPDATE bookings 
          SET status = 'pending_cancellation', 
              updated_at = NOW()
          WHERE id = ?`,
-        [bookingId]
-      );
+          [bookingId]
+        );
 
-      // B. Tạo refund request với refund_reason
-      let refundId = null;
+        // B. Tạo refund request với refund_reason
+        let refundId = null;
 
-      if (refundMethod === 'credit') {
-        const [refundResult] = await connection.execute(`
+        if (refundMethod === 'credit') {
+          const [refundResult] = await connection.execute(`
           INSERT INTO refunds 
           (booking_id, refund_amount, refund_percent, refund_reason, refund_method, refund_status, processing_fee, created_at)
           VALUES (?, ?, ?, ?, 'credit', 'pending', 0, NOW())
         `, [bookingId, refundAmount, refundPercent, refundReason]);
 
-        refundId = refundResult.insertId;
+          refundId = refundResult.insertId;
 
-        console.log(`[cancelPaidBooking] ⏳ Credit refund pending admin approval (Refund ID: ${refundId})`);
+          console.log(`[cancelPaidBooking] ⏳ Credit refund pending admin approval (Refund ID: ${refundId})`);
 
-      } else if (refundMethod === 'bank_transfer') {
-        const [refundResult] = await connection.execute(`
+        } else if (refundMethod === 'bank_transfer') {
+          const [refundResult] = await connection.execute(`
           INSERT INTO refunds 
           (booking_id, refund_amount, refund_percent, refund_reason, refund_method, refund_status, processing_fee, created_at)
           VALUES (?, ?, ?, ?, 'bank_transfer', 'pending', ?, NOW())
         `, [bookingId, finalRefundAmount, refundPercent, refundReason, processingFee]);
 
-        refundId = refundResult.insertId;
+          refundId = refundResult.insertId;
 
-        console.log(`[cancelPaidBooking] ⏳ Bank transfer refund pending admin approval (Refund ID: ${refundId})`);
-      }
-
-      await connection.commit();
-
-      return {
-        success: true,
-        requiresApproval: true,
-        refund_id: refundId,
-        message: refundMethod === 'credit'
-          ? 'Yêu cầu hủy tour đã được gửi. Admin sẽ xem xét và hoàn tiền vào ví Credit của bạn trong 24-48h.'
-          : 'Yêu cầu hủy tour đã được gửi. Admin sẽ xem xét và chuyển khoản trong 7-10 ngày làm việc.',
-        refundMethod,
-        refundPercent,
-        refundAmount: finalRefundAmount,
-        refundReason, 
-        processingFee,
-        originalRefundAmount: refundAmount,
-        refundStatus: 'pending',
-        daysUntilDeparture,
-        bookingDetails: {
-          bookingId,
-          tourName: booking.tour_name,
-          departureDate: booking.departure_date,
-          paidAmount: actualPaidAmount,
-          paymentMethod: booking.payment_method,
-          transactionNo: booking.vnp_TransactionNo
+          console.log(`[cancelPaidBooking] ⏳ Bank transfer refund pending admin approval (Refund ID: ${refundId})`);
         }
-      };
 
-    } else {
-      // ❌ HỦY NGAY (<3 ngày, không hoàn tiền)
+        await connection.commit();
 
-      await connection.execute(
-        `UPDATE bookings 
+        return {
+          success: true,
+          requiresApproval: true,
+          refund_id: refundId,
+          message: refundMethod === 'credit'
+            ? 'Yêu cầu hủy tour đã được gửi. Admin sẽ xem xét và hoàn tiền vào ví Credit của bạn trong 24-48h.'
+            : 'Yêu cầu hủy tour đã được gửi. Admin sẽ xem xét và chuyển khoản trong 7-10 ngày làm việc.',
+          refundMethod,
+          refundPercent,
+          refundAmount: finalRefundAmount,
+          refundReason,
+          processingFee,
+          originalRefundAmount: refundAmount,
+          refundStatus: 'pending',
+          daysUntilDeparture,
+          bookingDetails: {
+            bookingId,
+            tourName: booking.tour_name,
+            departureDate: booking.departure_date,
+            paidAmount: actualPaidAmount,
+            paymentMethod: booking.payment_method,
+            transactionNo: booking.vnp_TransactionNo
+          }
+        };
+
+      } else {
+        // ❌ HỦY NGAY (<3 ngày, không hoàn tiền)
+
+        await connection.execute(
+          `UPDATE bookings 
          SET status = 'cancelled', 
              updated_at = NOW()
          WHERE id = ?`,
-        [bookingId]
-      );
-
-      // Hoàn trả slots
-      if (booking.tour_departure_id && booking.total_guests > 0) {
-        await TourDeparture.restoreSlots(
-          booking.tour_departure_id,
-          booking.total_guests,
-          connection
+          [bookingId]
         );
-      }
 
-      // Tạo refund record với refund_reason
-      await connection.execute(`
+        // Hoàn trả slots
+        if (booking.tour_departure_id && booking.total_guests > 0) {
+          await TourDeparture.restoreSlots(
+            booking.tour_departure_id,
+            booking.total_guests,
+            connection
+          );
+        }
+
+        // Tạo refund record với refund_reason
+        await connection.execute(`
         INSERT INTO refunds 
         (booking_id, refund_amount, refund_percent, refund_reason, refund_method, refund_status, created_at, processed_at)
         VALUES (?, 0, 0, ?, 'none', 'rejected', NOW(), NOW())
       `, [bookingId, refundReason]);
 
-      await connection.commit();
+        await connection.commit();
 
-      console.log(`[cancelPaidBooking] ❌ Booking cancelled without refund (Reason: ${refundReason})`);
+        console.log(`[cancelPaidBooking] ❌ Booking cancelled without refund (Reason: ${refundReason})`);
 
-      return {
-        success: true,
-        requiresApproval: false,
-        message: `Tour đã được hủy.\n\n ⚠️ ${refundReason}`,
-        refundMethod: 'none',
-        refundPercent: 0,
-        refundAmount: 0,
-        refundReason, 
-        processingFee: 0,
-        daysUntilDeparture,
-        bookingDetails: {
-          bookingId,
-          tourName: booking.tour_name,
-          departureDate: booking.departure_date,
-          paidAmount: actualPaidAmount
-        }
-      };
+        return {
+          success: true,
+          requiresApproval: false,
+          message: `Tour đã được hủy.\n\n ⚠️ ${refundReason}`,
+          refundMethod: 'none',
+          refundPercent: 0,
+          refundAmount: 0,
+          refundReason,
+          processingFee: 0,
+          daysUntilDeparture,
+          bookingDetails: {
+            bookingId,
+            tourName: booking.tour_name,
+            departureDate: booking.departure_date,
+            paidAmount: actualPaidAmount
+          }
+        };
+      }
+
+    } catch (error) {
+      await connection.rollback();
+      console.error('[cancelPaidBooking] Error:', error);
+      throw error;
+    } finally {
+      connection.release();
     }
-
-  } catch (error) {
-    await connection.rollback();
-    console.error('[cancelPaidBooking] Error:', error);
-    throw error;
-  } finally {
-    connection.release();
   }
-}
   /**
    * TỰ ĐỘNG CẬP NHẬT TRẠNG THÁI 'COMPLETED' - SỬ DỤNG END_DATE
    */
   static async markCompletedBookings(io = null) {
     const connection = await pool.getConnection();
-    
+
     try {
       await connection.beginTransaction();
 
@@ -1094,12 +1048,12 @@ static async cancelPaidBooking(bookingId, userId, refundMethod = 'credit') {
           }
         });
       }
-      
+
       console.log(`[CRON] Marked ${completedBookings.length} bookings as completed:`);
       completedBookings.forEach(b => {
         console.log(`  - Booking #${b.id}: ${b.tour_name} (End: ${b.end_date})`);
       });
-      
+
       return completedBookings.length;
 
     } catch (error) {

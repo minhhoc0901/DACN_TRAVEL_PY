@@ -179,12 +179,12 @@ async function createLocation(data) {
       }
     }
 
-    // 9. Insert Nearbylocations
+    // 9. Insert nearbylocations
     if (Array.isArray(data.nearby)) {
       for (const nearbyId of data.nearby) {
         if (nearbyId) {
           await connection.execute(
-            "INSERT INTO Nearbylocations (location_id, nearby_location_id) VALUES (?, ?)",
+            "INSERT INTO nearbylocations (location_id, nearby_location_id) VALUES (?, ?)",
             [locationId, nearbyId]
           );
         }
@@ -332,11 +332,11 @@ async function updateLocation(locationId, data) {
        SET name = ?, type = ?, description = ?, latitude = ?, longitude = ?
        WHERE id = ?`,
       [
-        parsedData.name || '', 
-        parsedData.type || '', 
-        parsedData.description || '', 
-        parseFloat(parsedData.latitude) || 0, 
-        parseFloat(parsedData.longitude) || 0, 
+        parsedData.name || '',
+        parsedData.type || '',
+        parsedData.description || '',
+        parseFloat(parsedData.latitude) || 0,
+        parseFloat(parsedData.longitude) || 0,
         locationId
       ]
     );
@@ -368,7 +368,7 @@ async function updateLocation(locationId, data) {
     const simpleTables = {
       'besttimes': { data: parsedData.bestTimes, columns: ['location_id', 'time_description'] },
       'tips': { data: parsedData.tips, columns: ['location_id', 'description'] },
-      'Nearbylocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
+      'nearbylocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
       'locationhotels': { data: parsedData.hotel_ids, columns: ['location_id', 'hotel_id'] }
     };
 
@@ -492,7 +492,7 @@ async function deleteLocation(locationId) {
       "experiences",
       "cuisines",
       "tips",
-      "Nearbylocations",
+      "nearbylocations",
       "location_images",
       "locationhotels",
     ];
@@ -506,7 +506,7 @@ async function deleteLocation(locationId) {
 
     // Xóa từ bảng Tour_locations nếu có liên kết với tours
     await connection.execute(
-      "DELETE FROM Tour_locations WHERE location_id = ?",
+      "DELETE FROM tour_locations WHERE location_id = ?",
       [locationId]
     );
 
@@ -667,7 +667,7 @@ async function getCuisines(locationId) {
 // async function getNearbyLocations(locationId) {
 //   const query = `
 //         SELECT l2.name
-//         FROM Nearbylocations nl
+//         FROM nearbylocations nl
 //         JOIN locations l2 ON nl.nearby_location_id = l2.id
 //         WHERE nl.location_id = ?;
 //     `;
@@ -678,7 +678,7 @@ async function getCuisines(locationId) {
 async function getNearbyLocations(locationId) {
   const query = `
       SELECT nl.nearby_location_id as id, l2.name
-      FROM Nearbylocations nl
+      FROM nearbylocations nl
       JOIN locations l2 ON nl.nearby_location_id = l2.id
       WHERE nl.location_id = ?;
   `;
@@ -1017,7 +1017,7 @@ async function updateNearby(locationId, nearby) {
 
     // Xóa tất cả NearbyLocations hiện tại
     await connection.execute(
-      `DELETE FROM NearbyLocations WHERE location_id = ?`,
+      `DELETE FROM nearbylocations WHERE location_id = ?`,
       [locationId]
     );
 
@@ -1026,7 +1026,7 @@ async function updateNearby(locationId, nearby) {
       if (nearbyName && nearbyName.trim() !== "") {
         // Tìm địa điểm lân cận theo tên
         const [rows] = await connection.execute(
-          `SELECT id FROM Locations WHERE name = ?`,
+          `SELECT id FROM locations WHERE name = ?`,
           [nearbyName]
         );
 
@@ -1035,7 +1035,7 @@ async function updateNearby(locationId, nearby) {
 
           // Thêm vào bảng NearbyLocations
           await connection.execute(
-            `INSERT INTO NearbyLocations (location_id, nearby_location_id) VALUES (?, ?)`,
+            `INSERT INTO nearbylocations (location_id, nearby_location_id) VALUES (?, ?)`,
             [locationId, nearbyId]
           );
         }
@@ -1059,7 +1059,7 @@ async function updateTravelMethods(locationId, travelMethods) {
 
     // Xóa tất cả TravelMethods hiện tại
     await connection.execute(
-      `DELETE FROM TravelMethods WHERE location_id = ?`,
+      `DELETE FROM travelmethods WHERE location_id = ?`,
       [locationId]
     );
 
@@ -1068,7 +1068,7 @@ async function updateTravelMethods(locationId, travelMethods) {
       for (const method of travelMethods.fromTuyHoa) {
         if (method && method.trim() !== "") {
           await connection.execute(
-            `INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, 'fromTuyHoa', ?)`,
+            `INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, 'fromTuyHoa', ?)`,
             [locationId, method]
           );
         }
@@ -1082,7 +1082,7 @@ async function updateTravelMethods(locationId, travelMethods) {
       for (const method of travelMethods.fromElsewhere) {
         if (method && method.trim() !== "") {
           await connection.execute(
-            `INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, 'fromElsewhere', ?)`,
+            `INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, 'fromElsewhere', ?)`,
             [locationId, method]
           );
         }
@@ -1105,7 +1105,7 @@ async function updateExperiences(locationId, experiences) {
     await connection.beginTransaction();
 
     // Xóa tất cả Experiences hiện tại
-    await connection.execute(`DELETE FROM Experiences WHERE location_id = ?`, [
+    await connection.execute(`DELETE FROM experiences WHERE location_id = ?`, [
       locationId,
     ]);
 
@@ -1115,7 +1115,7 @@ async function updateExperiences(locationId, experiences) {
     for (const exp of experiences) {
       if (exp && exp.text && exp.text.trim() !== "") {
         const [result] = await connection.execute(
-          `INSERT INTO Experiences (location_id, description) VALUES (?, ?)`,
+          `INSERT INTO experiences (location_id, description) VALUES (?, ?)`,
           [locationId, exp.text]
         );
 
@@ -1141,7 +1141,7 @@ async function updateCuisines(locationId, cuisines) {
     await connection.beginTransaction();
 
     // Xóa tất cả Cuisines hiện tại
-    await connection.execute(`DELETE FROM Cuisines WHERE location_id = ?`, [
+    await connection.execute(`DELETE FROM cuisines WHERE location_id = ?`, [
       locationId,
     ]);
 
@@ -1151,7 +1151,7 @@ async function updateCuisines(locationId, cuisines) {
     for (const cuisine of cuisines) {
       if (cuisine && cuisine.text && cuisine.text.trim() !== "") {
         const [result] = await connection.execute(
-          `INSERT INTO Cuisines (location_id, description) VALUES (?, ?)`,
+          `INSERT INTO cuisines (location_id, description) VALUES (?, ?)`,
           [locationId, cuisine.text]
         );
 
@@ -1177,9 +1177,9 @@ async function getExperienceId(locationId, index) {
   if (isNaN(offset)) {
     throw new Error('Index phải là số');
   }
-  
-  const query = `SELECT id FROM Experiences WHERE location_id = ? ORDER BY id ASC LIMIT ${offset}, 1`;
-  
+
+  const query = `SELECT id FROM experiences WHERE location_id = ? ORDER BY id ASC LIMIT ${offset}, 1`;
+
   const [rows] = await pool.execute(query, [locationId]);
   return rows[0]?.id || null;
 }
@@ -1189,9 +1189,9 @@ async function getCuisineId(locationId, index) {
   if (isNaN(offset)) {
     throw new Error('Index phải là số');
   }
-  
-  const query = `SELECT id FROM Cuisines WHERE location_id = ? ORDER BY id ASC LIMIT ${offset}, 1`;
-  
+
+  const query = `SELECT id FROM cuisines WHERE location_id = ? ORDER BY id ASC LIMIT ${offset}, 1`;
+
   const [rows] = await pool.execute(query, [locationId]);
   return rows[0]?.id || null;
 }
@@ -1199,7 +1199,7 @@ async function getImageById(imageId) {
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.execute(
-      `SELECT * FROM Location_Images WHERE id = ?`,
+      `SELECT * FROM location_images WHERE id = ?`,
       [imageId]
     );
 
@@ -1215,13 +1215,13 @@ async function deleteImage(imageId) {
   const connection = await pool.getConnection();
   try {
     // Lấy thông tin ảnh trước khi xóa để xóa trên Cloudinary
-    const [rows] = await connection.execute(`SELECT image_url FROM Location_Images WHERE id = ?`, [imageId]);
+    const [rows] = await connection.execute(`SELECT image_url FROM location_images WHERE id = ?`, [imageId]);
     if (rows.length > 0 && rows[0].image_url.includes('cloudinary')) {
       const publicId = getPublicIdFromUrl(rows[0].image_url);
       if (publicId) await removeFromCloudinary(publicId);
     }
 
-    await connection.execute(`DELETE FROM Location_Images WHERE id = ?`, [
+    await connection.execute(`DELETE FROM location_images WHERE id = ?`, [
       imageId,
     ]);
 
@@ -1238,14 +1238,14 @@ async function addNearbyLocation(locationId, nearbyId) {
   try {
     // Kiểm tra xem đã có liên kết này chưa
     const [rows] = await connection.execute(
-      `SELECT * FROM NearbyLocations WHERE location_id = ? AND nearby_location_id = ?`,
+      `SELECT * FROM nearbylocations WHERE location_id = ? AND nearby_location_id = ?`,
       [locationId, nearbyId]
     );
 
     if (rows.length === 0) {
       // Thêm mối quan hệ mới
       await connection.execute(
-        `INSERT INTO NearbyLocations (location_id, nearby_location_id) VALUES (?, ?)`,
+        `INSERT INTO nearbylocations (location_id, nearby_location_id) VALUES (?, ?)`,
         [locationId, nearbyId]
       );
     }
@@ -1262,7 +1262,7 @@ async function removeNearbyLocation(locationId, nearbyId) {
   const connection = await pool.getConnection();
   try {
     await connection.execute(
-      `DELETE FROM NearbyLocations WHERE location_id = ? AND nearby_location_id = ?`,
+      `DELETE FROM nearbylocations WHERE location_id = ? AND nearby_location_id = ?`,
       [locationId, nearbyId]
     );
 
@@ -1277,7 +1277,7 @@ async function removeNearbyLocation(locationId, nearbyId) {
 async function getLocationByName(name) {
   try {
     const [rows] = await pool.execute(
-      `SELECT * FROM Locations WHERE name = ?`,
+      `SELECT * FROM locations WHERE name = ?`,
       [name]
     );
     return rows.length > 0 ? rows[0] : null;
@@ -1334,11 +1334,11 @@ async function saveImage(locationId, imageFile, imageType, referenceId = null) {
     // Cloudinary: Xóa ảnh cũ trên cloud trước khi lưu record mới
     if (!referenceId && (imageType === 'introduction' || imageType === 'architecture')) {
       const [oldImages] = await connection.execute(
-        `SELECT image_url FROM Location_Images 
+        `SELECT image_url FROM location_images 
          WHERE location_id = ? AND image_type = ? AND reference_id IS NULL`,
         [locationId, imageType]
       );
-      
+
       for (const old of oldImages) {
         if (old.image_url.includes('cloudinary')) {
           const oldPid = getPublicIdFromUrl(old.image_url);
@@ -1347,14 +1347,14 @@ async function saveImage(locationId, imageFile, imageType, referenceId = null) {
       }
 
       await connection.execute(
-        `DELETE FROM Location_Images 
+        `DELETE FROM location_images 
          WHERE location_id = ? AND image_type = ? AND reference_id IS NULL`,
         [locationId, imageType]
       );
     } else if (referenceId && (imageType === 'experience' || imageType === 'cuisine')) {
       // Xóa ảnh cũ cho Experience hoặc Cuisine dựa trên reference_id
       const [oldImages] = await connection.execute(
-        `SELECT image_url FROM Location_Images 
+        `SELECT image_url FROM location_images 
          WHERE location_id = ? AND image_type = ? AND reference_id = ?`,
         [locationId, imageType, referenceId]
       );
@@ -1367,7 +1367,7 @@ async function saveImage(locationId, imageFile, imageType, referenceId = null) {
       }
 
       await connection.execute(
-        `DELETE FROM Location_Images 
+        `DELETE FROM location_images 
          WHERE location_id = ? AND image_type = ? AND reference_id = ?`,
         [locationId, imageType, referenceId]
       );
@@ -1375,7 +1375,7 @@ async function saveImage(locationId, imageFile, imageType, referenceId = null) {
 
     // Save to database
     await connection.execute(
-      `INSERT INTO Location_Images (location_id, image_url, image_type, reference_id)
+      `INSERT INTO location_images (location_id, image_url, image_type, reference_id)
              VALUES (?, ?, ?, ?)`,
       [locationId, imageUrl, imageType, referenceId]
     );
@@ -1409,7 +1409,7 @@ function createImageFileName(locationId, type, index = "") {
 async function getImage(locationId, imageType, referenceId = null) {
   let query = `
         SELECT image_url 
-        FROM Location_Images 
+        FROM location_images 
         WHERE location_id = ? AND image_type = ?
     `;
   const params = [locationId, imageType];
@@ -1426,25 +1426,25 @@ async function getImage(locationId, imageType, referenceId = null) {
   return rows[0]?.image_url || null;
 }
 async function getLocationsByTypes(types, limit = 10) {
-    if (!types || types.length === 0) {
-        return [];
-    }
+  if (!types || types.length === 0) {
+    return [];
+  }
 
-    try {
-        // Dấu ? trong IN (?) sẽ được thư viện mysql2 tự động mở rộng cho mảng
-        const query = `
+  try {
+    // Dấu ? trong IN (?) sẽ được thư viện mysql2 tự động mở rộng cho mảng
+    const query = `
             SELECT * 
-            FROM Locations 
+            FROM locations 
             WHERE type IN (?)
             LIMIT ?
         `;
-        
-        const [locations] = await pool.query(query, [types, limit]);
-        return locations;
-    } catch (error) {
-        console.error('[Location][getLocationsByTypes] Error:', error);
-        throw error;
-    }
+
+    const [locations] = await pool.query(query, [types, limit]);
+    return locations;
+  } catch (error) {
+    console.error('[Location][getLocationsByTypes] Error:', error);
+    throw error;
+  }
 }
 
 module.exports = {

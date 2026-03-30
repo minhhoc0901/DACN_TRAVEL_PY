@@ -10,7 +10,7 @@ const sanitizers = require('../utils/validators/sanitizers');
 exports.sendOTP = async (req, res) => {
     try {
         const { email, isPasswordReset } = req.body;
-        
+
         // Kiểm tra email tồn tại
         const existingUser = await User.findByEmail(email);
 
@@ -22,7 +22,7 @@ exports.sendOTP = async (req, res) => {
                     message: 'Email không tồn tại trong hệ thống'
                 });
             }
-        } 
+        }
         // Logic cho đăng ký
         else {
             if (existingUser) {
@@ -35,16 +35,16 @@ exports.sendOTP = async (req, res) => {
 
         // Tạo OTP ngẫu nhiên 6 số
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        
+
         // Lưu OTP vào database
         await User.saveOTP(email, otp);
-        
+
         // Lấy username từ email hoặc từ user hiện có
         const username = existingUser ? existingUser.username : email.split('@')[0];
-        
+
         // Gửi email
         const emailSent = await sendOTPEmail(email, otp, username, isPasswordReset);
-        
+
         if (emailSent) {
             res.status(200).json({
                 success: true,
@@ -72,10 +72,10 @@ exports.register = async (req, res) => {
     try {
         // 🔹 BƯỚC 1: SANITIZE INPUT
         const sanitizedData = sanitizers.sanitizeRegistrationData(req.body);
-        
+
         // 🔹 BƯỚC 2: VALIDATE
         const { error } = validateRegister(sanitizedData);
-        
+
         if (error) {
             const errors = {};
             error.details.forEach(detail => {
@@ -164,10 +164,10 @@ exports.login = async (req, res) => {
     try {
         // 🔹 BƯỚC 1: SANITIZE INPUT
         const sanitizedData = sanitizers.sanitizeLoginData(req.body);
-        
+
         // 🔹 BƯỚC 2: VALIDATE
         const { error } = validateLogin(sanitizedData);
-        
+
         if (error) {
             const errors = {};
             error.details.forEach(detail => {
@@ -239,39 +239,39 @@ exports.login = async (req, res) => {
 };
 
 exports.getProfile = async (req, res) => {
-  try {
-    // Lấy thông tin người dùng từ middleware auth
-    const userId = req.user.id;
-    
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ 
-        success: false, 
-        message: 'Không tìm thấy người dùng' 
-      });
-    }
+    try {
+        // Lấy thông tin người dùng từ middleware auth
+        const userId = req.user.id;
 
-    // Trả về thông tin user (không trả password)
-    res.status(200).json({
-      success: true,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        fullName: user.full_name,
-        phone: user.phone,
-        role: user.role,
-        avatar: user.avatar
-      }
-    });
-  } catch (error) {
-    console.error('Get profile error:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Đã xảy ra lỗi khi lấy thông tin người dùng',
-      error: error.message
-    });
-  }
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'Không tìm thấy người dùng'
+            });
+        }
+
+        // Trả về thông tin user (không trả password)
+        res.status(200).json({
+            success: true,
+            user: {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                fullName: user.full_name,
+                phone: user.phone,
+                role: user.role,
+                avatar: user.avatar
+            }
+        });
+    } catch (error) {
+        console.error('Get profile error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Đã xảy ra lỗi khi lấy thông tin người dùng',
+            error: error.message
+        });
+    }
 };
 
 // Verify OTP for password reset
@@ -335,7 +335,7 @@ exports.resetPassword = async (req, res) => {
 
             // Cập nhật mật khẩu
             await connection.execute(
-                'UPDATE Users SET password_hash = ? WHERE id = ?',
+                'UPDATE users SET password_hash = ? WHERE id = ?',
                 [hashedPassword, user.id]
             );
 

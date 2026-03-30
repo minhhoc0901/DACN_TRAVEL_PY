@@ -107,7 +107,7 @@ class Hotel {
         }
 
         await pool.query(
-            `UPDATE Hotels 
+            `UPDATE hotels 
              SET name = ?, address = ?, latitude = ?, longitude = ?, 
                  phone = ?, email = ?, website = ?, rating = ?, 
                  price_range = ?, description = ?, image = ?,
@@ -146,7 +146,7 @@ class Hotel {
         }
 
         const [result] = await pool.query(
-            `DELETE FROM Hotels WHERE id = ?`,
+            `DELETE FROM hotels WHERE id = ?`,
             [id]
         );
         return result.affectedRows > 0;
@@ -159,7 +159,7 @@ class Hotel {
      */
     static async search(keyword) {
         const [rows] = await pool.query(
-            `SELECT * FROM Hotels 
+            `SELECT * FROM hotels 
              WHERE name LIKE ? OR address LIKE ?
              ORDER BY name ASC`,
             [`%${keyword}%`, `%${keyword}%`]
@@ -175,8 +175,8 @@ class Hotel {
     static async getByLocation(locationId) {
         const [rows] = await pool.query(
             `SELECT h.* 
-             FROM Hotels h
-             INNER JOIN LocationHotels lh ON h.id = lh.hotel_id
+             FROM hotels h
+             INNER JOIN locationhotels lh ON h.id = lh.hotel_id
              WHERE lh.location_id = ?
              ORDER BY h.name ASC`,
             [locationId]

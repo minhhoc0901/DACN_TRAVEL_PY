@@ -917,7 +917,7 @@ async function getApprovedToursForSale(options = {}) {
       params.push(`%${duration}%`);
     }
 
-    // Price filter sẽ được áp dụng sau khi JOIN với Tour_Prices
+    // Price filter sẽ được áp dụng sau khi JOIN với tour_prices
     let priceFilter = '';
     if (price_min || price_max) {
       if (price_min && price_max) {
@@ -969,7 +969,7 @@ async function getApprovedToursForSale(options = {}) {
                 t.updated_at,
                 GREATEST(t.created_at, IFNULL(t.updated_at, t.created_at)) as latest_update,
                 
-                -- Price information từ Tour_Prices
+                -- Price information từ tour_prices
                 COALESCE(MIN(CASE 
                     WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 
                     THEN tp.sale_price 
@@ -994,7 +994,7 @@ async function getApprovedToursForSale(options = {}) {
                 u.username as creator_username
                 
             FROM tours t
-            LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
+            LEFT JOIN tour_prices tp ON t.id = tp.tour_id
             LEFT JOIN (
                 SELECT 
                     tour_id,
@@ -1018,8 +1018,8 @@ async function getApprovedToursForSale(options = {}) {
     // Get total count
     const countQuery = `
             SELECT COUNT(DISTINCT t.id) as total
-            FROM Tours t
-            LEFT JOIN Users u ON t.user_id = u.id
+            FROM tours t
+            LEFT JOIN users u ON t.user_id = u.id
             WHERE ${whereClause}
         `;
 
@@ -1062,7 +1062,7 @@ async function getTourDetailForSale(tourId) {
                 u.username as creator_username,
                 u.email as creator_email
                 
-            FROM Tours t
+            FROM tours t
             LEFT JOIN (
                 SELECT 
                     tour_id,
@@ -1071,7 +1071,7 @@ async function getTourDetailForSale(tourId) {
                 FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
-            LEFT JOIN Users u ON t.user_id = u.id
+            LEFT JOIN users u ON t.user_id = u.id
             WHERE t.id = ? AND t.status = 'approved' AND t.is_active = TRUE AND u.role = 'admin' 
         `;
 
@@ -1097,7 +1097,7 @@ async function getTourDetailForSale(tourId) {
 }
 
 /**
- * Lấy giá tour từ Tour_Prices
+ * Lấy giá tour từ tour_prices
  */
 async function getTourPrices(tourId) {
   try {
@@ -1117,7 +1117,7 @@ async function getTourPrices(tourId) {
                     THEN ROUND(((price - sale_price) / price) * 100)
                     ELSE 0 
                 END as discount_percent
-            FROM Tour_Prices 
+            FROM tour_prices 
             WHERE tour_id = ?
             ORDER BY price ASC
         `, [tourId]);
@@ -1162,9 +1162,9 @@ async function getFeaturedTours(limit = 8) {
                 COALESCE(r.avg_rating, 0) as avg_rating,
                 COALESCE(r.review_count, 0) as review_count
                 
-            FROM Tours t
-            JOIN Users u ON t.user_id = u.id 
-            LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
+            FROM tours t
+            JOIN users u ON t.user_id = u.id 
+            LEFT JOIN tour_prices tp ON t.id = tp.tour_id
             LEFT JOIN (
                 SELECT 
                     tour_id,
@@ -1232,7 +1232,7 @@ async function getToursByLocationIds(locationIds, limit = 5) {
                 t.updated_at,
                 GREATEST(t.created_at, IFNULL(t.updated_at, t.created_at)) as latest_update,
                 
-                -- Price information từ Tour_Prices
+                -- Price information từ tour_prices
                 COALESCE(MIN(CASE 
                     WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 
                     THEN tp.sale_price 
@@ -1256,9 +1256,9 @@ async function getToursByLocationIds(locationIds, limit = 5) {
                 u.full_name as creator_name,
                 u.username as creator_username
                 
-            FROM Tours t
-            INNER JOIN Tour_locations tl ON t.id = tl.tour_id
-            LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
+            FROM tours t
+            INNER JOIN tour_locations tl ON t.id = tl.tour_id
+            LEFT JOIN tour_prices tp ON t.id = tp.tour_id
             LEFT JOIN (
                 SELECT 
                     tour_id,
@@ -1267,7 +1267,7 @@ async function getToursByLocationIds(locationIds, limit = 5) {
                 FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
-            LEFT JOIN Users u ON t.user_id = u.id
+            LEFT JOIN users u ON t.user_id = u.id
             WHERE tl.location_id IN (${placeholders})
               AND t.status = 'approved'
               AND u.role = 'admin'
@@ -1324,7 +1324,7 @@ async function restoreTour(tourId) {
   try {
     //  CẬP NHẬT: Vừa khôi phục (is_active = TRUE) vừa đặt lại status = 'pending'
     const [result] = await connection.execute(
-      'UPDATE Tours SET is_active = TRUE, status = ? WHERE id = ?',
+      'UPDATE tours SET is_active = TRUE, status = ? WHERE id = ?',
       ['pending', tourId]
     );
     return result.affectedRows > 0;

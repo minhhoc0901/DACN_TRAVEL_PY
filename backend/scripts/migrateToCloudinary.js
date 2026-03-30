@@ -5,11 +5,11 @@ const fs = require('fs');
 const path = require('path');
 
 const configs = [
-    { table: 'Users', column: 'avatar', folder: 'avatars' },
-    { table: 'Tours', column: 'image', folder: 'tours' },
-    { table: 'Hotels', column: 'image', folder: 'hotels' },
-    { table: 'Location_Images', column: 'image_url', folder: 'locations', idColumn: 'id' },
-    { table: 'Review_Images', column: 'image_url', folder: 'reviews', idColumn: 'id' }
+    { table: 'users', column: 'avatar', folder: 'avatars' },
+    { table: 'tours', column: 'image', folder: 'tours' },
+    { table: 'hotels', column: 'image', folder: 'hotels' },
+    { table: 'location_images', column: 'image_url', folder: 'locations', idColumn: 'id' },
+    { table: 'review_images', column: 'image_url', folder: 'reviews', idColumn: 'id' }
 ];
 
 async function migrate() {
