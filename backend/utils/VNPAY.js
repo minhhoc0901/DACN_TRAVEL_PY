@@ -44,6 +44,8 @@ class VNPAYService {
                 vnp_OrderType: 'other',
                 vnp_ReturnUrl: this.returnUrl,
                 vnp_Locale: 'vn',
+                vnp_CreateDate: this.getCurrentDateVnpay(),
+                vnp_ExpireDate: this.getExpireDateVnpay(15), // Hết hạn sau 15 phút
             };
 
             // Thêm bankCode nếu có
@@ -98,6 +100,39 @@ class VNPAYService {
         if (ip.includes(',')) ip = ip.split(',')[0].trim();
         if (ip === '::1' || ip.startsWith('::ffff:')) return '127.0.0.1';
         return ip;
+    }
+
+    /**
+     * Tạo chuỗi thời gian định dạng yyyyMMddHHmmss theo múi giờ Việt Nam
+     * @returns {string} định dạng yyyyMMddHHmmss
+     */
+    getCurrentDateVnpay() {
+        const date = new Date();
+        return this.formatDateVnpay(date);
+    }
+
+    /**
+     * Tạo chuỗi thời gian hết hạn sau N phút
+     * @param {number} minutes 
+     * @returns {string} định dạng yyyyMMddHHmmss
+     */
+    getExpireDateVnpay(minutes) {
+        const date = new Date();
+        date.setMinutes(date.getMinutes() + minutes);
+        return this.formatDateVnpay(date);
+    }
+
+    /**
+     * Helper định dạng Date sang yyyyMMddHHmmss
+     */
+    formatDateVnpay(date) {
+        const pad = (n) => n.toString().padStart(2, '0');
+        return date.getFullYear() +
+            pad(date.getMonth() + 1) +
+            pad(date.getDate()) +
+            pad(date.getHours()) +
+            pad(date.getMinutes()) +
+            pad(date.getSeconds());
     }
 }
 

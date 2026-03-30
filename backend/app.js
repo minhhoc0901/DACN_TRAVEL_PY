@@ -1,4 +1,5 @@
 const express = require('express');
+process.env.TZ = 'Asia/Ho_Chi_Minh'; // Thiết lập múi giờ Việt Nam toàn cục
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
