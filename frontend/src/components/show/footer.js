@@ -77,7 +77,8 @@ const Footer = () => {
                                         <Link to="/" className="footer-logo">
                                             <div className="logo-text-wrap">
                                                 <div className="logo-icon-wrap">
-                                                    <img src="/logo1.png" alt="Phú Yên Travel Logo" />                                                </div>
+                                                    <img src={process.env.PUBLIC_URL + '/logo1.png'} alt="Phú Yên Travel Logo" />
+                                                </div>
                                                 <div className="logo-text">PHÚ YÊN</div>
                                             </div>
                                         </Link>

@@ -689,7 +689,7 @@
     margin-bottom: 20px;
     box-sizing: border-box;
     position: relative; /* Thiết lập stacking context, hữu ích */
-    /* border: 1px dashed red; // Bỏ comment để debug đường viền của map-container */
+    /* border: 1px dashed red; Bỏ comment để debug đường viền của map-container */
   }
 
   /* 
@@ -700,7 +700,7 @@
     height: 100%; /* Chiếm toàn bộ chiều cao của map-container (đã bị giới hạn bởi max-height) */
     overflow-y: auto; /* Cho phép container bên trong này (TourSidebar) cuộn nội dung của nó */
     -webkit-overflow-scrolling: touch; /* Cải thiện cuộn trên iOS */
-    /* border: 1px dashed green; // Bỏ comment để debug đường viền của TourSidebar */
+    /* border: 1px dashed green; Bỏ comment để debug đường viền của TourSidebar */
   }
 
   /* 

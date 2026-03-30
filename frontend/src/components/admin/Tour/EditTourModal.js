@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TourForm from './TourForm';
 import axios from 'axios';
+import { CONFIG } from '../../../config';
 import '../../../styles/itineraryCSS/TourModal.css';
 
 const EditTourModal = ({ show, onClose, formData, setFormData, onSubmit, isSubmitting, tourId }) => {
@@ -12,7 +13,7 @@ const EditTourModal = ({ show, onClose, formData, setFormData, onSubmit, isSubmi
     // Fetch danh sách địa điểm khi component mount
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/locations");
+        const response = await axios.get(`${CONFIG.API_API_URL}/locations`);
         setAvailableLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -28,7 +29,7 @@ const EditTourModal = ({ show, onClose, formData, setFormData, onSubmit, isSubmi
       const fetchTour = async () => {
         try {
           setLoading(true);
-          const response = await axios.get(`http://localhost:5000/api/tours/${tourId}`);
+          const response = await axios.get(`${CONFIG.API_API_URL}/tours/${tourId}`);
           
           if (response.data.success) {
             const tourData = response.data.tour;

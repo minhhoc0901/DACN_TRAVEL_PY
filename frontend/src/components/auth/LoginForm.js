@@ -4,6 +4,7 @@ import axios from 'axios';
 import '../../styles/auth/AuthForm.css';
 import '../../styles/auth/ValidationStyles.css';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
 
 // ✅ CHỈ IMPORT validateUsername (BỎ validatePassword)
 import { validateUsername } from '../../utils/validationUtils';
@@ -109,7 +110,7 @@ const LoginForm = () => {
 
         try {
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/auth/login', {
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/login`, {
                 username: formData.username.trim(),
                 password: formData.password
             });

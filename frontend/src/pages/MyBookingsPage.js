@@ -8,6 +8,8 @@ import RefundMethodModal from '../components/admin/Booking/RefundMethodModal';
 import PaymentMethodModal from '../components/Payment/PaymentMethodModal'; 
 import { toast, ToastContainer } from 'react-toastify'; 
 import 'react-toastify/dist/ReactToastify.css'; 
+import { CONFIG } from '../config';
+import { getDisplayImageUrl } from '../utils/imageUtils';
 import '../styles/Booking/MyBookingsPage.css';
 
 const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message, confirmText }) => {
@@ -116,6 +118,7 @@ const MyBookingsPage = () => {
         const departureDate = new Date(booking.departure_date);
         const now = new Date();
         const daysUntilDeparture = Math.ceil((departureDate - now) / (1000 * 60 * 60 * 24));
+
         let refund_percent = 0;
         if (daysUntilDeparture >= 15) refund_percent = 100;
         else if (daysUntilDeparture >= 7) refund_percent = 80;
@@ -264,7 +267,7 @@ const MyBookingsPage = () => {
         selectedReviewFiles.forEach(file => formData.append('reviewImages', file));
         try {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-            const response = await fetch('http://localhost:5000/api/reviews', {
+            const response = await fetch(`${CONFIG.API_API_URL}/reviews`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -360,7 +363,7 @@ const MyBookingsPage = () => {
                                     <div key={booking.id} className={`v2-booking-card-compact status-${booking.status}`}>
                                         {/* THUMBNAIL */}
                                         <div className="v2-booking-thumbnail">
-                                            <img src={`http://localhost:5000${booking.tour_image}`} alt={booking.tour_name} />
+                                            <img src={getDisplayImageUrl(booking.tour_image)} alt={booking.tour_name} />
                                             <span className={`v2-status-badge status-${booking.status} payment-${booking.payment_status}`}>
                                                 {booking.status === 'pending_payment' && isExpired ? 'Hết hạn' : getStatusText(booking.status, booking.payment_status)}
                                             </span>

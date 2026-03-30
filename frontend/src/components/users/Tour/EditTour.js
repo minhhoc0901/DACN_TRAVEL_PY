@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getDisplayImageUrl } from "../../../utils/imageUtils";
+import { CONFIG } from "../../../config";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "../../../styles/user/EditTour.css";
@@ -109,7 +111,7 @@ const EditTour = () => {
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/locations");
+        const response = await axios.get(`${CONFIG.API_API_URL}/locations`);
         setAvailableLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -124,7 +126,7 @@ const EditTour = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/tours/${id}`
+          `${CONFIG.API_API_URL}/tours/${id}`
         );
 
         if (response.data.success) {
@@ -174,7 +176,7 @@ const EditTour = () => {
             schedule: updatedSchedule,
             image: null, // Giữ nguyên là null, chỉ cập nhật khi user tải lên file mới
             // Tạo URL preview từ ảnh hiện tại của tour
-            imagePreview: tourData.image ? `http://localhost:5000${tourData.image}` : null,
+            imagePreview: getDisplayImageUrl(tourData.image),
             hasNewImage: false, // Ban đầu chưa có ảnh mới
             selected_location_ids: allLocationIds,
             includes,
@@ -255,7 +257,7 @@ const EditTour = () => {
         localStorage.getItem("token") || sessionStorage.getItem("token");
 
       const response = await axios.put(
-        `http://localhost:5000/api/tours/${id}`,
+        `${CONFIG.API_API_URL}/tours/${id}`,
         tourFormData,
         {
           headers: {
@@ -723,9 +725,7 @@ const EditTour = () => {
                         setFormData((prev) => ({
                           ...prev,
                           image: null,
-                          imagePreview: tour.image
-                            ? `http://localhost:5000${tour.image}`
-                            : null,
+                          imagePreview: getDisplayImageUrl(tour.image),
                           hasNewImage: false,
                         }));
                         document.getElementById("image").value = "";

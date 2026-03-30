@@ -6,40 +6,40 @@ const Tour = require('../models/Tour');
 // Tạo fallback function cho trường hợp API không hoạt động
 function getFallbackResponse(message) {
   const lowerMsg = message.toLowerCase();
-  
+
   // General greetings
   if (lowerMsg.includes('hi') || lowerMsg.includes('hello') || lowerMsg.includes('xin chào') || lowerMsg.includes('chào')) {
     return "Xin chào! Tôi là trợ lý du lịch Phú Yên. Tôi có thể giúp bạn tìm hiểu về các địa điểm du lịch, đề xuất lịch trình hoặc tư vấn thời điểm tốt nhất để đi Phú Yên.";
   }
-  
+
   // Weather inquiries
   if (lowerMsg.includes('thời tiết')) {
     return "Thời tiết ở Phú Yên thường rất đẹp từ tháng 2 đến tháng 8, với nhiệt độ từ 25-32°C. Đây là thời gian lý tưởng để tham quan các địa điểm ngoài trời. Mùa mưa thường bắt đầu từ tháng 9 đến tháng 1.";
   }
-  
+
   // Popular destinations
   if (lowerMsg.includes('gành đá đĩa') || lowerMsg.includes('ganh da dia')) {
     return "Gành Đá Đĩa (ID: 1) là một trong những địa điểm nổi tiếng nhất của Phú Yên. Đây là một thắng cảnh thiên nhiên độc đáo với những khối đá bazan hình lục giác xếp chồng lên nhau như những chồng đĩa khổng lồ. Địa điểm này nằm ở xã An Ninh Đông, huyện Tuy An, cách thành phố Tuy Hòa khoảng 30km.";
   }
-  
+
   if (lowerMsg.includes('bãi xép') || lowerMsg.includes('bai xep')) {
     return "Bãi Xép (ID: 2) là một bãi biển đẹp hoang sơ nằm cách thành phố Tuy Hòa khoảng 14km về phía nam. Bãi biển nổi tiếng với cát trắng mịn, nước biển trong xanh và những tảng đá lớn. Đây cũng là địa điểm quay phim 'Tôi thấy hoa vàng trên cỏ xanh'.";
   }
-  
+
   if (lowerMsg.includes('mũi điện') || lowerMsg.includes('mui dien')) {
     return "Mũi Điện (ID: 3) là điểm cực Đông của đất liền Việt Nam, nơi đón ánh bình minh đầu tiên trên đất liền. Ngọn hải đăng Mũi Điện được xây dựng từ thời Pháp, là điểm tham quan hấp dẫn du khách với khung cảnh biển tuyệt đẹp và bình minh ngoạn mục.";
   }
-  
+
   // Tours
   if (lowerMsg.includes('tour') || lowerMsg.includes('chuyến đi')) {
     return "Phú Yên Travel có nhiều tour du lịch đa dạng. Tour phổ biến nhất là tour 3 ngày 2 đêm khám phá các điểm đến nổi tiếng như Gành Đá Đĩa, Bãi Xép, Đầm Ô Loan, và Mũi Điện. Chúng tôi cũng có các tour ngắn ngày và tour theo yêu cầu.";
   }
-  
+
   // Best time to visit
   if (lowerMsg.includes('khi nào') || lowerMsg.includes('thời gian') || lowerMsg.includes('mùa')) {
-return "Thời điểm lý tưởng để du lịch Phú Yên là từ tháng 2 đến tháng 8 khi thời tiết khô ráo, ít mưa. Đặc biệt, tháng 4 đến tháng 6 là mùa đẹp nhất với nhiệt độ dễ chịu và ít du khách. Nếu bạn muốn ngắm hoa vàng trên cỏ xanh, hãy đến vào tháng 3.";
+    return "Thời điểm lý tưởng để du lịch Phú Yên là từ tháng 2 đến tháng 8 khi thời tiết khô ráo, ít mưa. Đặc biệt, tháng 4 đến tháng 6 là mùa đẹp nhất với nhiệt độ dễ chịu và ít du khách. Nếu bạn muốn ngắm hoa vàng trên cỏ xanh, hãy đến vào tháng 3.";
   }
-  
+
   // Default response
   return "Xin chào! Tôi là trợ lý du lịch Phú Yên. Tôi có thể giúp bạn tìm hiểu về các địa điểm du lịch như Gành Đá Đĩa, Bãi Xép, Mũi Điện, hoặc tư vấn khi nào nên đi Phú Yên (thời điểm lý tưởng là từ tháng 2-8). Bạn cần tư vấn gì về chuyến du lịch Phú Yên?";
 }
@@ -49,20 +49,20 @@ class ChatbotService {
     try {
       // Kích hoạt Gemini API thay vì luôn sử dụng fallback
       console.log('Processing message:', message);
-      
+
       // Lấy dữ liệu địa điểm và tour để tạo context cho AI
       const [locationData, tourData, weatherPrompt] = await Promise.all([
         this.getLocationData(),
         this.getTourData(),
         this.getWeatherPrompt()
       ]);
-      
+
       // Tạo system prompt từ dữ liệu
       const systemPrompt = this.generateSystemPrompt(locationData, tourData, weatherPrompt);
-      
+
       // Gọi Gemini API với system prompt và tin nhắn của người dùng
       const response = await this.callGeminiAPI(systemPrompt, message);
-      
+
       return response;
     } catch (error) {
       console.error('Error processing message:', error);
@@ -182,15 +182,15 @@ Phú Yên có khí hậu nhiệt đới gió mùa.
       "gemini-2.5-flash-legacy",
       "gemini-1.5-flash-latest",
       "gemini-2.5-flash-lite",
-      "gemini-2.5-flash", 
-      "gemini-pro"        
+      "gemini-2.5-flash",
+      "gemini-pro"
     ];
 
     // BƯỚC 2: Lần lượt thử các model trong danh sách
     for (const modelName of modelsToTry) {
       try {
         console.log(`INFO: Đang thử model: "${modelName}"...`);
-const model = genAI.getGenerativeModel({ model: modelName });
+        const model = genAI.getGenerativeModel({ model: modelName });
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
@@ -199,18 +199,18 @@ const model = genAI.getGenerativeModel({ model: modelName });
           console.log(`THÀNH CÔNG: Model "${modelName}" đã phản hồi.`);
           return text; // Trả về kết quả thành công
         }
-        
+
         // Nếu API trả về rỗng
         console.warn(`CẢNH BÁO: Model "${modelName}" trả về nội dung rỗng.`);
 
       } catch (error) {
         // Nếu có lỗi với model hiện tại
         console.error(`LỖI với model "${modelName}":`, error.message);
-        
+
         // Nếu lỗi là do giới hạn quota, dừng lại ngay
         if (error.message.includes('429')) {
-            console.log('LỖI: API bị giới hạn quota (Rate Limit). Chuyển sang dùng fallback.');
-            return getFallbackResponse(userMessage);
+          console.log('LỖI: API bị giới hạn quota (Rate Limit). Chuyển sang dùng fallback.');
+          return getFallbackResponse(userMessage);
         }
         // Nếu lỗi khác (vd: model not found), vòng lặp sẽ tự động thử model tiếp theo
       }

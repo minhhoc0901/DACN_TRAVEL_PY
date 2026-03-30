@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
+import { CONFIG } from '../../config';
 import '../../styles/LocationCSS/CommentSection.css';
 
 const CommentSection = ({ locationId }) => {
@@ -17,7 +19,7 @@ const CommentSection = ({ locationId }) => {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/location-comments/${locationId}`);
+        const response = await axios.get(`${CONFIG.API_API_URL}/location-comments/${locationId}`);
         if (response.data.success) {
           setComments(response.data.comments);
         }
@@ -31,7 +33,7 @@ const CommentSection = ({ locationId }) => {
 
   // ✅ Socket.IO listener - SỬA LẠI
   useEffect(() => {
-    const socket = io('http://localhost:5000');
+    const socket = io(CONFIG.API_URL);
 
     // Listen cho event cụ thể của location này
     socket.on(`location_${locationId}_new_comment`, (data) => {
@@ -86,7 +88,7 @@ const CommentSection = ({ locationId }) => {
     try {
       const token = getToken();
       await axios.post(
-        'http://localhost:5000/api/location-comments',
+        `${CONFIG.API_API_URL}/location-comments`,
         {
           location_id: locationId,
           comment: newComment
@@ -115,7 +117,7 @@ const CommentSection = ({ locationId }) => {
     try {
       const token = getToken();
       await axios.post(
-        'http://localhost:5000/api/location-comments',
+        `${CONFIG.API_API_URL}/location-comments`,
         {
           location_id: locationId,
           comment: replyText,
@@ -144,7 +146,7 @@ const CommentSection = ({ locationId }) => {
 
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:5000/api/location-comments/${commentId}`, {
+      await axios.delete(`${CONFIG.API_API_URL}/location-comments/${commentId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -159,7 +161,7 @@ const CommentSection = ({ locationId }) => {
   const renderComment = (comment, isReply = false) => (
     <div key={comment.id} className={`comment-item ${isReply ? 'reply' : ''}`}>
       <img
-        src={comment.avatar ? `http://localhost:5000${comment.avatar}` : '/default-avatar.png'}
+        src={getDisplayImageUrl(comment.avatar)}
         alt={comment.username}
         className="comment-avatar"
       />
@@ -238,7 +240,7 @@ const CommentSection = ({ locationId }) => {
         <form onSubmit={handleSubmit} className="comment-form">
           <div className="comment-input-wrapper">
             <img
-              src={user?.avatar ? `http://localhost:5000${user.avatar}` : '/default-avatar.png'}
+              src={getDisplayImageUrl(user?.avatar)}
               alt={user?.username}
               className="comment-avatar"
             />

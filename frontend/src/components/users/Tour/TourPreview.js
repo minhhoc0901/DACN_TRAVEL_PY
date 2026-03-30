@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
+import { CONFIG } from '../../../config';
 import '../../../styles/user/TourPreview.css';
 
 const TourPreview = () => {
@@ -13,7 +15,7 @@ const TourPreview = () => {
     const fetchTour = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:5000/api/tours/${id}`);
+        const response = await axios.get(`${CONFIG.API_API_URL}/tours/${id}`);
         
         if (response.data.success) {
           setTour(response.data.tour);
@@ -93,9 +95,7 @@ const TourPreview = () => {
 
       <div className="tour-preview-image">
         <img 
-          src={tour.image && tour.image.startsWith('/') 
-            ? `http://localhost:5000${tour.image}` 
-            : tour.image || '/placeholder-image.jpg'}
+          src={getDisplayImageUrl(tour.image)}
           alt={tour.destination}
         />
       </div>

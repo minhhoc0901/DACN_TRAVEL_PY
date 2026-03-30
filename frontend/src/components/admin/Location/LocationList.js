@@ -1,4 +1,5 @@
 import React from 'react';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
 
 const LocationList = ({ locations, onEdit, onDelete }) => {
   return (
@@ -17,7 +18,7 @@ const LocationList = ({ locations, onEdit, onDelete }) => {
           {locations.map((location) => (
             <tr key={location.id}>
               <td>
-                <img src={location.introduction.image ? `http://localhost:5000${location.introduction.image}` : 'https://via.placeholder.com/300x200?text=No+Image'}
+                <img src={getDisplayImageUrl(location.introduction?.image)}
                         alt={location.title}
                         className="location-image" />
               </td>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { tourDepartureService } from '../../services/tourDepartureService';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/Tour/TourCard.css';
 
 const TourCard = ({ tour }) => {
@@ -92,9 +93,7 @@ const TourCard = ({ tour }) => {
 
     // FORMAT IMAGE URL
     const getImageUrl = () => {
-        if (!image) return '/default-tour-image.jpg';
-        if (image.startsWith('http')) return image;
-        return `http://localhost:5000${image}`;
+        return getDisplayImageUrl(image);
     };
 
     // FORMAT NGÀY KHỞI HÀNH

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
-import '../../../styles/admin/NotificationManagement.css';
+import { CONFIG } from '../../../config';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
 
 const BulkNotificationModal = ({ onClose, onSend }) => {
   const { getToken } = useAuth();
@@ -19,14 +20,15 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
   useEffect(() => {
     console.log('[BulkNotificationModal] Component mounted!');
     fetchUsers();
-    
+
     // Khóa scroll body khi modal mở
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       // Mở lại scroll khi modal đóng
       document.body.style.overflow = 'auto';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {
@@ -34,7 +36,7 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
     try {
       const token = getToken();
       console.log('[BulkNotificationModal] Fetching users...');
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      const response = await axios.get(`${CONFIG.API_API_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -63,14 +65,14 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
     const newUserIds = formData.userIds.includes(userId)
       ? formData.userIds.filter(id => id !== userId)
       : [...formData.userIds, userId];
-    
+
     setFormData({ ...formData, userIds: newUserIds });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('[BulkNotificationModal] Submitting:', formData);
-    
+
     if (formData.userIds.length === 0) {
       alert('Vui lòng chọn ít nhất một người dùng');
       return;
@@ -103,8 +105,8 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
 
   return (
     <div className="qltb-modal-overlay" onClick={handleOverlayClick}>
-      <div 
-        className="qltb-modal-content qltb-bulk-modal" 
+      <div
+        className="qltb-modal-content qltb-bulk-modal"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="qltb-modal-header">
@@ -123,7 +125,7 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
                 <h4>Chọn người nhận</h4>
                 <span className="qltb-user-count">{formData.userIds.length} được chọn</span>
               </div>
-              
+
               <div className="qltb-search-box">
                 <i className="bi bi-search"></i>
                 <input
@@ -166,7 +168,7 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
                     />
                     <div className="qltb-user-avatar">
                       {user.avatar ? (
-                        <img src={`http://localhost:5000${user.avatar}`} alt={user.username} />
+                        <img src={getDisplayImageUrl(user.avatar)} alt={user.username} />
                       ) : (
                         <div className="qltb-avatar-placeholder">
                           {(user.full_name || user.username).charAt(0).toUpperCase()}

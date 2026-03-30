@@ -176,6 +176,7 @@
 // export default TourList;
 
 import React from 'react';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
 import '../../../styles/itineraryCSS/TourList.css';
 
 const TourList = ({ tours, onApprove, onReject, onEdit, onHide, onRestore, onDelete, currentUserId, canModerate, processingTourId, activeTab }) => {
@@ -232,10 +233,7 @@ const TourList = ({ tours, onApprove, onReject, onEdit, onHide, onRestore, onDel
               <div className="mng-tour-image">
                 {tour.image && (
                   <img 
-                    src={tour.image.startsWith('/') 
-                      ? `http://localhost:5000${tour.image}` 
-                      : tour.image
-                    }
+                    src={getDisplayImageUrl(tour.image)}
                     alt={tour.destination}
                     onError={(e) => {
                       e.target.src = 'https://via.placeholder.com/300x200?text=No+Image';

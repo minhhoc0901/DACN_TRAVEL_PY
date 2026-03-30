@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useAuth } from './AuthContext';
 import { toast } from 'react-toastify'; // Add this import
 import io from 'socket.io-client';
+import { CONFIG } from '../config';
 
 const ChatContext = createContext();
 
@@ -15,7 +16,7 @@ export const ChatProvider = ({ children }) => {
   const token = getToken();
 
   useEffect(() => {
-    const newSocket = io('http://localhost:5000', {
+    const newSocket = io(CONFIG.API_URL, {
       transports: ['websocket'],
       reconnection: true,
       reconnectionAttempts: 5,

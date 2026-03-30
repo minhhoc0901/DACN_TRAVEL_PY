@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { CONFIG } from '../../config';
 import '../../styles/auth/ForgotPasswordForm.css';
 
 const ForgotPasswordForm = () => {
@@ -41,7 +42,7 @@ const ForgotPasswordForm = () => {
             }
 
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/auth/send-otp', {
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/send-otp`, {
                 email: formData.email,
                 isPasswordReset: true // Thêm flag để phân biệt với đăng ký
             });
@@ -67,7 +68,7 @@ const ForgotPasswordForm = () => {
             }
 
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/auth/verify-reset-otp', {
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/verify-reset-otp`, {
                 email: formData.email,
                 otp: formData.otp
             });
@@ -91,7 +92,7 @@ const ForgotPasswordForm = () => {
             }
 
             setLoading(true);
-            const response = await axios.post('http://localhost:5000/api/auth/reset-password', {
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/reset-password`, {
                 email: formData.email,
                 otp: formData.otp,
                 newPassword: formData.newPassword

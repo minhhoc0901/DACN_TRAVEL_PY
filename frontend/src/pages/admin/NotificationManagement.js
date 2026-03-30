@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
 import NotificationStats from '../../components/admin/Notification/NotificationStats';
 import NotificationList from '../../components/admin/Notification/NotificationList';
 import NotificationFilters from '../../components/admin/Notification/NotificationFilters';
@@ -28,7 +29,7 @@ const NotificationManagement = () => {
     setLoading(true);
     try {
       const token = getToken();
-      const response = await axios.get('http://localhost:5000/api/admin/notifications/all', {
+      const response = await axios.get(`${CONFIG.API_API_URL}/admin/notifications/all`, {
         params: {
           page: currentPage,
           limit: 20,
@@ -53,7 +54,7 @@ const NotificationManagement = () => {
   const fetchStats = useCallback(async () => {
     try {
       const token = getToken();
-      const response = await axios.get('http://localhost:5000/api/admin/notifications/stats', {
+      const response = await axios.get(`${CONFIG.API_API_URL}/admin/notifications/stats`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -79,7 +80,7 @@ const NotificationManagement = () => {
 
     try {
       const token = getToken();
-      await axios.delete(`http://localhost:5000/api/admin/notifications/${notificationId}`, {
+      await axios.delete(`${CONFIG.API_API_URL}/admin/notifications/${notificationId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -96,7 +97,7 @@ const NotificationManagement = () => {
   const handleSendBulk = async (data) => {
     try {
       const token = getToken();
-      await axios.post('http://localhost:5000/api/admin/notifications/send-bulk', data, {
+      await axios.post(`${CONFIG.API_API_URL}/admin/notifications/send-bulk`, data, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

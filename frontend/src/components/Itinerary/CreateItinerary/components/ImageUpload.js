@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../../../../styles/itineraryCSS/ImageUpload.css';
+import { getDisplayImageUrl } from '../../../../utils/imageUtils';
 
 export const ImageUpload = ({ formData, setFormData }) => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -11,8 +12,8 @@ export const ImageUpload = ({ formData, setFormData }) => {
 
   // Hiển thị preview ảnh hiện tại nếu đang edit
   useEffect(() => {
-    if (formData.image && typeof formData.image === 'string' && formData.image.startsWith('/')) {
-      setPreviewImage(`http://localhost:5000${formData.image}`);
+    if (formData.image && typeof formData.image === 'string') {
+      setPreviewImage(getDisplayImageUrl(formData.image));
     } else if (formData.image && typeof formData.image === 'string') {
       setPreviewImage(formData.image);
     } else if (formData.imagePreview) {

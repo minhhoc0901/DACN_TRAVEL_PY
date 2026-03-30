@@ -1,9 +1,10 @@
 import axios from 'axios';
+import { CONFIG } from '../config';
 import { getAuthToken } from '../utils/auth';
 
 // Tạo một instance của axios với cấu hình mặc định
 const api = axios.create({
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+    baseURL: CONFIG.API_API_URL,
     headers: {
         'Content-Type': 'application/json',
     },

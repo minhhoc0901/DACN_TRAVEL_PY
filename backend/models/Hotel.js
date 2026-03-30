@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { removeFromCloudinary, getPublicIdFromUrl } = require('../utils/cloudinaryHelper');
 
 class Hotel {
     /**
@@ -93,6 +94,18 @@ class Hotel {
             image
         } = data;
 
+        // Lấy thông tin khách sạn hiện tại để xử lý ảnh
+        const existingHotel = await this.findById(id);
+        if (!existingHotel) {
+            throw new Error('Không tìm thấy khách sạn để cập nhật');
+        }
+
+        // Xử lý xóa ảnh cũ trên Cloudinary nếu có ảnh mới
+        if (image && image !== existingHotel.image && existingHotel.image && existingHotel.image.includes('cloudinary')) {
+            const oldPid = getPublicIdFromUrl(existingHotel.image);
+            if (oldPid) await removeFromCloudinary(oldPid);
+        }
+
         await pool.query(
             `UPDATE Hotels 
              SET name = ?, address = ?, latitude = ?, longitude = ?, 
@@ -125,6 +138,13 @@ class Hotel {
      * @returns {Promise<boolean>} Kết quả xóa
      */
     static async delete(id) {
+        // Lấy thông tin khách sạn để xóa ảnh trên Cloudinary
+        const hotel = await this.findById(id);
+        if (hotel && hotel.image && hotel.image.includes('cloudinary')) {
+            const pid = getPublicIdFromUrl(hotel.image);
+            if (pid) await removeFromCloudinary(pid);
+        }
+
         const [result] = await pool.query(
             `DELETE FROM Hotels WHERE id = ?`,
             [id]

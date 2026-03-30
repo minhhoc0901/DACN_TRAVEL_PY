@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
+import { CONFIG } from '../../../config';
 import '../../../styles/user/UserTours.css';
 
 const UserTours = () => {
@@ -25,7 +27,7 @@ const UserTours = () => {
         
         // Try to get tours using the user-specific endpoint
         try {
-          const response = await axios.get('http://localhost:5000/api/tours/user/tours', {
+          const response = await axios.get(`${CONFIG.API_API_URL}/tours/user/tours`, {
             headers: {
               'Authorization': `Bearer ${token}`
             }
@@ -45,7 +47,7 @@ const UserTours = () => {
           
           // Fall back to admin endpoint if user has sufficient privileges
           try {
-            const adminResponse = await axios.get('http://localhost:5000/api/admin/tours', {
+            const adminResponse = await axios.get(`${CONFIG.API_API_URL}/admin/tours`, {
               headers: {
                 'Authorization': `Bearer ${token}`
               }
@@ -68,7 +70,7 @@ const UserTours = () => {
           } catch (adminApiErr) {
             // If both APIs fail, try the generic tours endpoint as last resort
             if (adminApiErr.response?.status === 403) {
-              const publicResponse = await axios.get('http://localhost:5000/api/tours');
+              const publicResponse = await axios.get(`${CONFIG.API_API_URL}/tours`);
               
               if (publicResponse.data.success) {
                 // Still filter by current user ID if we have that info
@@ -178,17 +180,15 @@ const UserTours = () => {
             return (
               <div key={tour.id} className={`user-tour-item ${tour.status || 'pending'}`}>
                 <div className="tour-preview">
-                  <div className="tour-image">
-                    <img 
-                      src={tour.image && tour.image.startsWith('/') 
-                        ? `http://localhost:5000${tour.image}` 
-                        : tour.image || '/placeholder-image.jpg'}
-                      alt={tour.destination}
-                      onError={(e) => {
-                        e.target.src = '/placeholder-image.jpg';
-                      }}
-                    />
-                  </div>
+                    <div className="tour-image">
+                      <img 
+                        src={getDisplayImageUrl(tour.image)}
+                        alt={tour.destination}
+                        onError={(e) => {
+                          e.target.src = '/placeholder-image.jpg';
+                        }}
+                      />
+                    </div>
                   
                   <div className="tour-details">
                     <h3 className="tour-title">{tour.destination}</h3>

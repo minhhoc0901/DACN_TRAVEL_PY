@@ -1,6 +1,7 @@
 const { pool } = require("../config/db");
 const path = require("path");
 const fs = require("fs");
+const { uploadToCloudinary, removeFromCloudinary, getPublicIdFromUrl } = require('../utils/cloudinaryHelper');
 
 // -------------------
 // Truy vấn cơ bản
@@ -130,25 +131,33 @@ async function createLocation(data) {
     }
 
     // 6. Insert Experiences
+    const experienceIds = [];
     if (Array.isArray(data.experiences)) {
       for (const exp of data.experiences) {
-        if (exp && exp.text) {
-          await connection.execute(
+        if (exp && (exp.text || exp.hasImage)) {
+          const [result] = await connection.execute(
             "INSERT INTO Experiences (location_id, description) VALUES (?, ?)",
-            [locationId, exp.text]
+            [locationId, (exp.text || "").trim()]
           );
+          experienceIds.push(result.insertId);
+        } else {
+          experienceIds.push(null);
         }
       }
     }
 
     // 7. Insert Cuisines
+    const cuisineIds = [];
     if (Array.isArray(data.cuisines)) {
       for (const cuisine of data.cuisines) {
-        if (cuisine && cuisine.text) {
-          await connection.execute(
+        if (cuisine && (cuisine.text || cuisine.hasImage)) {
+          const [result] = await connection.execute(
             "INSERT INTO Cuisines (location_id, description) VALUES (?, ?)",
-            [locationId, cuisine.text]
+            [locationId, (cuisine.text || "").trim()]
           );
+          cuisineIds.push(result.insertId);
+        } else {
+          cuisineIds.push(null);
         }
       }
     }
@@ -194,7 +203,11 @@ async function createLocation(data) {
     }
 
     await connection.commit();
-    return locationId;
+    return {
+      locationId,
+      experienceIds,
+      cuisineIds
+    };
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -350,47 +363,85 @@ async function updateLocation(locationId, data) {
       await connection.execute(`INSERT INTO TravelInfo (location_id, ticket_price, tip) VALUES (?, ?, ?)`, [locationId, parsedData.ticket_price || '', parsedData.tip || '']);
     }
 
-    // 6. Cập nhật các bảng liên quan (theo mô hình Xóa và Thêm lại)
-    const relatedTables = {
+    // 6. Cập nhật các bảng liên quan
+    // --- Các bảng đơn giản: Xóa và Thêm lại ---
+    const simpleTables = {
       'BestTimes': { data: parsedData.bestTimes, columns: ['location_id', 'time_description'] },
       'Tips': { data: parsedData.tips, columns: ['location_id', 'description'] },
-      'TravelMethods': { data: parsedData.travelMethods, isObject: true },
-      'Experiences': { data: parsedData.experiences, columns: ['location_id', 'description'], nestedField: 'text' },
-      'Cuisines': { data: parsedData.cuisines, columns: ['location_id', 'description'], nestedField: 'text' },
       'NearbyLocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
       'LocationHotels': { data: parsedData.hotel_ids, columns: ['location_id', 'hotel_id'] }
     };
 
-    for (const [tableName, config] of Object.entries(relatedTables)) {
+    for (const [tableName, config] of Object.entries(simpleTables)) {
       await connection.execute(`DELETE FROM ${tableName} WHERE location_id = ?`, [locationId]);
-
-      if (config.isObject) { // Xử lý riêng cho TravelMethods
-        const { fromTuyHoa = [], fromElsewhere = [] } = config.data;
-        if (Array.isArray(fromTuyHoa)) {
-          for (const method of fromTuyHoa) {
-            if (method && typeof method === 'string' && method.trim()) {
-              await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromTuyHoa', method.trim()]);
-            }
-          }
-        }
-        if (Array.isArray(fromElsewhere)) {
-          for (const method of fromElsewhere) {
-            if (method && typeof method === 'string' && method.trim()) {
-              await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromElsewhere', method.trim()]);
-            }
-          }
-        }
-      } else if (Array.isArray(config.data) && config.data.length > 0) {
+      if (Array.isArray(config.data) && config.data.length > 0) {
         const values = config.data
-          .map(item => config.nestedField ? item[config.nestedField] : item)
           .filter(item => item && (typeof item !== 'string' || item.trim()))
           .map(item => [locationId, item]);
-        
         if (values.length > 0) {
           await connection.query(`INSERT INTO ${tableName} (${config.columns.join(', ')}) VALUES ?`, [values]);
         }
       }
     }
+
+    // --- Xử lý riêng TravelMethods (Xóa và Thêm lại) ---
+    await connection.execute(`DELETE FROM TravelMethods WHERE location_id = ?`, [locationId]);
+    const { fromTuyHoa = [], fromElsewhere = [] } = parsedData.travelMethods;
+    if (Array.isArray(fromTuyHoa)) {
+      for (const method of fromTuyHoa) {
+        if (method && typeof method === 'string' && method.trim()) {
+          await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromTuyHoa', method.trim()]);
+        }
+      }
+    }
+    if (Array.isArray(fromElsewhere)) {
+      for (const method of fromElsewhere) {
+        if (method && typeof method === 'string' && method.trim()) {
+          await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromElsewhere', method.trim()]);
+        }
+      }
+    }
+
+    // --- logic SYNC cho Experiences và Cuisines (Để bảo toàn ID và Ảnh) ---
+    const syncRelatedTable = async (tableName, items) => {
+      const currentItemIds = [];
+      for (const item of items) {
+        // Chỉ bỏ qua nếu là mục mới (không có id) VÀ không có nội dung text
+        if (!item.id && (!item.text || !item.text.trim())) continue;
+
+        if (item.id) {
+          // Update existing (giữ record kể cả khi text trống để bảo toàn ảnh)
+          await connection.execute(
+            `UPDATE ${tableName} SET description = ? WHERE id = ? AND location_id = ?`,
+            [(item.text || '').trim(), item.id, locationId]
+          );
+          currentItemIds.push(item.id);
+        } else {
+          // Insert new (phải có text mới insert)
+          const [result] = await connection.execute(
+            `INSERT INTO ${tableName} (location_id, description) VALUES (?, ?)`,
+            [locationId, (item.text || '').trim()]
+          );
+          currentItemIds.push(result.insertId);
+          // Gán lại ID mới vào object để Controller có thể dùng cho saveImage
+          item.id = result.insertId;
+        }
+      }
+
+      // Xóa các mục cũ không còn trong danh sách mới
+      // Trước khi xóa, lý tưởng nhất là xóa ảnh trên Cloudinary, nhưng để đơn giản ta giữ record trong Location_Images (hoặc xóa sau)
+      if (currentItemIds.length > 0) {
+        await connection.query(
+          `DELETE FROM ${tableName} WHERE location_id = ? AND id NOT IN (?)`,
+          [locationId, currentItemIds]
+        );
+      } else {
+        await connection.execute(`DELETE FROM ${tableName} WHERE location_id = ?`, [locationId]);
+      }
+    };
+
+    if (parsedData.experiences) await syncRelatedTable('Experiences', parsedData.experiences);
+    if (parsedData.cuisines) await syncRelatedTable('Cuisines', parsedData.cuisines);
 
     await connection.commit();
     console.log(`[updateLocation] Giao dịch thành công cho địa điểm ID: ${locationId}`);
@@ -582,7 +633,7 @@ async function getExperiences(locationId) {
   for (const row of rows) {
     // Lấy ảnh cho trải nghiệm này, sử dụng id của trải nghiệm
     const image = await getImage(locationId, "experience", row.id);
-    experiences.push({ text: row.description, image });
+    experiences.push({ id: row.id, text: row.description, image });
   }
   return experiences;
 }
@@ -601,7 +652,7 @@ async function getCuisines(locationId) {
   const cuisines = [];
   for (const row of rows) {
     const image = await getImage(locationId, "cuisine", row.id);
-    cuisines.push({ text: row.description, image });
+    cuisines.push({ id: row.id, text: row.description, image });
   }
   return cuisines;
 }
@@ -773,7 +824,7 @@ async function composeLocation(loc) {
       tip: loc.tip,
     },
     experiences: formattedExperiences,
-    cuisine: formattedCuisines,
+    cuisines: formattedCuisines,
     tips: formattedTips,
     nearby: formattedNearby,
     // averageRating: ratings.averageRating,
@@ -1163,6 +1214,13 @@ async function getImageById(imageId) {
 async function deleteImage(imageId) {
   const connection = await pool.getConnection();
   try {
+    // Lấy thông tin ảnh trước khi xóa để xóa trên Cloudinary
+    const [rows] = await connection.execute(`SELECT image_url FROM Location_Images WHERE id = ?`, [imageId]);
+    if (rows.length > 0 && rows[0].image_url.includes('cloudinary')) {
+      const publicId = getPublicIdFromUrl(rows[0].image_url);
+      if (publicId) await removeFromCloudinary(publicId);
+    }
+
     await connection.execute(`DELETE FROM Location_Images WHERE id = ?`, [
       imageId,
     ]);
@@ -1257,46 +1315,61 @@ async function saveImage(locationId, imageFile, imageType, referenceId = null) {
   try {
     await connection.beginTransaction();
 
+    let imageUrl = '';
+    let publicId = '';
+
     // If imageFile is already a URL string, just save to database
     if (typeof imageFile === "string") {
-      await connection.execute(
-        `INSERT INTO Location_Images (location_id, image_url, image_type, reference_id)
-                 VALUES (?, ?, ?, ?)`,
-        [locationId, imageFile, imageType, referenceId]
-      );
-
-      await connection.commit();
-      return imageFile;
-    }
-
-    // If it's a file object, handle file upload
-    const fileName = createImageFileName(locationId, imageType, referenceId);
-    const imageUrl = `/uploads/locations/${locationId}/${fileName}`;
-    const uploadDir = path.join(
-      __dirname,
-      "../uploads/locations",
-      locationId.toString()
-    );
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
-    // Save file
-    if (imageFile.mv) {
-      await imageFile.mv(path.join(uploadDir, fileName));
+      imageUrl = imageFile;
+    } else if (imageFile && imageFile.data) {
+      // --- CLOUDINARY UPLOAD ---
+      const cloudResult = await uploadToCloudinary(imageFile.data, 'locations');
+      imageUrl = cloudResult.url;
+      publicId = cloudResult.public_id;
     } else {
-      // Handle buffer or stream if needed
-      fs.writeFileSync(path.join(uploadDir, fileName), imageFile);
+      throw new Error('Invalid image file or URL');
     }
 
-    // Delete old image if exists (for main images)
-    if (!referenceId) {
+    // Delete old image if exists
+    // Cloudinary: Xóa ảnh cũ trên cloud trước khi lưu record mới
+    if (!referenceId && (imageType === 'introduction' || imageType === 'architecture')) {
+      const [oldImages] = await connection.execute(
+        `SELECT image_url FROM Location_Images 
+         WHERE location_id = ? AND image_type = ? AND reference_id IS NULL`,
+        [locationId, imageType]
+      );
+      
+      for (const old of oldImages) {
+        if (old.image_url.includes('cloudinary')) {
+          const oldPid = getPublicIdFromUrl(old.image_url);
+          if (oldPid) await removeFromCloudinary(oldPid);
+        }
+      }
+
       await connection.execute(
         `DELETE FROM Location_Images 
-                 WHERE location_id = ? AND image_type = ? AND reference_id IS NULL`,
+         WHERE location_id = ? AND image_type = ? AND reference_id IS NULL`,
         [locationId, imageType]
+      );
+    } else if (referenceId && (imageType === 'experience' || imageType === 'cuisine')) {
+      // Xóa ảnh cũ cho Experience hoặc Cuisine dựa trên reference_id
+      const [oldImages] = await connection.execute(
+        `SELECT image_url FROM Location_Images 
+         WHERE location_id = ? AND image_type = ? AND reference_id = ?`,
+        [locationId, imageType, referenceId]
+      );
+
+      for (const old of oldImages) {
+        if (old.image_url.includes('cloudinary')) {
+          const oldPid = getPublicIdFromUrl(old.image_url);
+          if (oldPid) await removeFromCloudinary(oldPid);
+        }
+      }
+
+      await connection.execute(
+        `DELETE FROM Location_Images 
+         WHERE location_id = ? AND image_type = ? AND reference_id = ?`,
+        [locationId, imageType, referenceId]
       );
     }
 

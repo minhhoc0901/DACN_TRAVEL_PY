@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import '../../styles/HomePageCSS/DestinationsSection.css';
 import axios from 'axios';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 
 const DestinationsSection = () => {
     const [activeTab, setActiveTab] = useState('all');
-    const [activeCard, setActiveCard] = useState(null);
+    const containerRef = useRef(null);
     const [animateOut, setAnimateOut] = useState(false);
+    const [activeCard, setActiveCard] = useState(null);
     
     const [locations, setLocations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const placeholderImage = 'https://via.placeholder.com/400x300?text=Không+có+ảnh';
-
     useEffect(() => {
         const fetchLocations = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:5000/api/locations');
+                const response = await axios.get(`${CONFIG.API_API_URL}/locations`);
                 setLocations(response.data || []);
                 setError(null);
             } catch (err) {
@@ -162,7 +163,7 @@ const DestinationsSection = () => {
                             {/* Image */}
                             <div className="pydes-card-image">
                                 <img 
-                                    src={destination.introduction?.image ? `http://localhost:5000${destination.introduction.image}` : placeholderImage} 
+                                    src={getDisplayImageUrl(destination.introduction?.image)} 
                                     alt={destination.title} 
                                 />
                                 <div className="pydes-overlay"></div>

@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/auth/AvatarUpload.css';
 import { toast } from 'react-toastify';
 
@@ -13,8 +15,8 @@ const AvatarUpload = () => {
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
   
-  const defaultAvatar = 'https://via.placeholder.com/150';
-  const currentAvatarSrc = user?.avatar ? `http://localhost:5000${user.avatar}` : defaultAvatar;
+  // const defaultAvatar = 'https://via.placeholder.com/150'; // REMOVED unused variable
+  const currentAvatarSrc = getDisplayImageUrl(user?.avatar);
   const displaySrc = previewUrl || currentAvatarSrc;
 
   const triggerFileInput = () => {
@@ -71,7 +73,7 @@ const AvatarUpload = () => {
       
       const token = getToken();
       const response = await axios.post(
-        `http://localhost:5000/api/users/${user.id}/avatar`,
+        `${CONFIG.API_API_URL}/users/${user.id}/avatar`,
         formData,
         {
           headers: {

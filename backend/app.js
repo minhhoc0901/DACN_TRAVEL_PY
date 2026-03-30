@@ -46,9 +46,10 @@ const server = http.createServer(app);
 // --- Cấu hình CORS tập trung ---
 // Định nghĩa các origin được phép để sử dụng chung cho cả Express và Socket.IO
 const allowedOrigins = [
-    "http://localhost:3000",      // Web React
-    "http://10.0.2.2:3000",      // Web trên Android emulator (nếu dùng)
-];
+    "http://localhost:3000",
+    "http://10.0.2.2:3000",
+    process.env.FRONTEND_URL,
+].filter(Boolean);
 
 const corsOptions = {
     origin: allowedOrigins,
@@ -137,7 +138,7 @@ setupChatSocketWithAdmin(io);
 cron.schedule('* * * * *', async () => {
     console.log('[CRON] Running job to cancel expired bookings...');
     try {
-        const count = await Booking.cancelExpiredBookings(io); // ✅ TRUYỀN io
+        const count = await Booking.cancelExpiredBookings(io); // TRUYỀN io
         if (count > 0) {
             console.log(`[CRON] Cancelled ${count} expired bookings.`);
         }
@@ -152,7 +153,7 @@ cron.schedule('* * * * *', async () => {
 cron.schedule('0 0 * * *', async () => {
     console.log('[CRON] Checking for completed bookings...');
     try {
-        const count = await Booking.markCompletedBookings(io); // ✅ TRUYỀN io
+        const count = await Booking.markCompletedBookings(io); // TRUYỀN io
         if (count > 0) {
             console.log(`[CRON] Successfully marked ${count} bookings as completed.`);
         }

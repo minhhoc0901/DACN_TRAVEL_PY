@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { CONFIG } from "../../../config";
+import { getDisplayImageUrl } from "../../../utils/imageUtils";
 
 const LocationForm = ({
   formData,
@@ -8,17 +10,17 @@ const LocationForm = ({
   onCancel,
   selectedLocation = null,
   // availableLocations = [],
-  availableHotels = []
+  availableHotels = [],
+  isSubmitting = false
 }) => {
   const [availableLocations, setAvailableLocations] = useState([]);
   const [previewImages, setPreviewImages] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch available locations for nearby selection
   useEffect(() => {
     const fetchLocations = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/locations");
+        const response = await axios.get(`${CONFIG.API_API_URL}/locations`);
         setAvailableLocations(response.data);
       } catch (error) {
         console.error("Error fetching locations:", error);
@@ -52,8 +54,8 @@ const LocationForm = ({
       }
 
       // Set previews for cuisines
-      if (selectedLocation.cuisine && Array.isArray(selectedLocation.cuisine)) {
-        selectedLocation.cuisine.forEach((cuisine, index) => {
+      if (selectedLocation.cuisines && Array.isArray(selectedLocation.cuisines)) {
+        selectedLocation.cuisines.forEach((cuisine, index) => {
           if (cuisine.image) {
             newPreviews[`cuisine_${index}`] = cuisine.image;
           }
@@ -291,12 +293,12 @@ const LocationForm = ({
     ));
     locationFormData.append('travelMethods', JSON.stringify(formData.travelMethods || {}));
 
-    // Thêm experiences và cuisines (chỉ text)
+    // Thêm experiences và cuisines (chất lượng cao: gửi kèm ID nếu có)
     locationFormData.append('experiences', JSON.stringify(
-      (formData.experiences || []).map(exp => ({ text: exp.text }))
+      (formData.experiences || []).map(exp => ({ id: exp.id, text: exp.text }))
     ));
     locationFormData.append('cuisines', JSON.stringify(
-      (formData.cuisines || []).map(cuisine => ({ text: cuisine.text }))
+      (formData.cuisines || []).map(cuisine => ({ id: cuisine.id, text: cuisine.text }))
     ));
 
     // Handle file uploads for main images
@@ -427,11 +429,7 @@ const LocationForm = ({
             {previewImages.introduction && (
               <div className="current-image">
                 <img
-                  src={
-                    previewImages.introduction.startsWith("blob:")
-                      ? previewImages.introduction
-                      : `http://localhost:5000${previewImages.introduction}`
-                  }
+                  src={getDisplayImageUrl(previewImages.introduction)}
                   alt="Ảnh giới thiệu"
                   className="preview-image"
                   style={{ maxWidth: "200px", marginBottom: "10px" }}
@@ -479,11 +477,7 @@ const LocationForm = ({
             {previewImages.architecture && (
               <div className="current-image">
                 <img
-                  src={
-                    previewImages.architecture.startsWith("blob:")
-                      ? previewImages.architecture
-                      : `http://localhost:5000${previewImages.architecture}`
-                  }
+                  src={getDisplayImageUrl(previewImages.architecture)}
                   alt="Ảnh kiến trúc"
                   className="preview-image"
                   style={{ maxWidth: "200px", marginBottom: "10px" }}
@@ -702,13 +696,7 @@ const LocationForm = ({
                 {previewImages[`experience_${index}`] && (
                   <div className="current-image">
                     <img
-                      src={
-                        previewImages[`experience_${index}`].startsWith("blob:")
-                          ? previewImages[`experience_${index}`]
-                          : `http://localhost:5000${
-                              previewImages[`experience_${index}`]
-                            }`
-                      }
+                      src={getDisplayImageUrl(previewImages[`experience_${index}`])}
                       alt={`Trải nghiệm ${index + 1}`}
                       className="preview-image"
                       style={{ maxWidth: "200px", marginBottom: "10px" }}
@@ -773,13 +761,7 @@ const LocationForm = ({
                 {previewImages[`cuisine_${index}`] && (
                   <div className="current-image">
                     <img
-                      src={
-                        previewImages[`cuisine_${index}`].startsWith("blob:")
-                          ? previewImages[`cuisine_${index}`]
-                          : `http://localhost:5000${
-                              previewImages[`cuisine_${index}`]
-                            }`
-                      }
+                      src={getDisplayImageUrl(previewImages[`cuisine_${index}`])}
                       alt={`Ẩm thực ${index + 1}`}
                       className="preview-image"
                       style={{ maxWidth: "200px", marginBottom: "10px" }}

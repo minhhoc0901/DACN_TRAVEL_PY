@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/ChatBot/ChatBox.css';
 
 
@@ -57,7 +58,7 @@ const ChatMessage = ({ message, userAvatar }) => {
         <div className="avatar-content user-avatar">👤</div> // Avatar mặc định
       ) : (
         <img
-          src={`http://localhost:5000${userAvatar}`} // Đường dẫn avatar của người dùng
+          src={getDisplayImageUrl(userAvatar)} // Đường dẫn avatar của người dùng
           alt="User Avatar"
           onError={handleImageError}
           className="avatar-image"

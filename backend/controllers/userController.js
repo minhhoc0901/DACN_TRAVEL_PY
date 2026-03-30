@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { validateUpdateProfile, validateChangePassword } = require('../utils/validators/authValidator');
 const sanitizers = require('../utils/validators/sanitizers');
+const { uploadToCloudinary, removeFromCloudinary, getPublicIdFromUrl } = require('../utils/cloudinaryHelper');
 
 // Lấy danh sách tất cả người dùng (chỉ admin)
 exports.getAllUsers = async (req, res) => {
@@ -370,12 +371,6 @@ exports.uploadAvatar = async (req, res) => {
       });
     }
 
-    // Tạo thư mục lưu trữ nếu chưa tồn tại
-    const uploadDir = path.join(__dirname, '../uploads/avatars');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-
     // Lấy thông tin user để kiểm tra avatar cũ
     const user = await User.findById(userId);
     if (!user) {
@@ -385,34 +380,23 @@ exports.uploadAvatar = async (req, res) => {
         });
     }
 
-    // Đặt tên file unique để tránh trùng lặp
-    const fileName = `user_${userId}_${Date.now()}${path.extname(avatarFile.name)}`;
-    const filePath = path.join(uploadDir, fileName);
-    const avatarUrl = `/uploads/avatars/${fileName}`;
+    // --- CLOUDINARY UPLOAD ---
+    const cloudResult = await uploadToCloudinary(avatarFile.data, 'avatars');
+    const avatarUrl = cloudResult.url;
 
-    // Kiểm tra và xóa avatar cũ nếu có
-    if (user.avatar) {
-      const oldAvatarPath = path.join(__dirname, '..', user.avatar);
-      if (fs.existsSync(oldAvatarPath)) {
-        try {
-            fs.unlinkSync(oldAvatarPath);
-        } catch (unlinkError) {
-            console.error('Failed to delete old avatar:', unlinkError);
-            // Có thể bỏ qua lỗi này và tiếp tục, hoặc xử lý tùy theo yêu cầu
-        }
+    // Kiểm tra và xóa avatar cũ trên Cloudinary (nếu có)
+    if (user.avatar && user.avatar.includes('cloudinary')) {
+      const publicId = getPublicIdFromUrl(user.avatar);
+      if (publicId) {
+        await removeFromCloudinary(publicId);
       }
     }
-
-    // Lưu file mới
-    await avatarFile.mv(filePath);
 
     // Cập nhật đường dẫn avatar trong database
     const updated = await User.updateUser(userId, { avatar: avatarUrl });
     if (!updated) {
-        // Nếu việc cập nhật DB thất bại, có thể bạn muốn xóa file vừa tải lên
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
+        // Nếu cập nhật DB thất bại, xóa ảnh vừa upload lên Cloudinary
+        await removeFromCloudinary(cloudResult.public_id);
         return res.status(500).json({
             success: false,
             message: 'Không thể cập nhật thông tin avatar trong cơ sở dữ liệu.'

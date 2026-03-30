@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../contexts/AuthContext';
 import { tourDepartureService } from '../../services/tourDepartureService';
 import axios from 'axios';
+import { CONFIG } from '../../config';
 import '../../styles/admin/TourDepartureManagement.css';
 
 const TourDepartureManagement = () => {
@@ -54,13 +55,8 @@ const TourDepartureManagement = () => {
         return;
       }
 
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Accept': 'application/json'
-      };
-
-      // Lấy danh sách tours để map
-      const toursResponse = await axios.get('http://localhost:5000/api/tours/admin/tours', { headers });
+      const headers = { Authorization: `Bearer ${getToken()}` };
+      const toursResponse = await axios.get(`${CONFIG.API_API_URL}/tours/admin/tours`, { headers });
       const tours = toursResponse.data.success ? toursResponse.data.tours : [];
       const tourMapping = {};
       tours.forEach(tour => {

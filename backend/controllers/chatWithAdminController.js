@@ -1,5 +1,6 @@
 
 const Chat = require('../models/chatWithAdmin');
+const { uploadToCloudinary } = require('../utils/cloudinaryHelper');
 
 // Lấy lịch sử chat (chủ yếu cho debug, vì app dùng socket)
 exports.getConversation = async (req, res) => {
@@ -94,29 +95,16 @@ exports.uploadImage = (req, res) => {
     const imageFiles = Array.isArray(filesToProcess) ? filesToProcess : [filesToProcess];
     
     const uploadPromises = imageFiles.map(imageFile => {
-        return new Promise((resolve, reject) => {
-            // Tạo tên file và đường dẫn duy nhất
-            const uploadPath = `uploads/chat_admin_images/${Date.now()}_${imageFile.name}`;
-            
-            // Di chuyển file vào thư mục uploads
-            imageFile.mv(uploadPath, (err) => {
-                if (err) {
-                    console.error('[Controller] Lỗi khi di chuyển file:', err);
-                    return reject(err);
-                }
-                // Resolve với đường dẫn tương đối, đúng cấu trúc database
-                resolve(`/${uploadPath}`);
-            });
-        });
+        // --- CLOUDINARY UPLOAD ---
+        return uploadToCloudinary(imageFile.data, 'chat_admin_images').then(res => res.url);
     });
 
     // Chờ tất cả các file được upload xong
     Promise.all(uploadPromises)
         .then(imageUrls => {
-            console.log('[Controller] Upload thành công, các URL:', imageUrls);
+            console.log('[Controller] Upload lên Cloudinary thành công, các URL:', imageUrls);
             
             // Trả về response thành công
-            // 'imageUrls' cho web, và 'url' cho mobile để tương thích ngược
             res.json({
                 success: true,
                 message: `Đã tải lên thành công ${imageUrls.length} ảnh.`,
@@ -125,7 +113,7 @@ exports.uploadImage = (req, res) => {
             });
         })
         .catch(err => {
-            console.error('[Controller] Lỗi trong quá trình xử lý nhiều file:', err);
+            console.error('[Controller] Lỗi trong quá trình upload lên Cloudinary:', err);
             res.status(500).json({ success: false, message: 'Lỗi server khi upload file.' });
         });
 };

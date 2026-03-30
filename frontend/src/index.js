@@ -1,6 +1,6 @@
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
-import 'bootstrap-icons/font/bootstrap-icons.css'; 
+import 'bootstrap-icons/font/bootstrap-icons.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
@@ -10,6 +10,15 @@ import './styles/show/footer.css';
 import './styles/HomePageCSS/HomePage.css';
 import './styles/animations.css';
 import { AuthProvider } from './contexts/AuthContext';
+
+// Vô hiệu hóa toàn bộ console log trong môi trường production (hoặc luôn luôn theo yêu cầu)
+if (process.env.NODE_ENV === 'production' || true) {
+    console.log = () => { };
+    console.debug = () => { };
+    console.info = () => { };
+    console.warn = () => { };
+    console.error = () => { };
+}
 
 const style = document.createElement('style');
 style.textContent = `
@@ -37,14 +46,12 @@ style.textContent = `
         position: relative;
     }
     
-    /* ✅ MAIN CONTENT - CHỈ PADDING TOP CHO TRANG THƯỜNG */
     .main-content {
         flex: 1;
         min-height: calc(100vh - 80px);
-        padding-top: 80px; /* Padding cho trang có header */
+        padding-top: 80px;
     }
     
-    /* ✅ ADMIN PAGE - KHÔNG PADDING TOP */
     .main-content.admin-page {
         padding-top: 0 !important;
         margin-top: 0 !important;

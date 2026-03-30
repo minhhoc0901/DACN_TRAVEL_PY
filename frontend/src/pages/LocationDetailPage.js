@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom"; 
 import axios from "axios";
+import { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
+import { CONFIG } from "../config";
+import { getDisplayImageUrl } from "../utils/imageUtils";
 import "../styles/LocationCSS/LocationDetailPage.css";
 // Import all components
 import WeatherSection from "../components/LocationDetail/WeatherSection";
@@ -47,7 +49,9 @@ const LocationDetailPage = () => {
   useEffect(() => {
     const fetchLocation = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/locations/${id}`, {
+        setLoading(true);
+        const response = await axios.get(`${CONFIG.API_API_URL}/locations/${id}`, {
+          timeout: 5000, // Thêm timeout để tránh treo
           headers: {
             "Content-Type": "application/json",
           },
@@ -110,12 +114,9 @@ const LocationDetailPage = () => {
   if (error) return <div className="location-detail-page container mx-auto p-4"><p>Lỗi: {error}</p></div>;
   if (!location) return <div className="location-detail-page container mx-auto p-4"><p>Không tìm thấy địa điểm!</p></div>;
 
-  // Function to construct image URL (if using express.static or S3/Cloudinary)
+  // Function to construct image URL
   const getImageUrl = (imagePath) => {
-    if (!imagePath || typeof imagePath !== "string") {
-      return "https://via.placeholder.com/300x200?text=No+Image";
-    }
-    return `http://localhost:5000${imagePath}`;
+    return getDisplayImageUrl(imagePath);
   };
 
   return (

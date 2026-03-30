@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getDisplayImageUrl } from '../utils/imageUtils';
+import React, { useState, useEffect } from 'react';
+import { CONFIG } from '../config';
 import '../styles/LocationCSS/LocationListPage.css';
 import { motion } from 'framer-motion'; // Thêm framer-motion cho hiệu ứng
 
@@ -41,7 +43,7 @@ function ApiLocationList() {
         const fetchLocations = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('http://localhost:5000/api/locations', {
+                const response = await fetch(`${CONFIG.API_API_URL}/locations`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json'
@@ -289,10 +291,7 @@ function ApiLocationList() {
                                         <div className="location-card-media">
                                             <div className="location-card-image">
                                                 <img
-                                                    src={location.introduction?.image 
-                                                        ? `http://localhost:5000${location.introduction.image}` 
-                                                        : 'https://images.unsplash.com/photo-1500964757637-c85e8a162699?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60'
-                                                    }
+                                                    src={getDisplayImageUrl(location.introduction?.image)}
                                                     alt={location.title || 'Hình ảnh địa điểm'}
                                                 />
                                             </div>

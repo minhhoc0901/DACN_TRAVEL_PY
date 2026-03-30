@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react'; 
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios'; 
+import { CONFIG } from '../../config';
 import TourHeader from './TourHeader';
 import TourNavigation from './TourNavigation';
 import TourTabContent from './TourTabContent';
@@ -26,7 +27,7 @@ const ItineraryDetail = () => {
   const fetchTourAndReviews = useCallback(async () => { // Wrap with useCallback
     setLoading(true);
     try {
-      const tourResponse = await axios.get(`http://localhost:5000/api/tours/${tourId}`);
+      const tourResponse = await axios.get(`${CONFIG.API_API_URL}/tours/${tourId}`);
       if (!tourResponse.data.success) throw new Error(tourResponse.data.message || 'Không thể tải thông tin tour');
       
       const fetchedTour = tourResponse.data.tour;
@@ -88,7 +89,7 @@ const ItineraryDetail = () => {
         ];
       setTour(fetchedTour);
 
-      const reviewsResponse = await axios.get(`http://localhost:5000/api/reviews/tour/${tourId}`);
+      const reviewsResponse = await axios.get(`${CONFIG.API_API_URL}/reviews/tour/${tourId}`);
       if (reviewsResponse.data.success) {
         setReviews(reviewsResponse.data.reviews || []);
       } else {
@@ -126,7 +127,7 @@ const ItineraryDetail = () => {
 
     try {
       const token = getToken();
-      const response = await axios.post('http://localhost:5000/api/reviews', formData, {
+      const response = await axios.post(`${CONFIG.API_API_URL}/reviews`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`

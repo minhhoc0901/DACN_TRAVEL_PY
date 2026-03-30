@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import TourList from "../../components/admin/Tour/TourList";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { CONFIG } from "../../config";
 import EditTourModal from "../../components/admin/Tour/EditTourModal";
 import AddTourModal from "../../components/admin/Tour/AddTourModal";
 
@@ -79,8 +80,7 @@ const TourManagement = () => {
         return;
       }
 
-      // Use the new endpoint for fetching tours with proper filtering
-      const response = await axios.get("http://localhost:5000/api/tours", {
+      const response = await axios.get(`${CONFIG.API_API_URL}/tours`, {
         headers: {
           Authorization: `Bearer ${currentToken}`,
         },
@@ -90,13 +90,11 @@ const TourManagement = () => {
       console.log("API response data:", response.data);
 
       if (response.data.success) {
-        // Chuẩn hóa dữ liệu tour để đảm bảo có trạng thái
         let normalizedTours = response.data.tours.map((tour) => ({
           ...tour,
           status: tour.status || "pending",
         }));
 
-        // Log số lượng tour theo từng trạng thái
         const pending = normalizedTours.filter(
           (t) => t.status === "pending"
         ).length;
@@ -120,7 +118,6 @@ const TourManagement = () => {
     } catch (error) {
       console.error("Error fetching tours:", error);
 
-      // Log chi tiết lỗi
       if (error.response) {
         console.log("Error response status:", error.response.status);
         console.log("Error response data:", error.response.data);
@@ -147,11 +144,9 @@ const TourManagement = () => {
     fetchTours();
   }, [fetchTours]);
 
-  // Hàm lọc tour theo tab
   const filteredTours = tours.filter((tour) => {
     const tourStatus = tour.status || "pending";
     
-    // ✅ SỬA LỖI: Chuyển is_active về boolean một cách rõ ràng
     const isActive = Boolean(tour.is_active);
 
     if (activeTab === "all") return isActive;
@@ -161,12 +156,10 @@ const TourManagement = () => {
     return isActive && tourStatus === activeTab;
   });
 
-  // Thêm log kết quả lọc
   console.log(
     `Lọc theo tab '${activeTab}': ${filteredTours.length}/${tours.length} tours`
   );
 
-  // HÀM KHÔI PHỤC TOUR
   const handleRestoreTour = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn khôi phục tour này không? Tour sẽ được đặt lại về trạng thái "Chờ duyệt".')) return;
 
@@ -174,13 +167,12 @@ const TourManagement = () => {
       setProcessingTourId(id);
       const currentToken = getToken();
       
-      const response = await axios.put(`http://localhost:5000/api/tours/admin/tours/${id}/restore`, {}, {
+      const response = await axios.put(`${CONFIG.API_API_URL}/tours/admin/tours/${id}/restore`, {}, {
         headers: { 'Authorization': `Bearer ${currentToken}` }
       });
       
       if (response.data.success) {
         toast.success('Tour đã được khôi phục và đặt lại về trạng thái "Chờ duyệt" thành công!');
-        // ✅ CẬP NHẬT: Vừa đặt is_active = true, vừa đặt status = 'pending'
         setTours((prevTours) =>
           prevTours.map((tour) =>
             tour.id === id ? { ...tour, is_active: true, status: 'pending' } : tour
@@ -214,7 +206,7 @@ const TourManagement = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/tours/admin/tours/${id}/hide`,
+        `${CONFIG.API_API_URL}/tours/admin/tours/${id}/hide`,
         {},
         {
           headers: { Authorization: `Bearer ${currentToken}` },
@@ -223,7 +215,6 @@ const TourManagement = () => {
 
       if (response.data.success) {
         toast.success("Tour đã được ẩn và chuyển sang trạng thái 'Từ chối' thành công!");
-        // ✅ CẬP NHẬT: Vừa đặt is_active = false, vừa đặt status = 'rejected'
         setTours((prevTours) =>
           prevTours.map((tour) =>
             tour.id === id ? { ...tour, is_active: false, status: 'rejected' } : tour
@@ -254,17 +245,15 @@ const TourManagement = () => {
         return;
       }
 
-      // Check if user has permission to delete this tour
       const tourToDelete = tours.find((tour) => tour.id === id);
 
-      // Only allow deletion if admin or the tour creator
       if (user.role !== "admin" && tourToDelete.user_id !== user.id) {
         toast.error("Bạn không có quyền xóa tour này!");
         return;
       }
 
       const response = await axios.delete(
-        `http://localhost:5000/api/tours/${id}`,
+        `${CONFIG.API_API_URL}/tours/${id}`,
         {
           headers: {
             Authorization: `Bearer ${currentToken}`,
@@ -289,7 +278,6 @@ const TourManagement = () => {
   };
 
   const handleEditTour = (tour) => {
-    // Only allow editing if admin or the tour creator
     if (user.role !== "admin" && tour.user_id !== user.id) {
       toast.error("Bạn không có quyền chỉnh sửa tour này!");
       return;
@@ -309,7 +297,6 @@ const TourManagement = () => {
         return;
       }
 
-      // Convert formData to appropriate format for API
       const tourData = new FormData();
       Object.keys(formData).forEach((key) => {
         if (key !== "image") {
@@ -325,24 +312,22 @@ const TourManagement = () => {
         tourData.append("image", formData.image);
       }
 
-      // When regular user edits, set status back to pending
       if (user.role !== "admin") {
         tourData.append("status", "pending");
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/tours/${currentTour.id}`,
+        `${CONFIG.API_API_URL}/tours/${currentTour.id}`,
         tourData,
         {
           headers: {
             Authorization: `Bearer ${currentToken}`,
-            "Content-Type": "multipart/form-data",
           },
         }
       );
 
       if (response.data.success) {
-        fetchTours(); // Refresh tour list
+        fetchTours();
         setShowEditModal(false);
         toast.success("Tour đã được cập nhật thành công!");
       }
@@ -354,8 +339,6 @@ const TourManagement = () => {
     }
   };
 
-  // Cách sửa khi sử dụng FormData để gửi dữ liệu với file ảnh
-
   const handleAddTour = async (formData) => {
     try {
       setIsSubmitting(true);
@@ -366,7 +349,6 @@ const TourManagement = () => {
         return;
       }
 
-      // Kiểm tra các trường bắt buộc
       if (
         !formData.destination ||
         !formData.departure_from ||
@@ -378,7 +360,6 @@ const TourManagement = () => {
         return;
       }
 
-      // Xử lý lịch trình
       if (
         !formData.schedule ||
         !Array.isArray(formData.schedule) ||
@@ -389,7 +370,6 @@ const TourManagement = () => {
         return;
       }
 
-      // Chuẩn bị dữ liệu tour
       const tourData = {
         destination: formData.destination,
         departure_from: formData.departure_from,
@@ -424,14 +404,11 @@ const TourManagement = () => {
           : [],
       };
 
-      // Xử lý ảnh nếu có
       if (formData.image instanceof File) {
         const tourFormData = new FormData();
 
-        // Thêm file ảnh
         tourFormData.append("image", formData.image);
 
-        // Thêm các trường dữ liệu đơn giản
         tourFormData.append("destination", tourData.destination);
         tourFormData.append("departure_from", tourData.departure_from);
         if (tourData.departure_date)
@@ -441,7 +418,6 @@ const TourManagement = () => {
         tourFormData.append("duration", tourData.duration);
         tourFormData.append("description", tourData.description);
 
-        // Chuyển đổi các trường mảng thành JSON
         tourFormData.append("highlights", JSON.stringify(tourData.highlights));
         tourFormData.append("schedule", JSON.stringify(tourData.schedule));
         tourFormData.append("includes", JSON.stringify(tourData.includes));
@@ -452,26 +428,12 @@ const TourManagement = () => {
           JSON.stringify(tourData.selected_location_ids)
         );
 
-        // Log để kiểm tra
-        console.log("FormData sent:");
-        for (const pair of tourFormData.entries()) {
-          const value = pair[1];
-          const displayValue =
-            typeof value === "object"
-              ? value instanceof File
-                ? `File: ${value.name}`
-                : "Object"
-              : value;
-          console.log(`${pair[0]}: ${displayValue}`);
-        }
-
         const response = await axios.post(
-          "http://localhost:5000/api/tours",
+          `${CONFIG.API_API_URL}/tours`,
           tourFormData,
           {
             headers: {
               Authorization: `Bearer ${currentToken}`,
-              "Content-Type": "multipart/form-data",
             },
           }
         );
@@ -483,9 +445,8 @@ const TourManagement = () => {
           fetchTours();
         }
       } else {
-        // Gửi dữ liệu JSON khi không có ảnh
         const response = await axios.post(
-          "http://localhost:5000/api/tours",
+          `${CONFIG.API_API_URL}/tours`,
           tourData,
           {
             headers: {
@@ -518,7 +479,6 @@ const TourManagement = () => {
       setIsSubmitting(false);
     }
   };
-  // Thêm hàm resetFormData để reset form data sau khi thêm thành công
   const resetFormData = () => {
     setNewTourFormData({
       destination: "",
@@ -543,23 +503,25 @@ const TourManagement = () => {
     });
   };
 
-  // eslint-disable-next-line no-unused-vars
+  /* REMOVED unused variable
   const getStatusBadge = (status) => {
     switch (status) {
       case "approved":
-        return <span className="status-badge approved">Đã duyệt</span>;
+        return <span className="status-badge status-approved">Đã duyệt</span>;
+      case "pending":
+        return <span className="status-badge status-pending">Chờ duyệt</span>;
       case "rejected":
-        return <span className="status-badge rejected">Từ chối</span>;
+        return <span className="status-badge status-rejected">Từ chối</span>;
       default:
-        return <span className="status-badge pending">Chờ duyệt</span>;
+        return <span className="status-badge">{status}</span>;
     }
   };
+  */
 
   const canModerateContent = useCallback(() => {
     return user?.role === "admin";
   }, [user]);
 
-  // Hàm approve tour
   const handleApproveTour = async (tourId) => {
     try {
       console.log("[TourManagement] Approve tour:", tourId);
@@ -572,7 +534,7 @@ const TourManagement = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/tours/admin/tours/${tourId}/approve`,
+        `${CONFIG.API_API_URL}/tours/admin/tours/${tourId}/approve`,
         {},
         {
           headers: {
@@ -602,7 +564,6 @@ const TourManagement = () => {
     }
   };
 
-  // Hàm reject tour
   const handleRejectTour = async (tourId) => {
     try {
       console.log("[TourManagement] Reject tour:", tourId);
@@ -615,7 +576,7 @@ const TourManagement = () => {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/tours/admin/tours/${tourId}/reject`,
+        `${CONFIG.API_API_URL}/tours/admin/tours/${tourId}/reject`,
         {},
         {
           headers: {
@@ -649,6 +610,7 @@ const TourManagement = () => {
 
   return (
     <div className="tour-management">
+      <ToastContainer />
       <div className="tour-header-wrapper">
         <h1 className="page-title">
           {user?.role === "admin" ? "Quản lý kế hoạch" : "Tour của tôi"}
@@ -723,6 +685,7 @@ const TourManagement = () => {
           onClose={() => setShowEditModal(false)}
           formData={currentTour}
           setFormData={setCurrentTour}
+          tourId={currentTour.id} // ✅ BỔ SUNG: Truyền ID để modal fetch full data
           onSubmit={handleSubmitEdit}
           isSubmitting={isSubmitting}
         />

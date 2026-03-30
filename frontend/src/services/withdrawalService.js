@@ -1,6 +1,7 @@
 import { getAuthToken } from '../contexts/AuthContext';
+import { CONFIG } from '../config';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = CONFIG.API_API_URL;
 
 /**
  * Xử lý response từ API

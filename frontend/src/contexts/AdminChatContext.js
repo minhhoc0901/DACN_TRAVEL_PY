@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { CONFIG } from '../config';
 
 const AdminChatContext = createContext();
 
@@ -46,7 +47,7 @@ export const AdminChatProvider = ({ children }) => {
 
         console.log('[AdminChat] Initializing socket connection for admin:', adminId);
         
-        const newSocket = io('http://localhost:5000', {
+        const newSocket = io(CONFIG.API_URL, {
             transports: ['websocket'],
             auth: { token }
         });
@@ -172,7 +173,7 @@ export const AdminChatProvider = ({ children }) => {
             fetchUsersCalledRef.current = true;
             setLoading(true);
             
-            const response = await fetch('http://localhost:5000/api/chatwithadmin/users', {
+            const response = await fetch(`${CONFIG.API_URL}/api/chatwithadmin/users`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -224,7 +225,7 @@ export const AdminChatProvider = ({ children }) => {
             const userId = user.id || user;
             
             const response = await fetch(
-                `http://localhost:5000/api/chatwithadmin/conversation?userId1=${adminId}&userId2=${userId}`,
+                `${CONFIG.API_URL}/api/chatwithadmin/conversation?userId1=${adminId}&userId2=${userId}`,
                 {
                     method: 'GET',
                     headers: {
