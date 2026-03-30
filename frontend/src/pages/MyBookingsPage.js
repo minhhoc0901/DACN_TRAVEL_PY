@@ -118,7 +118,7 @@ const MyBookingsPage = () => {
         const departureDate = new Date(booking.departure_date);
         const now = new Date();
         const daysUntilDeparture = Math.ceil((departureDate - now) / (1000 * 60 * 60 * 24));
-        // const daysUntilDeparture = Math.ceil(timeDiff / (1000 * 3600 * 24)); // REMOVED unused variable
+
         let refund_percent = 0;
         if (daysUntilDeparture >= 15) refund_percent = 100;
         else if (daysUntilDeparture >= 7) refund_percent = 80;

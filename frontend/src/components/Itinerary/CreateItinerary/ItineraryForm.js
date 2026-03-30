@@ -23,7 +23,7 @@ export const ItineraryForm = () => {
     departureDate: '',
     returnDate: '',
     duration: '',
-    selected_location_ids: [], // Thay đổi từ selected_location_id thành selected_location_ids
+    selected_location_ids: [], 
     image: '/assets/uploads/locations/1/1-exp-3.jpg',
     coverImage: null,
     description: '',
@@ -62,8 +62,7 @@ export const ItineraryForm = () => {
       if (diffDays > 0) {
         const newSchedule = [];
         
-        // Phân bổ các địa điểm cho các ngày
-        const locationIds = [...formData.selected_location_ids]; // Tạo bản sao để không ảnh hưởng gốc
+        const locationIds = [...formData.selected_location_ids]; 
         const locationsPerDay = Math.ceil(locationIds.length / diffDays);
         
         for (let i = 0; i < diffDays; i++) {
@@ -73,7 +72,6 @@ export const ItineraryForm = () => {
           let title = "";
           let defaultActivities = [];
           
-          // Code hiện tại cho việc thiết lập tiêu đề và hoạt động mặc định
           if (i === 0) {
             title = "TP.HCM - TUY HÒA - THÁP NGHINH PHONG";
             defaultActivities = [
@@ -136,7 +134,6 @@ export const ItineraryForm = () => {
     });
   };
 
-  // Sửa hàm handleNextStep
   const handleNextStep = () => {
     // Thêm console.log để debug
     console.log(`Moving from step ${currentStep} to ${Math.min(currentStep + 1, 5)}`);
@@ -311,7 +308,7 @@ export const ItineraryForm = () => {
     return <TourCreationSuccess tourData={createdTour} />;
   }
 
-  // Thêm hàm này vào component ItineraryForm
+  
   const updateLocationsInSchedule = (locationIds) => {
     if (!formData.schedule || formData.schedule.length === 0) return;
     

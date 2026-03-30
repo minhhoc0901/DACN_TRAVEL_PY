@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
 import { CONFIG } from '../../../config';
 import { getDisplayImageUrl } from '../../../utils/imageUtils';
-import '../../../styles/admin/NotificationManagement.css';
 
 const BulkNotificationModal = ({ onClose, onSend }) => {
   const { getToken } = useAuth();
@@ -21,10 +20,10 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
   useEffect(() => {
     console.log('[BulkNotificationModal] Component mounted!');
     fetchUsers();
-    
+
     // Khóa scroll body khi modal mở
     document.body.style.overflow = 'hidden';
-    
+
     return () => {
       // Mở lại scroll khi modal đóng
       document.body.style.overflow = 'auto';
@@ -66,14 +65,14 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
     const newUserIds = formData.userIds.includes(userId)
       ? formData.userIds.filter(id => id !== userId)
       : [...formData.userIds, userId];
-    
+
     setFormData({ ...formData, userIds: newUserIds });
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log('[BulkNotificationModal] Submitting:', formData);
-    
+
     if (formData.userIds.length === 0) {
       alert('Vui lòng chọn ít nhất một người dùng');
       return;
@@ -106,8 +105,8 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
 
   return (
     <div className="qltb-modal-overlay" onClick={handleOverlayClick}>
-      <div 
-        className="qltb-modal-content qltb-bulk-modal" 
+      <div
+        className="qltb-modal-content qltb-bulk-modal"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="qltb-modal-header">
@@ -126,7 +125,7 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
                 <h4>Chọn người nhận</h4>
                 <span className="qltb-user-count">{formData.userIds.length} được chọn</span>
               </div>
-              
+
               <div className="qltb-search-box">
                 <i className="bi bi-search"></i>
                 <input
