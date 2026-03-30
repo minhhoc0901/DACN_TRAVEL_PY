@@ -411,7 +411,7 @@
 .schedule-timeline::before {
   content: '';
   position: absolute;
-  left: 28.5px; /* Căn giữa đường kẻ ( (60px padding / 2) - (3px line width / 2) ) */
+  left: 28.5px; /* Can giua duong ke */
   top: 15px;
   bottom: 15px;
   width: 3px;
@@ -427,12 +427,7 @@
 
 .schedule-day-marker {
   position: absolute;
-  /* Căn marker (rộng 40px) vào giữa đường kẻ:
-     left = ( (padding-left của timeline / 2) - (chiều rộng marker / 2) ) - padding-left của timeline
-          = ( (60px / 2) - (40px / 2) ) - 60px
-          = (30px - 20px) - 60px
-          = 10px - 60px = -50px
-  */
+  /* Can marker (rong 40px) vao giua duong ke */
   left: -50px; 
   top: 5px;
   width: 40px;

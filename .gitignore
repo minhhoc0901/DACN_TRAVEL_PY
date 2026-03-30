@@ -20,7 +20,11 @@ node_modules/
 
 # database and secrets
 .env
+.env.*
+*.env
 backend/.env
+frontend/.env
+frontend/src/.env
 backend/uploads/
 node_modules/
 

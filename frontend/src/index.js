@@ -12,7 +12,7 @@ import './styles/animations.css';
 import { AuthProvider } from './contexts/AuthContext';
 
 // Vô hiệu hóa toàn bộ console log trong môi trường production (hoặc luôn luôn theo yêu cầu)
-if (process.env.NODE_ENV === 'production' || true) {
+if (process.env.NODE_ENV === 'production') {
     console.log = () => { };
     console.debug = () => { };
     console.info = () => { };

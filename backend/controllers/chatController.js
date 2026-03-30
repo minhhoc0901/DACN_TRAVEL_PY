@@ -1,5 +1,5 @@
 const Chat = require('../models/Chat');
-const ChatbotService = require('../utils/chatbotService');
+const ChatbotService = require('../utils/chatBotService');
 
 exports.sendMessage = async (req, res) => {
   try {
