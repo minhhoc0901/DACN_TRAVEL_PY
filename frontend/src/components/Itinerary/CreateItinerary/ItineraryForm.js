@@ -8,6 +8,7 @@ import { FormNavigation } from './components/FormNavigation';
 import { ProcessingOverlay } from './components/ProcessingOverlay';
 import { TourCreationSuccess } from './components/TourCreationSuccess';
 import axios from 'axios';
+import { CONFIG } from '../../../config';
 import { useAuth } from '../../../contexts/AuthContext'; // Sửa từ context thành contexts
 
 export const ItineraryForm = () => {
@@ -232,7 +233,7 @@ export const ItineraryForm = () => {
       
       // Gửi dữ liệu đến API với token xác thực
       const response = await axios.post(
-        'http://localhost:5000/api/tours', 
+        `${CONFIG.API_API_URL}/tours`, 
         tourFormData,
         {
           headers: {

@@ -1,5 +1,5 @@
 const Hotel = require('../models/Hotel');
-const path = require('path');
+const { uploadToCloudinary } = require('../utils/cloudinaryHelper');
 
 /**
  * Lấy tất cả khách sạn
@@ -89,11 +89,9 @@ exports.createHotel = async (req, res) => {
                 });
             }
 
-            const fileName = `${Date.now()}-${file.name}`;
-            const uploadPath = path.join(__dirname, '../uploads/hotels', fileName);
-
-            await file.mv(uploadPath);
-            hotelData.image = `/uploads/hotels/${fileName}`;
+            // --- CLOUDINARY UPLOAD ---
+            const cloudResult = await uploadToCloudinary(file.data, 'hotels');
+            hotelData.image = cloudResult.url;
         }
 
         const newHotel = await Hotel.create(hotelData);
@@ -150,11 +148,9 @@ exports.updateHotel = async (req, res) => {
                 });
             }
 
-            const fileName = `${Date.now()}-${file.name}`;
-            const uploadPath = path.join(__dirname, '../uploads/hotels', fileName);
-
-            await file.mv(uploadPath);
-            hotelData.image = `/uploads/hotels/${fileName}`;
+            // --- CLOUDINARY UPLOAD ---
+            const cloudResult = await uploadToCloudinary(file.data, 'hotels');
+            hotelData.image = cloudResult.url;
         } else if (!hotelData.image) {
             // Giữ nguyên ảnh cũ nếu không có ảnh mới
             hotelData.image = existingHotel.image;

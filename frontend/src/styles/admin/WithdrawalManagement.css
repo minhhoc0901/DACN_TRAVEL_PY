@@ -103,6 +103,7 @@
     display: flex;
     gap: 16px;
     align-items: flex-end;
+    flex-wrap: wrap;
 }
 
 .filter-group {
@@ -534,4 +535,45 @@
     .withdrawal-table tbody td {
         padding: 10px 8px;
     }
+}
+
+/* ==================== SIÊU ƯU TIÊN CHO NÚT RESET ==================== */
+div.withdrawal-management .filters-section .filters-row .filter-group-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    margin-left: auto !important;
+    justify-content: flex-end !important;
+}
+
+div.withdrawal-management .filters-section .filters-row .filter-group-actions .btn-reset {
+    height: 42px !important;
+    min-height: 42px !important;
+    padding: 0 24px !important;
+    background-color: #ffffff !important;
+    color: #5a6268 !important;
+    border: 1.5px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    width: auto !important;
+    box-shadow: none !important;
+    margin-bottom: 20px;
+}
+
+div.withdrawal-management .filters-section .filters-row .filter-group-actions .btn-reset:hover {
+    background-color: #f8f9fa !important;
+    border-color: #667eea !important;
+    color: #667eea !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
+    transform: translateY(-1px);
+}
+
+.withdrawal-management .btn-reset i {
+    font-size: 16px;
 }

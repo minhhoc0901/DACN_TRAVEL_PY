@@ -3,6 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../../contexts/AuthContext';
 import { hotelService } from '../../services/hotelService';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/admin/HotelManagement.css';
 
 const HotelManagement = () => {
@@ -68,7 +69,7 @@ const HotelManagement = () => {
       price_range: hotel.price_range || '',
       description: hotel.description || '',
       image: hotel.image || null,
-      imagePreview: hotel.image ? `http://localhost:5000${hotel.image}` : null
+      imagePreview: getDisplayImageUrl(hotel.image)
     });
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -452,7 +453,7 @@ const HotelManagement = () => {
                     <td>
                       {hotel.image ? (
                         <img
-                          src={`http://localhost:5000${hotel.image}`}
+                          src={getDisplayImageUrl(hotel.image)}
                           alt={hotel.name}
                           className="hotel-thumbnail"
                         />

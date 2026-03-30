@@ -88,7 +88,7 @@ const HeroSection = () => {
                             </Link>
                             <Link to="/itinerary-planner" className="hero-btn hero-btn-secondary">
                                 <i className="bi bi-stars"></i>
-                                <span>Lịch trình AI</span>
+                                <span>Gợi ý lịch trình thông minh</span>
                             </Link>
                             <Link to="/locations" className="hero-btn hero-btn-outline">
                                 <i className="bi bi-map"></i>

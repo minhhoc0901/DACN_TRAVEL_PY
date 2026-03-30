@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/itineraryCSS/Itinerary.css'; 
 
 const ItineraryModule = () => {
@@ -29,8 +31,8 @@ const ItineraryModule = () => {
       const signal = abortRef.current.signal;
 
       const url = query
-        ? `http://localhost:5000/api/tours/search?query=${encodeURIComponent(query)}`
-        : 'http://localhost:5000/api/tours';
+        ? `${CONFIG.API_API_URL}/tours/search?query=${encodeURIComponent(query)}`
+        : `${CONFIG.API_API_URL}/tours`;
 
       const response = await axios.get(url, { signal });
       const data = response.data && (response.data.tours || response.data || []);
@@ -175,7 +177,7 @@ const ItineraryModule = () => {
             <i className="bi bi-plus-circle-fill"></i> Tạo Lịch Trình Mới
           </Link>
           <Link to="/itinerary-planner" className="itinerary-btn itinerary-btn-ai">
-            <i className="bi bi-stars"></i> Lịch trình AI thông minh
+            <i className="bi bi-stars"></i> Gợi ý lịch trình thông minh
           </Link>
           <Link to="/user/my-tours" className="itinerary-btn itinerary-btn-secondary">
             <i className="bi bi-person-badge"></i> Lịch Trình Của Tôi
@@ -250,16 +252,14 @@ const TourCard = ({ tour }) => {
   };
 
   const authorName = tour.full_name || tour.username || `Người dùng #${tour.user_id}`;
-  const authorAvatar = tour.user_avatar ? `http://localhost:5000${tour.user_avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(authorName)}&background=random&color=fff`;
+  const authorAvatar = getDisplayImageUrl(tour.user_avatar);
 
   return (
     <div className="itinerary-card">
       <Link to={`/tours/${tour.id}`} className="itinerary-card__link">
         <div className="itinerary-card__image-wrapper">
           <img
-            src={tour.image && tour.image.startsWith('/') 
-              ? `http://localhost:5000${tour.image}` 
-              : tour.image || 'https://images.unsplash.com/photo-1530789253388-582c481c54b0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1050&q=80'}
+            src={getDisplayImageUrl(tour.image)}
             alt={tour.destination || 'Lịch trình Phú Yên'}
             className="itinerary-card__image"
             onError={(e) => {

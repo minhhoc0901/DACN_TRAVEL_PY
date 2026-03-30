@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/itineraryCSS/UserTours.css';
 
 const UserTours = () => {
@@ -22,7 +24,7 @@ const UserTours = () => {
       }
       
       // Fetch user profile
-      const userResponse = await axios.get('http://localhost:5000/api/users/profile', {
+      const userResponse = await axios.get(`${CONFIG.API_BASE_URL}/api/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -62,7 +64,7 @@ const UserTours = () => {
       try {
         // Try user-specific endpoint first
         console.log("Fetching tours using user-specific API");
-        const response = await axios.get('http://localhost:5000/api/tours/user/tours', {
+        const response = await axios.get(`${CONFIG.API_BASE_URL}/api/tours/user/tours`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -80,7 +82,7 @@ const UserTours = () => {
         console.warn("Falling back to admin API:", apiErr);
         
         // Try admin API as fallback
-        const adminResponse = await axios.get('http://localhost:5000/api/admin/tours', {
+        const adminResponse = await axios.get(`${CONFIG.API_BASE_URL}/api/admin/tours`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -208,9 +210,7 @@ const UserTours = () => {
                 <div className="tour-preview">
                   <div className="tour-image">
                     <img
-                      src={tour.image && tour.image.startsWith('/')
-                        ? `http://localhost:5000${tour.image}`
-                        : tour.image || '/placeholder-image.jpg'}
+                      src={getDisplayImageUrl(tour.image)}
                       alt={tour.destination}
                       onError={(e) => {
                         e.target.src = '/placeholder-image.jpg';

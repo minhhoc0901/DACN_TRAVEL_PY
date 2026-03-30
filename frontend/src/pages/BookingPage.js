@@ -5,6 +5,7 @@ import { bookingService } from "../services/bookingService";
 import { paymentService } from "../services/paymentService";
 import { promotionService } from "../services/promotionService";
 import { useAuth } from "../contexts/AuthContext";
+import { getDisplayImageUrl } from "../utils/imageUtils";
 import PaymentMethodModal from "../components/Payment/PaymentMethodModal"; 
 import "../styles/Booking/BookingPage.css";
 
@@ -487,7 +488,7 @@ const BookingPage = () => {
             <div className="v2-summary-card">
               <div className="v2-tour-summary">
                 <img
-                  src={`http://localhost:5000${tour.image}`}
+                  src={getDisplayImageUrl(tour.image)}
                   alt={tour.title}
                   className="v2-tour-image"
                 />

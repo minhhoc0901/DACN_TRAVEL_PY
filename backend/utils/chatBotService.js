@@ -1,19 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const Location = require('../models/Location');
 const Tour = require('../models/Tour');
-const dotenv = require('dotenv');
 
-// Đảm bảo đọc các biến môi trường từ .env
-dotenv.config();
-
-// API key từ biến môi trường
-const API_KEY = process.env.GEMINI_API_KEY;
-
-if (!API_KEY || API_KEY === 'AIzaSyCj9jhv7Dj6ajEgHlNWLC9U1idqozMZUPg') {
-  console.warn(
-    'GEMINI_API_KEY is not set or is using a placeholder in .env. Chatbot may not function correctly.'
-  );
-}
 
 // Tạo fallback function cho trường hợp API không hoạt động
 function getFallbackResponse(message) {
@@ -49,7 +37,7 @@ function getFallbackResponse(message) {
   
   // Best time to visit
   if (lowerMsg.includes('khi nào') || lowerMsg.includes('thời gian') || lowerMsg.includes('mùa')) {
-    return "Thời điểm lý tưởng để du lịch Phú Yên là từ tháng 2 đến tháng 8 khi thời tiết khô ráo, ít mưa. Đặc biệt, tháng 4 đến tháng 6 là mùa đẹp nhất với nhiệt độ dễ chịu và ít du khách. Nếu bạn muốn ngắm hoa vàng trên cỏ xanh, hãy đến vào tháng 3.";
+return "Thời điểm lý tưởng để du lịch Phú Yên là từ tháng 2 đến tháng 8 khi thời tiết khô ráo, ít mưa. Đặc biệt, tháng 4 đến tháng 6 là mùa đẹp nhất với nhiệt độ dễ chịu và ít du khách. Nếu bạn muốn ngắm hoa vàng trên cỏ xanh, hãy đến vào tháng 3.";
   }
   
   // Default response
@@ -178,64 +166,61 @@ class ChatbotService {
   }
 
   static async callGeminiAPI(systemPrompt, userMessage) {
-    try {
-      // Kiểm tra API key
-      if (!API_KEY || API_KEY === 'AIzaSyCj9jhv7Dj6ajEgHlNWLC9U1idqozMZUPg') {
-        console.error('API key không hợp lệ hoặc chưa được cấu hình.');
-        return getFallbackResponse(userMessage);
-      }
-
-      // Khởi tạo client API với API Key của bạn
-      const genAI = new GoogleGenerativeAI(API_KEY);
-      
-      // Thử model gemini-1.5-pro thay vì gemini-pro
-      const model = genAI.getGenerativeModel({
-        model: "gemini-2.0-flash",
-      });
-
-      // Tạo nội dung kết hợp giữa system prompt và user message
-      const prompt = `${systemPrompt}\n\nNgười dùng hỏi: ${userMessage}\n\nTrả lời:`;
-      
-      // Gọi API với handling lỗi tốt hơn
-      const result = await model.generateContent(prompt);
-      const response = await result.response;
-      const text = response.text();
-      
-      if (!text || text.trim() === "") {
-        console.warn("Gemini API returned empty response. Using fallback.");
-        return getFallbackResponse(userMessage);
-      }
-      return text;
-    } catch (error) {
-      console.error('Gemini API error:', error.message);
-      
-      // Thử lại với model khác nếu model đầu tiên không tìm thấy
-      if (error.message.includes("not found") || error.message.includes("404")) {
-        try {
-          console.log("Trying with alternative model name...");
-          const genAI = new GoogleGenerativeAI(API_KEY);
-          const model = genAI.getGenerativeModel({ 
-            model: "gemini-pro" 
-          });
-          
-          const prompt = `${systemPrompt}\n\nNgười dùng hỏi: ${userMessage}\n\nTrả lời:`;
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          const text = response.text();
-          
-          if (!text || text.trim() === "") {
-            return getFallbackResponse(userMessage);
-          }
-          return text;
-        } catch (retryError) {
-          console.error('Retry with alternative model failed:', retryError.message);
-          return getFallbackResponse(userMessage);
-        }
-      }
-      
+    // BƯỚC 1: Đọc và kiểm tra API Key
+    const API_KEY = process.env.GEMINI_API_KEY;
+    if (!API_KEY) {
+      console.error('LỖI: Không tìm thấy GEMINI_API_KEY. Vui lòng kiểm tra file .env và đảm bảo app.js đã gọi dotenv.config() ở dòng đầu tiên.');
       return getFallbackResponse(userMessage);
     }
+    console.log('INFO: Đã tìm thấy API Key.');
+
+    const genAI = new GoogleGenerativeAI(API_KEY);
+    const prompt = `${systemPrompt}\n\nNgười dùng hỏi: ${userMessage}\n\nTrả lời:`;
+
+    // Danh sách các model để thử theo thứ tự ưu tiên
+    const modelsToTry = [
+      "gemini-2.5-flash-legacy",
+      "gemini-1.5-flash-latest",
+      "gemini-2.5-flash-lite",
+      "gemini-2.5-flash", 
+      "gemini-pro"        
+    ];
+
+    // BƯỚC 2: Lần lượt thử các model trong danh sách
+    for (const modelName of modelsToTry) {
+      try {
+        console.log(`INFO: Đang thử model: "${modelName}"...`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        if (text && text.trim() !== "") {
+          console.log(`THÀNH CÔNG: Model "${modelName}" đã phản hồi.`);
+          return text; // Trả về kết quả thành công
+        }
+        
+        // Nếu API trả về rỗng
+        console.warn(`CẢNH BÁO: Model "${modelName}" trả về nội dung rỗng.`);
+
+      } catch (error) {
+        // Nếu có lỗi với model hiện tại
+        console.error(`LỖI với model "${modelName}":`, error.message);
+        
+        // Nếu lỗi là do giới hạn quota, dừng lại ngay
+        if (error.message.includes('429')) {
+            console.log('LỖI: API bị giới hạn quota (Rate Limit). Chuyển sang dùng fallback.');
+            return getFallbackResponse(userMessage);
+        }
+        // Nếu lỗi khác (vd: model not found), vòng lặp sẽ tự động thử model tiếp theo
+      }
+    }
+
+    // BƯỚC 3: Nếu tất cả các model đều thất bại
+    console.error('LỖI: Tất cả các model đều thất bại. Sử dụng fallback response.');
+    return getFallbackResponse(userMessage);
   }
+
 }
 
 module.exports = ChatbotService;

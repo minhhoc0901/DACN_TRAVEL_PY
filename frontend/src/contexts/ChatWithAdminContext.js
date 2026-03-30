@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useAuth } from './AuthContext';
+import { CONFIG } from '../config';
 
 const ChatWithAdminContext = createContext();
 
@@ -21,7 +22,7 @@ export const ChatWithAdminProvider = ({ children }) => {
     useEffect(() => {
         const fetchAdminId = async () => {
             try {
-                const response = await fetch('http://localhost:5000/api/chatwithadmin/admin-id');
+                const response = await fetch(`${CONFIG.API_API_URL}/chatwithadmin/admin-id`);
                 const data = await response.json();
                 if (data.success && data.adminId) {
                     setAdminId(data.adminId);
@@ -39,7 +40,7 @@ export const ChatWithAdminProvider = ({ children }) => {
         if (!token || !userId || !adminId) return;
         setLoading(true);
         try {
-            const response = await fetch(`http://localhost:5000/api/chatwithadmin/conversation?userId1=${userId}&userId2=${adminId}`, {
+            const response = await fetch(`${CONFIG.API_API_URL}/chatwithadmin/conversation?userId1=${userId}&userId2=${adminId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();
@@ -62,7 +63,7 @@ export const ChatWithAdminProvider = ({ children }) => {
         }
 
         const token = getToken();
-        const newSocket = io('http://localhost:5000', {
+        const newSocket = io(CONFIG.API_URL, {
             transports: ['websocket'],
             auth: { token }
         });

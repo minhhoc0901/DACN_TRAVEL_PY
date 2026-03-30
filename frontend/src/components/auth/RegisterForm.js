@@ -4,6 +4,7 @@ import axios from 'axios';
 import '../../styles/auth/AuthForm.css';
 import '../../styles/auth/ValidationStyles.css'; // ✅ THÊM CSS VALIDATION
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
 
 // ✅ IMPORT VALIDATION UTILITIES
 import { 
@@ -182,8 +183,7 @@ const RegisterForm = () => {
 
             setSendingOTP(true);
             startCountdown();
-
-            const response = await axios.post('http://localhost:5000/api/auth/send-otp', {
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/send-otp`, {
                 email: formData.email
             });
 
@@ -223,8 +223,7 @@ const RegisterForm = () => {
                 ...payload,
                 password: '***hidden***'
             });
-
-            const response = await axios.post('http://localhost:5000/api/auth/register', payload);
+            const response = await axios.post(`${CONFIG.API_API_URL}/auth/register`, payload);
 
             console.log('[REGISTER] Response:', response.data);
 

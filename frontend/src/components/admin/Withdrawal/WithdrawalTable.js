@@ -67,6 +67,7 @@ const WithdrawalTable = ({
                             <th>Số tiền</th>
                             <th>Ngân hàng</th>
                             <th>Số TK</th>
+                            <th>Chủ TK</th>
                             <th>Trạng thái</th>
                             <th>Ngày tạo</th>
                             <th>Thao tác</th>
@@ -91,6 +92,7 @@ const WithdrawalTable = ({
                                 <td>
                                     <code>{withdrawal.account_number}</code>
                                 </td>
+                                <td>{withdrawal.account_name}</td>
                                 <td>{getStatusBadge(withdrawal.status)}</td>
                                 <td>{formatDate(withdrawal.created_at)}</td>
                                 <td>

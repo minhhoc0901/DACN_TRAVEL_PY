@@ -2,20 +2,24 @@ import React, { useState, useEffect } from 'react';
 import UserList from '../../components/admin/users/UserList';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { CONFIG } from '../../config';
+import { useAuth } from '../../contexts/AuthContext';
+// import '../../styles/admin/UserManagement.css'; // File doesn't exist
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const response = await axios.get(`${CONFIG.API_API_URL}/users`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       setUsers(response.data.data);
       setLoading(false);
@@ -27,10 +31,9 @@ const UserManagement = () => {
 
   const handleUpdateRole = async (userId, newRole) => {
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/users/${userId}`,
+      await axios.put(`${CONFIG.API_API_URL}/users/${userId}`,
         { role: newRole },
-        { headers: { 'Authorization': `Bearer ${token}` }}
+        { headers: { 'Authorization': `Bearer ${getToken()}` }}
       );
       toast.success('Cập nhật quyền thành công');
       fetchUsers();
@@ -43,9 +46,8 @@ const UserManagement = () => {
     if (!window.confirm('Bạn có chắc muốn xóa người dùng này?')) return;
 
     try {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      await axios.delete(`http://localhost:5000/api/users/${userId}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      await axios.delete(`${CONFIG.API_API_URL}/users/${userId}`, {
+        headers: { 'Authorization': `Bearer ${getToken()}` }
       });
       toast.success('Xóa người dùng thành công');
       fetchUsers();
@@ -55,10 +57,13 @@ const UserManagement = () => {
   };
 
   return (
-    <div className="user-management">
-      <h2>Quản lý người dùng</h2>
+    <div className="admin-page-container">
+      <div className="admin-page-header">
+        <h1 className="admin-page-title">Quản lý người dùng</h1>
+      </div>
+      
       {loading ? (
-        <div>Đang tải...</div>
+        <div style={{ textAlign: 'center', padding: '40px' }}>Đang tải...</div>
       ) : (
         <UserList
           users={users}

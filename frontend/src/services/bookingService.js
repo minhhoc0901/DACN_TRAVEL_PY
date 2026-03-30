@@ -1,7 +1,8 @@
 import { getAuthToken } from '../contexts/AuthContext'; // Giả sử bạn có hàm này để lấy token
+import { CONFIG } from '../config';
 
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = CONFIG.API_API_URL;
 
 export const bookingService = {
     /**

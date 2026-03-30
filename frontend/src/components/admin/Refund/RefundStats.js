@@ -30,7 +30,7 @@ const RefundStats = ({ stats }) => {
         {
             key: 'pending',
             label: 'Chờ duyệt',
-            value: stats.pending || 0,
+            value: (stats.pending_count || 0) + (stats.processing_count || 0),
             sublabel: 'CẦN XỬ LÝ',
             icon: 'bi-clock-history',
             className: 'run_ad_stat_pending'
@@ -38,7 +38,7 @@ const RefundStats = ({ stats }) => {
         {
             key: 'completed',
             label: 'Đã hoàn thành',
-            value: stats.completed || 0,
+            value: stats.approved_count || 0,
             sublabel: 'YÊU CẦU',
             icon: 'bi-check-circle',
             className: 'run_ad_stat_completed'
@@ -46,7 +46,7 @@ const RefundStats = ({ stats }) => {
         {
             key: 'rejected',
             label: 'Đã từ chối',
-            value: stats.rejected || 0,
+            value: stats.rejected_count || 0,
             sublabel: 'YÊU CẦU',
             icon: 'bi-x-circle',
             className: 'run_ad_stat_rejected'
@@ -55,7 +55,7 @@ const RefundStats = ({ stats }) => {
             key: 'amount',
             label: 'Tổng tiền hoàn',
             value: `${formatCurrency(stats.total_refund_amount)} ₫`,
-            sublabel: `Đã hoàn: ${formatCurrency(stats.completed_amount)} ₫`,
+            sublabel: `Đã hoàn: ${formatCurrency(stats.approved_amount)} ₫`,
             icon: 'bi-cash-coin',
             className: 'run_ad_stat_amount'
         },

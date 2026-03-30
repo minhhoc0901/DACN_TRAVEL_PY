@@ -117,15 +117,15 @@ const PromotionManagement = () => {
     const endDate = new Date(promo.end_date);
 
     if (now < startDate) {
-      return { text: 'Chưa bắt đầu', color: '#ffc107' };
+      return { text: 'Chưa bắt đầu', className: 'status-disabled', icon: 'bi-clock' };
     }
     if (now > endDate) {
-      return { text: 'Đã hết hạn', color: '#dc3545' };
+      return { text: 'Đã hết hạn', className: 'status-expired', icon: 'bi-exclamation-circle' };
     }
     if (!promo.is_active) {
-      return { text: 'Vô hiệu hóa', color: '#6c757d' };
+      return { text: 'Vô hiệu hóa', className: 'status-disabled', icon: 'bi-x-circle' };
     }
-    return { text: 'Đang hoạt động', color: '#28a745' };
+    return { text: 'Đang hoạt động', className: 'status-active', icon: 'bi-check-circle' };
   };
 
   return (
@@ -195,15 +195,9 @@ const PromotionManagement = () => {
                       
                       {/* HIỂN THỊ TRẠNG THÁI THỰC TẾ */}
                       <td style={{ textAlign: 'center' }}>
-                        <span style={{ 
-                          padding: '4px 12px', 
-                          borderRadius: '12px', 
-                          background: status.color, 
-                          color: 'white',
-                          fontSize: '13px',
-                          fontWeight: '600'
-                        }}>
-                          {status.icon} {status.text}
+                        <span className={`status-badge ${status.className}`}>
+                          <i className={`bi ${status.icon}`} style={{ marginRight: '6px' }}></i>
+                          {status.text}
                         </span>
                       </td>
                       

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-// import { useNotification } from '../../contexts/NotificationContext'; // XÓA DÒNG NÀY
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import NotificationBell from '../Notifications/NotificationBell';
 import '../../styles/show/header.css';
 
@@ -53,8 +53,7 @@ const Header = ({ setMenuOpen, menuOpen }) => {
                     <Link to="/" className="navbar-brand">
                         <div className="logo-text-wrap">
                             <div className="logo-icon-wrap">
-                                {/* <i className="bi bi-airplane-engines"></i> */}
-                                <img src="/logo1.png" alt="Phú Yên Travel Logo" /> {/* Removed style={{ height: '30px', width: 'auto' }} */}
+                                <img src={process.env.PUBLIC_URL + '/logo1.png'} alt="Phú Yên Travel Logo" />
                             </div>
                             <div className="logo-text">PHÚ YÊN</div>
                         </div>
@@ -126,7 +125,7 @@ const Header = ({ setMenuOpen, menuOpen }) => {
                                         <div className="header-user-profile" onClick={() => setUserMenuOpen(!userMenuOpen)}>
                                             <div className="header-user-avatar">
                                                 <img 
-                                                    src={user.avatar ? `http://localhost:5000${user.avatar}` : 'https://via.placeholder.com/40'} 
+                                                    src={getDisplayImageUrl(user.avatar)} 
                                                     alt="Avatar" 
                                                     className="avatar-img" 
                                                 />

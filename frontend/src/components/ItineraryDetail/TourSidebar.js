@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
 import L from 'leaflet';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/itineraryCSS/TourSidebar.css';
 
 const TourSidebar = ({ tour }) => {
@@ -85,7 +86,7 @@ const TourSidebar = ({ tour }) => {
                   <div className="popup-content">
                     {loc.image && (
                       <img 
-                        src={`http://localhost:5000${loc.image}`} 
+                        src={getDisplayImageUrl(loc.image)} 
                         alt={loc.name}
                         className="popup-image"
                         onError={(e) => { e.target.src = '/placeholder-image.jpg'; }}

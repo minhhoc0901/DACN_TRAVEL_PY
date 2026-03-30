@@ -1,7 +1,8 @@
 import { getAuthToken } from '../contexts/AuthContext'; // Giả sử bạn có hàm này
+import { CONFIG } from '../config';
 
 // Định nghĩa URL cơ sở cho API, tương tự các service khác
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = CONFIG.API_API_URL;
 
 export const itineraryService = {
     /**

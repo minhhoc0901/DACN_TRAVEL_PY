@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChatWithAdmin } from '../../contexts/ChatWithAdminContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/user/ChatWithAdminBox.css';
 
 const ChatWithAdminBox = ({ onClose }) => {
@@ -40,7 +42,7 @@ const ChatWithAdminBox = ({ onClose }) => {
       if (!token) throw new Error('Cần đăng nhập.');
       const formData = new FormData();
       selectedImages.forEach(f => formData.append('images', f));
-      const res = await fetch('http://localhost:5000/api/chatwithadmin/upload-image', {
+      const res = await fetch(`${CONFIG.API_API_URL}/chatwithadmin/upload-image`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData
@@ -76,7 +78,7 @@ const ChatWithAdminBox = ({ onClose }) => {
       {msg.imageUrls && msg.imageUrls.length > 0 && (
         <div className="uwa-message-images" data-count={msg.imageUrls.length}>
           {msg.imageUrls.map((url, idx) => {
-            const full = url.startsWith('http') ? url : `http://localhost:5000${url}`;
+            const full = getDisplayImageUrl(url);
             return (
               <img
                 key={idx}

@@ -1,6 +1,4 @@
 const Location = require('../models/Location');
-const path = require('path');
-const fs = require('fs');
 
 exports.searchLocations = async (req, res) => {
   try {
@@ -34,29 +32,7 @@ exports.searchLocations = async (req, res) => {
 };
 
 
-const handleFileUpload = async (file, locationId, type, index = '') => {
-    try {
-        if (!file || !locationId) {
-            throw new Error('Missing required parameters');
-        }
-
-        const uploadDir = path.join(__dirname, '../uploads/locations', locationId.toString());
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        const ext = path.extname(file.name);
-        const fileName = createImageFileName(locationId, type, index);
-        const filePath = path.join(uploadDir, fileName);
-        
-        await file.mv(filePath);
-        return `/uploads/locations/${locationId}/${fileName}`;
-    } catch (error) {
-        console.error('File upload error:', error);
-        throw error;
-    }
-};
-// Helper function to create image filename
+// Helper function to create image filename (Keep if needed, though model has it too)
 const createImageFileName = (locationId, type, index = '') => {
     switch(type) {
         case 'introduction': 
@@ -91,59 +67,45 @@ exports.createLocation = async (req, res) => {
             hotel_ids: JSON.parse(data.hotel_ids || '[]') 
         };
 
+        // Đánh dấu items có ảnh để Model biết và không bỏ qua (đối với create)
+        if (req.files) {
+            parsedData.experiences = parsedData.experiences.map((exp, i) => ({
+                ...exp,
+                hasImage: !!req.files[`experienceImage_${i}`]
+            }));
+            parsedData.cuisines = parsedData.cuisines.map((c, i) => ({
+                ...c,
+                hasImage: !!req.files[`cuisineImage_${i}`]
+            }));
+        }
+
         // Create location first
-        const locationId = await Location.createLocation(parsedData);
+        const { locationId, experienceIds, cuisineIds } = await Location.createLocation(parsedData);
 
         // Handle file uploads if any
         if (req.files) {
             // Handle main images
             if (req.files.introductionImage) {
-                await Location.saveImage(
-                    locationId,
-                    req.files.introductionImage,
-                    'introduction'
-                );
+                await Location.saveImage(locationId, req.files.introductionImage, 'introduction');
             }
 
             if (req.files.architectureImage) {
-                await Location.saveImage(
-                    locationId,
-                    req.files.architectureImage,
-                    'architecture'
-                );
+                await Location.saveImage(locationId, req.files.architectureImage, 'architecture');
             }
 
-            // Handle experience images - sử dụng getExperienceId để lấy ID thực
-            for (let i = 0; i < parsedData.experiences.length; i++) {
+            // Handle experience images
+            for (let i = 0; i < (experienceIds?.length || 0); i++) {
                 const key = `experienceImage_${i}`;
-                if (req.files[key]) {
-                    // Lấy ID thực của experience
-                    const experienceId = await Location.getExperienceId(locationId, i);
-                    if (experienceId) {
-                        await Location.saveImage(
-                            locationId,
-                            req.files[key],
-                            'experience',
-                            experienceId  // Sử dụng ID thực
-                        );
-                    }
+                if (req.files[key] && experienceIds[i]) {
+                    await Location.saveImage(locationId, req.files[key], 'experience', experienceIds[i]);
                 }
             }
 
-            // Handle cuisine images - sử dụng getCuisineId để lấy ID thực
-            for (let i = 0; i < parsedData.cuisines.length; i++) {
+            // Handle cuisine images
+            for (let i = 0; i < (cuisineIds?.length || 0); i++) {
                 const key = `cuisineImage_${i}`;
-                if (req.files[key]) {
-                    // Lấy ID thực của cuisine
-                    const cuisineId = await Location.getCuisineId(locationId, i);
-                    if (cuisineId) {
-                        await Location.saveImage(
-                            locationId,
-                            req.files[key],
-                            'cuisine',
-                            cuisineId  // Sử dụng ID thực
-                        );
-                    }
+                if (req.files[key] && cuisineIds[i]) {
+                    await Location.saveImage(locationId, req.files[key], 'cuisine', cuisineIds[i]);
                 }
             }
         }
@@ -168,22 +130,12 @@ exports.createLocation = async (req, res) => {
 const handleLocationImages = async (files, locationId, data) => {
     // Handle introduction image
     if (files.introductionImage) {
-        const introUrl = await handleFileUpload(
-            files.introductionImage,
-            locationId,
-            'introduction'
-        );
-        await Location.saveImage(locationId, introUrl, 'introduction');
+        await Location.saveImage(locationId, files.introductionImage, 'introduction');
     }
 
     // Handle architecture image
     if (files.architectureImage) {
-        const archUrl = await handleFileUpload(
-            files.architectureImage,
-            locationId,
-            'architecture'
-        );
-        await Location.saveImage(locationId, archUrl, 'architecture');
+        await Location.saveImage(locationId, files.architectureImage, 'architecture');
     }
 
     // Handle experience images
@@ -192,13 +144,7 @@ const handleLocationImages = async (files, locationId, data) => {
     
     for (const key of experienceFiles) {
         const index = parseInt(key.split('_')[1]);
-        const imageUrl = await handleFileUpload(
-            files[key],
-            locationId,
-            'experience',
-            index + 1
-        );
-        await Location.saveImage(locationId, imageUrl, 'experience', index + 1);
+        await Location.saveImage(locationId, files[key], 'experience', index + 1);
     }
 
     // Handle cuisine images
@@ -207,27 +153,14 @@ const handleLocationImages = async (files, locationId, data) => {
     
     for (const key of cuisineFiles) {
         const index = parseInt(key.split('_')[1]);
-        const imageUrl = await handleFileUpload(
-            files[key],
-            locationId,
-            'cuisine',
-            index + 1
-        );
-        await Location.saveImage(locationId, imageUrl, 'cuisine', index + 1);
+        await Location.saveImage(locationId, files[key], 'cuisine', index + 1);
     }
 };
 
 // Hàm helper để tạo thư mục
+// Bỏ tạo thư mục local
 const createUploadDirs = (locationId) => {
-    const basePath = path.join(__dirname, '../uploads/locations', locationId.toString());
-    const dirs = ['introduction', 'architecture', 'experience', 'cuisine'];
-    
-    dirs.forEach(dir => {
-        const fullPath = path.join(basePath, dir);
-        if (!fs.existsSync(fullPath)) {
-            fs.mkdirSync(fullPath, { recursive: true });
-        }
-    });
+    // Không cần thiết khi dùng Cloudinary
 };
 // Read: Lấy tất cả địa điểm
 exports.getAllLocations = async (req, res) => {
@@ -331,8 +264,8 @@ exports.updateLocation = async (req, res) => {
           const key = `experienceImage_${i}`;
           if (req.files[key]) {
             console.log(`Updating experience image ${i}`);
-            // Get the experience ID
-            const experienceId = await Location.getExperienceId(locationId, i);
+            // Lấy ID từ đối tượng đã được Sync trong Model
+            const experienceId = parsedData.experiences[i].id;
             if (experienceId) {
               await Location.saveImage(
                 locationId,
@@ -351,8 +284,8 @@ exports.updateLocation = async (req, res) => {
           const key = `cuisineImage_${i}`;
           if (req.files[key]) {
             console.log(`Updating cuisine image ${i}`);
-            // Get the cuisine ID
-            const cuisineId = await Location.getCuisineId(locationId, i);
+            // Lấy ID từ đối tượng đã được Sync trong Model
+            const cuisineId = parsedData.cuisines[i].id;
             if (cuisineId) {
               await Location.saveImage(
                 locationId,
@@ -433,24 +366,14 @@ exports.uploadImage = async (req, res) => {
             return res.status(400).json({ error: 'Không có file ảnh được tải lên' });
         }
 
-        const image = req.files.image;
-        const uploadDir = path.join(__dirname, '../uploads/locations', locationId.toString());
+        // Lưu đường dẫn vào database và upload lên Cloudinary qua Model
+        const resultUrl = await Location.saveImage(locationId, image, imageType);
 
-        // Tạo thư mục nếu chưa tồn tại
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        // Đặt tên file ảnh
-        const fileName = `${locationId}-${imageType}-${Date.now()}.jpg`;
-        const filePath = path.join(uploadDir, fileName);
-        const imageUrl = `/uploads/locations/${locationId}/${fileName}`;
-
-        // Lưu file ảnh
-        await image.mv(filePath);
-
-        // Lưu đường dẫn vào database
-        await Location.saveImage(locationId, imageUrl, imageType);
+        res.status(200).json({ 
+            success: true,
+            message: 'Upload ảnh lên Cloudinary thành công',
+            imageUrl: resultUrl 
+        });
 
         res.status(200).json({ 
             success: true,
@@ -478,19 +401,7 @@ exports.deleteImage = async (req, res) => {
             return res.status(404).json({ error: 'Không tìm thấy địa điểm' });
         }
 
-        // Lấy thông tin ảnh từ database
-        const image = await Location.getImageById(imageId);
-        if (!image) {
-            return res.status(404).json({ error: 'Không tìm thấy ảnh' });
-        }
-
-        // Xóa file ảnh
-        const filePath = path.join(__dirname, '..', image.image_url);
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
-
-        // Xóa record trong database
+        // Xóa record trong database (Model sẽ tự xóa trên Cloudinary)
         await Location.deleteImage(imageId);
 
         res.status(200).json({
@@ -604,17 +515,10 @@ exports.handleMediaImages = async (req, files, locationId) => {
 
     for (const key of experienceFiles) {
         const index = key.split('_')[1];
-        const imageUrl = await handleFileUpload(
-            files[key],
-            locationId,
-            'experiences',
-            index
-        );
-        
         // Lấy ID của experience tương ứng
         const experienceId = await Location.getExperienceId(locationId, index);
         if (experienceId) {
-            await Location.saveImage(locationId, imageUrl, 'experience', experienceId);
+            await Location.saveImage(locationId, files[key], 'experience', experienceId);
         }
     }
 
@@ -624,17 +528,10 @@ exports.handleMediaImages = async (req, files, locationId) => {
 
     for (const key of cuisineFiles) {
         const index = key.split('_')[1];
-        const imageUrl = await handleFileUpload(
-            files[key],
-            locationId,
-            'cuisines',
-            index
-        );
-        
         // Lấy ID của cuisine tương ứng
         const cuisineId = await Location.getCuisineId(locationId, index);
         if (cuisineId) {
-            await Location.saveImage(locationId, imageUrl, 'cuisine', cuisineId);
+            await Location.saveImage(locationId, files[key], 'cuisine', cuisineId);
         }
     }
 };

@@ -18,7 +18,7 @@
 //                 if (token) {
 //                     try {
 //                         // Gọi API để lấy thông tin user từ token
-//                         const response = await axios.get('http://localhost:5000/api/auth/profile', {
+//                         const response = await axios.get(`${CONFIG.API_API_URL}/auth/profile`, {
 //                             headers: { Authorization: `Bearer ${token}` }
 //                         });
 

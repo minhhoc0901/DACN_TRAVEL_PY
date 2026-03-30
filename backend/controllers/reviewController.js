@@ -1,7 +1,6 @@
 const Review = require('../models/Review');
 const Tour = require('../models/Tour');
-const path = require('path');
-const fs = require('fs');
+const { uploadToCloudinary } = require('../utils/cloudinaryHelper');
 const NotificationService = require('../utils/notificationService');
 
 exports.addReview = async (req, res) => {
@@ -19,16 +18,11 @@ exports.addReview = async (req, res) => {
         let imageUrls = [];
         if (req.files && req.files.images) {
             const files = Array.isArray(req.files.images) ? req.files.images : [req.files.images];
-            const uploadDir = path.join(__dirname, '../uploads/reviews');
-            if (!fs.existsSync(uploadDir)) {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            }
-
+            
             for (const file of files) {
-                const fileName = `${Date.now()}_${file.name}`;
-                const filePath = path.join(uploadDir, fileName);
-                await file.mv(filePath);
-                imageUrls.push(`/uploads/reviews/${fileName}`);
+                // --- CLOUDINARY UPLOAD ---
+                const cloudResult = await uploadToCloudinary(file.data, 'reviews');
+                imageUrls.push(cloudResult.url);
             }
         }
 

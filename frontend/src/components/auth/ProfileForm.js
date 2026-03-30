@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import axios from 'axios';
+import { CONFIG } from '../../config';
 import AvatarUpload from './AvatarUpload';
 import '../../styles/auth/ProfileForm.css';
 import '../../styles/auth/ValidationStyles.css'; // ✅ IMPORT VALIDATION CSS
@@ -210,7 +211,7 @@ const ProfileForm = () => {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             
             const response = await axios.put(
-                `http://localhost:5000/api/users/${user.id}`,
+                `${CONFIG.API_API_URL}/users/${user.id}`,
                 formData,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -264,7 +265,7 @@ const ProfileForm = () => {
             const token = localStorage.getItem('token') || sessionStorage.getItem('token');
             
             const response = await axios.put(
-                `http://localhost:5000/api/users/${user.id}/change-password`,
+                `${CONFIG.API_API_URL}/users/${user.id}/change-password`,
                 passwordData,
                 {
                     headers: { 'Authorization': `Bearer ${token}` }

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
+import { CONFIG } from '../../../config';
+import { getDisplayImageUrl } from '../../../utils/imageUtils';
+import '../../../styles/admin/NotificationManagement.css';
 
 const BulkNotificationModal = ({ onClose, onSend }) => {
   const { getToken } = useAuth();
@@ -13,6 +16,7 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
   });
   const [selectAll, setSelectAll] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     console.log('[BulkNotificationModal] Component mounted!');
@@ -25,13 +29,15 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
       // Mở lại scroll khi modal đóng
       document.body.style.overflow = 'auto';
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchUsers = async () => {
+    setLoading(true);
     try {
       const token = getToken();
       console.log('[BulkNotificationModal] Fetching users...');
-      const response = await axios.get('http://localhost:5000/api/admin/users', {
+      const response = await axios.get(`${CONFIG.API_API_URL}/admin/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
@@ -41,6 +47,9 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
       }
     } catch (error) {
       console.error('[BulkNotificationModal] Error fetching users:', error);
+      alert('Không thể tải danh sách người dùng');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -86,9 +95,8 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
     );
   });
 
-  // ✅ XỬ LÝ CLICK OVERLAY
+  // XỬ LÝ CLICK OVERLAY
   const handleOverlayClick = (e) => {
-    // Chỉ đóng modal nếu click vào overlay, không phải content bên trong
     if (e.target === e.currentTarget) {
       onClose();
     }
@@ -97,39 +105,40 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
   console.log('[BulkNotificationModal] Rendering modal...');
 
   return (
-    <div className="admin-notif-modal-overlay" onClick={handleOverlayClick}>
+    <div className="qltb-modal-overlay" onClick={handleOverlayClick}>
       <div 
-        className="admin-notif-modal-content admin-notif-bulk-modal" 
+        className="qltb-modal-content qltb-bulk-modal" 
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="admin-notif-modal-header">
+        <div className="qltb-modal-header">
           <h3>
             <i className="bi bi-megaphone"></i> Gửi thông báo hàng loạt
           </h3>
-          <button onClick={onClose} className="admin-notif-btn-close">
+          <button onClick={onClose} className="qltb-btn-close">
             <i className="bi bi-x"></i>
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="admin-notif-modal-body">
-          <div className="admin-notif-form-section">
-            <div className="admin-notif-user-selection-header">
-              <div className="admin-notif-selection-title">
+        <form onSubmit={handleSubmit} className="qltb-modal-body">
+          <div className="qltb-form-section">
+            <div className="qltb-user-selection-header">
+              <div className="qltb-selection-title">
                 <h4>Chọn người nhận</h4>
-                <span className="admin-notif-user-count">{formData.userIds.length} được chọn</span>
+                <span className="qltb-user-count">{formData.userIds.length} được chọn</span>
               </div>
               
-              <div className="admin-notif-search-box">
+              <div className="qltb-search-box">
                 <i className="bi bi-search"></i>
                 <input
                   type="text"
                   placeholder="Tìm kiếm người dùng..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  className="qltb-form-control"
                 />
               </div>
 
-              <label className="admin-notif-checkbox-label">
+              <label className="qltb-checkbox-label">
                 <input
                   type="checkbox"
                   checked={selectAll}
@@ -139,30 +148,35 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
               </label>
             </div>
 
-            <div className="admin-notif-user-list-scroll">
-              {filteredUsers.length === 0 ? (
-                <div className="admin-notif-no-users">
+            <div className="qltb-user-list-scroll">
+              {loading ? (
+                <div className="qltb-loading">
+                  <i className="bi bi-arrow-repeat"></i>
+                  <p>Đang tải danh sách người dùng...</p>
+                </div>
+              ) : filteredUsers.length === 0 ? (
+                <div className="qltb-no-users">
                   <i className="bi bi-inbox"></i>
                   <p>Không tìm thấy người dùng nào</p>
                 </div>
               ) : (
                 filteredUsers.map(user => (
-                  <label key={user.id} className="admin-notif-user-item">
+                  <label key={user.id} className="qltb-user-item">
                     <input
                       type="checkbox"
                       checked={formData.userIds.includes(user.id)}
                       onChange={() => handleUserToggle(user.id)}
                     />
-                    <div className="admin-notif-user-avatar">
+                    <div className="qltb-user-avatar">
                       {user.avatar ? (
-                        <img src={`http://localhost:5000${user.avatar}`} alt={user.username} />
+                        <img src={getDisplayImageUrl(user.avatar)} alt={user.username} />
                       ) : (
-                        <div className="admin-notif-avatar-placeholder">
+                        <div className="qltb-avatar-placeholder">
                           {(user.full_name || user.username).charAt(0).toUpperCase()}
                         </div>
                       )}
                     </div>
-                    <div className="admin-notif-user-info">
+                    <div className="qltb-user-info">
                       <strong>{user.full_name || user.username}</strong>
                       <span>{user.email}</span>
                     </div>
@@ -172,11 +186,12 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
             </div>
           </div>
 
-          <div className="admin-notif-form-group">
+          <div className="qltb-form-group">
             <label>
               <i className="bi bi-tag"></i> Loại thông báo
             </label>
             <select
+              className="qltb-form-control"
               value={formData.type}
               onChange={(e) => setFormData({ ...formData, type: e.target.value })}
             >
@@ -188,11 +203,12 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
             </select>
           </div>
 
-          <div className="admin-notif-form-group">
+          <div className="qltb-form-group">
             <label>
               <i className="bi bi-chat-text"></i> Nội dung thông báo *
             </label>
             <textarea
+              className="qltb-form-control"
               value={formData.message}
               onChange={(e) => setFormData({ ...formData, message: e.target.value })}
               placeholder="Nhập nội dung thông báo..."
@@ -201,23 +217,24 @@ const BulkNotificationModal = ({ onClose, onSend }) => {
             />
           </div>
 
-          <div className="admin-notif-form-group">
+          <div className="qltb-form-group">
             <label>
               <i className="bi bi-link-45deg"></i> Đường dẫn hành động (tùy chọn)
             </label>
             <input
               type="text"
+              className="qltb-form-control"
               value={formData.actionUrl}
               onChange={(e) => setFormData({ ...formData, actionUrl: e.target.value })}
               placeholder="Ví dụ: /tours hoặc /profile"
             />
           </div>
 
-          <div className="admin-notif-modal-footer">
-            <button type="button" onClick={onClose} className="admin-notif-btn-secondary">
+          <div className="qltb-modal-footer">
+            <button type="button" onClick={onClose} className="qltb-btn qltb-btn-secondary">
               <i className="bi bi-x-circle"></i> Hủy
             </button>
-            <button type="submit" className="admin-notif-btn-primary">
+            <button type="submit" className="qltb-btn qltb-btn-primary">
               <i className="bi bi-send"></i> Gửi thông báo
             </button>
           </div>

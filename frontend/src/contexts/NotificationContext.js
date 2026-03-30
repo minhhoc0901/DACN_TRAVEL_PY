@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth } from './AuthContext';
 import io from 'socket.io-client';
+import { CONFIG } from '../config';
 
 const NotificationContext = createContext();
 
@@ -13,20 +14,19 @@ export const useNotification = () => {
 };
 
 export const NotificationProvider = ({ children }) => {
-    const { user, isAuthenticated, getToken } = useAuth();
+    const { user, getToken, userLoggedIn } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [socket, setSocket] = useState(null);
     const [loading, setLoading] = useState(false);
 
     // Fetch notifications from API
     const fetchNotifications = async () => {
-        if (!isAuthenticated || !user) return;
+        if (!userLoggedIn || !user) return;
 
         try {
             setLoading(true);
             const token = getToken();
-            const response = await fetch('http://localhost:5000/api/notifications', {
+            const response = await fetch(`${CONFIG.API_API_URL}/notifications`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -48,9 +48,9 @@ export const NotificationProvider = ({ children }) => {
 
     // Setup Socket.IO for real-time notifications
     useEffect(() => {
-        if (!isAuthenticated || !user) return;
+        if (!userLoggedIn || !user) return;
 
-        const newSocket = io('http://localhost:5000', {
+        const newSocket = io(CONFIG.API_URL, {
             transports: ['websocket'],
             reconnection: true
         });
@@ -70,23 +70,22 @@ export const NotificationProvider = ({ children }) => {
             setUnreadCount(prev => prev + 1);
         });
 
-        setSocket(newSocket);
-
         return () => {
             newSocket.disconnect();
         };
-    }, [isAuthenticated, user, getToken]);
+    }, [userLoggedIn, user, getToken]);
 
     // Fetch notifications on mount
     useEffect(() => {
         fetchNotifications();
-    }, [isAuthenticated, user]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userLoggedIn]);
 
     // Mark notification as read
     const markAsRead = async (notificationId) => {
         try {
             const token = getToken();
-            const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}/read`, {
+            const response = await fetch(`${CONFIG.API_API_URL}/notifications/${notificationId}/read`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -111,7 +110,7 @@ export const NotificationProvider = ({ children }) => {
     const markAllAsRead = async () => {
         try {
             const token = getToken();
-            const response = await fetch('http://localhost:5000/api/notifications/mark-all-read', {
+            const response = await fetch(`${CONFIG.API_API_URL}/notifications/mark-all-read`, {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -134,7 +133,7 @@ export const NotificationProvider = ({ children }) => {
     const deleteNotification = async (notificationId) => {
         try {
             const token = getToken();
-            const response = await fetch(`http://localhost:5000/api/notifications/${notificationId}`, {
+            const response = await fetch(`${CONFIG.API_API_URL}/notifications/${notificationId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`

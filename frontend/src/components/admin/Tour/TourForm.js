@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
+import { getDisplayImageUrl } from "../../../utils/imageUtils";
+import { CONFIG } from "../../../config";
 import "../../../styles/itineraryCSS/TourForm.css";
 
 const provinces = [
@@ -88,17 +90,8 @@ const TourForm = ({
 
   // Hiển thị preview ảnh hiện tại nếu đang edit
   useEffect(() => {
-    if (
-      formData.image &&
-      typeof formData.image === "string" &&
-      formData.image.startsWith("/")
-    ) {
-      setImagePreview(`http://localhost:5000${formData.image}`);
-    } else if (formData.image && typeof formData.image === "string") {
-      setImagePreview(formData.image);
-    } else if (formData.imagePreview) {
-      setImagePreview(formData.imagePreview);
-    }
+    // Ưu tiên preview URL (blob) nếu có, nếu không mới dùng path từ database
+    setImagePreview(getDisplayImageUrl(formData.imagePreview || formData.image));
   }, [formData.image, formData.imagePreview]);
 
   // Tính toán thời gian tour
@@ -200,7 +193,7 @@ const TourForm = ({
   const fetchLocations = async () => {
     try {
       setIsLoadingLocations(true);
-      const response = await axios.get("http://localhost:5000/api/locations");
+      const response = await axios.get(`${CONFIG.API_API_URL}/locations`);
       if (response.data) {
         setAvailableLocations(response.data);
       }
@@ -724,7 +717,7 @@ const TourForm = ({
                     setTourImage(null);
                     setImagePreview(
                       selectedTour?.image
-                        ? `http://localhost:5000${selectedTour.image}`
+                        ? getDisplayImageUrl(selectedTour.image)
                         : null
                     );
                     setFormData((prev) => ({

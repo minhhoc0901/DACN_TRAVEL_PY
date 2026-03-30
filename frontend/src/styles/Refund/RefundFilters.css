@@ -8,9 +8,9 @@
 
 .filters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    align-items: end;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+    align-items: flex-end;
 }
 
 .filter-group {
@@ -74,6 +74,7 @@
 .filter-actions {
     display: flex;
     align-items: flex-end;
+    margin-left: auto;
 }
 
 .filter-actions .btn {
@@ -91,13 +92,23 @@
     gap: 0.5rem;
 }
 
-.filter-actions .btn-secondary {
-    background: #e9ecef;
-    color: #495057;
+.filters-section .filters-grid .filter-actions .btn-secondary {
+    background: #ffffff !important;
+    color: #5a6268 !important;
+    border: 1.5px solid #dee2e6 !important;
+    border-radius: 8px !important;
+    height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 }
 
-.filter-actions .btn-secondary:hover {
-    background: #dee2e6;
+.filters-section .filters-grid .filter-actions .btn-secondary:hover {
+    background: #f8f9fa !important;
+    border-color: #667eea !important;
+    color: #667eea !important;
+    box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2) !important;
+    transform: translateY(-1px) !important;
 }
 
 /* Responsive */

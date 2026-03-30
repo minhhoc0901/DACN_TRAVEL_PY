@@ -375,7 +375,11 @@ class Refund {
         COUNT(CASE WHEN refund_status = 'rejected' THEN 1 END) as rejected_count,
         COALESCE(SUM(refund_amount), 0) as total_refund_amount,
         COALESCE(SUM(CASE WHEN refund_status IN ('approved', 'processing') THEN refund_amount ELSE 0 END), 0) as approved_amount,
-        COALESCE(SUM(CASE WHEN refund_status = 'pending' THEN refund_amount ELSE 0 END), 0) as pending_amount
+        COALESCE(SUM(CASE WHEN refund_status = 'pending' THEN refund_amount ELSE 0 END), 0) as pending_amount,
+        COALESCE(AVG(refund_amount), 0) as avg_refund_amount,
+        COUNT(CASE WHEN refund_method = 'credit' THEN 1 END) as credit_refunds,
+        COUNT(CASE WHEN refund_method = 'bank_transfer' THEN 1 END) as bank_refunds,
+        COALESCE(SUM(processing_fee), 0) as total_processing_fees
       FROM refunds
     `);
 

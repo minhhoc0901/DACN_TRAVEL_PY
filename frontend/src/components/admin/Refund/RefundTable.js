@@ -85,7 +85,9 @@ const RefundTable = ({ refunds, loading, pagination, onPageChange, onViewDetail 
                                 <td>
                                     <div className="customer-info">
                                         <strong>{refund.full_name || refund.contact_name}</strong>
-                                        <br />
+                                        <div style={{ fontSize: '12px', color: '#667eea', fontWeight: '600' }}>
+                                            <i className="bi bi-telephone"></i> {refund.contact_phone}
+                                        </div>
                                         <small className="text-muted">{refund.user_email || refund.contact_email}</small>
                                     </div>
                                 </td>

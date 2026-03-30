@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useAdminChat } from '../../contexts/AdminChatContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/admin/ChatwithAdmin.css';
 
 const AdminChatPage = () => {
@@ -76,7 +78,7 @@ const AdminChatPage = () => {
             const formData = new FormData();
             files.forEach(file => formData.append('images', file));
 
-            const response = await fetch('http://localhost:5000/api/chatwithadmin/upload-image', {
+            const response = await fetch(`${CONFIG.API_API_URL}/chatwithadmin/upload-image`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
@@ -156,7 +158,7 @@ const AdminChatPage = () => {
                     <div className="user-avatar">
                         {user.avatar ? (
                             <img 
-                                src={user.avatar.startsWith('http') ? user.avatar : `http://localhost:5000${user.avatar}`} 
+                                src={getDisplayImageUrl(user.avatar)} 
                                 alt={userName} 
                             />
                         ) : (
@@ -203,13 +205,8 @@ const AdminChatPage = () => {
             }
         }
 
-        const userAvatar = selectedUser?.avatar
-            ? (selectedUser.avatar.startsWith('http')
-                ? selectedUser.avatar
-                : `http://localhost:5000${selectedUser.avatar}`)
-            : null;
+        const userAvatar = selectedUser?.avatar ? getDisplayImageUrl(selectedUser.avatar) : null;
 
-        // ✅ FIX: Lấy message content
         const messageText = msg.message || msg.text || '';
 
         return (
@@ -230,7 +227,7 @@ const AdminChatPage = () => {
                     {imageUrls.length > 0 && (
                         <div className="message-images" data-count={imageUrls.length}>
                             {imageUrls.map((url, urlIdx) => {
-                                const finalUrl = url && url.startsWith('http') ? url : `http://localhost:5000${url}`;
+                                const finalUrl = getDisplayImageUrl(url);
                                 return (
                                     <img
                                         key={urlIdx}
@@ -316,9 +313,7 @@ const AdminChatPage = () => {
                                         <div className="header-avatar">
                                             {selectedUser.avatar ? (
                                                 <img 
-                                                    src={selectedUser.avatar.startsWith('http') 
-                                                        ? selectedUser.avatar 
-                                                        : `http://localhost:5000${selectedUser.avatar}`} 
+                                                    src={getDisplayImageUrl(selectedUser.avatar)} 
                                                     alt={selectedUser.fullName || selectedUser.username} 
                                                 />
                                             ) : (

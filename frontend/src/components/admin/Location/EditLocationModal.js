@@ -23,12 +23,12 @@ const EditLocationModal = ({ show, onClose, selectedLocation, onSubmit, availabl
         tip: selectedLocation.travelInfo?.tip || '',
         bestTimes: selectedLocation.bestTimes?.length ? selectedLocation.bestTimes : [''],
         travelMethods: selectedLocation.travelMethods || { fromTuyHoa: [''], fromElsewhere: [''] },
-         experiences: selectedLocation.experiences?.length 
-            ? selectedLocation.experiences.map(e => ({ text: e.text, image: null, imageUrl: e.image })) 
-            : [{ text: '', image: null, imageUrl: null }],
-        cuisines: selectedLocation.cuisine?.length 
-            ? selectedLocation.cuisine.map(c => ({ text: c.text, image: null, imageUrl: c.image })) 
-            : [{ text: '', image: null, imageUrl: null }],
+        experiences: selectedLocation.experiences?.length 
+            ? selectedLocation.experiences.map(e => ({ id: e.id, text: e.text, image: e.image })) 
+            : [{ text: '', image: null }],
+        cuisines: selectedLocation.cuisines?.length 
+            ? selectedLocation.cuisines.map(c => ({ id: c.id, text: c.text, image: c.image })) 
+            : [{ text: '', image: null }],
         tips: selectedLocation.tips?.length ? selectedLocation.tips : [''],
         nearby: selectedLocation.nearby?.length ? selectedLocation.nearby.map(loc => loc.id) : [],
         hotel_ids: selectedLocation.nearbyHotels?.length ? selectedLocation.nearbyHotels.map(hotel => hotel.id) : [],

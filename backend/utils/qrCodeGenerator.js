@@ -1,6 +1,5 @@
 const qrcode = require('qrcode');
-const fs = require('fs');
-const path = require('path');
+const { uploadToCloudinary } = require('./cloudinaryHelper');
 
 /**
  * Tạo mã QR từ một token xác thực và trả về dưới dạng Data URL (base64).
@@ -46,18 +45,8 @@ const generateQrCodeFile = async (verificationToken) => {
     try {
         const verificationUrl = `${process.env.FRONTEND_URL}/verify-invoice/${verificationToken}`;
         
-        // Tạo tên file duy nhất
-        const fileName = `qr_${verificationToken}.png`;
-        const qrDir = path.join(__dirname, '../uploads/qr-codes');
-        const filePath = path.join(qrDir, fileName);
-
-        // Đảm bảo folder tồn tại
-        if (!fs.existsSync(qrDir)) {
-            fs.mkdirSync(qrDir, { recursive: true });
-        }
-
-        // TẠO QR CODE VÀ LƯU VÀO FILE
-        await qrcode.toFile(filePath, verificationUrl, {
+        // TẠO QR CODE DƯỚI DẠNG BUFFER
+        const qrBuffer = await qrcode.toBuffer(verificationUrl, {
             errorCorrectionLevel: 'H',
             margin: 2,
             width: 300,
@@ -67,16 +56,16 @@ const generateQrCodeFile = async (verificationToken) => {
             },
         });
 
-        // TRẢ VỀ URL CÔNG KHAI
-        const qrUrl = `${process.env.BACKEND_URL || 'http://localhost:5000'}/uploads/qr-codes/${fileName}`;
+        // --- CLOUDINARY UPLOAD ---
+        const cloudResult = await uploadToCloudinary(qrBuffer, 'qr-codes');
+        const qrUrl = cloudResult.url;
         
-        console.log(`✅ [qrCodeGenerator] QR file created: ${filePath}`);
-        console.log(`✅ [qrCodeGenerator] QR URL: ${qrUrl}`);
+        console.log(`✅ [qrCodeGenerator] QR created and uploaded to Cloudinary: ${qrUrl}`);
         
         return qrUrl;
     } catch (err) {
-        console.error('❌ Failed to generate QR code file:', err);
-        throw new Error('Could not generate QR code file.');
+        console.error('❌ Failed to generate QR code:', err);
+        throw new Error('Could not generate QR code.');
     }
 };
 
@@ -84,17 +73,8 @@ const generateQrCodeFile = async (verificationToken) => {
  * XÓA QR CODE FILE CŨ (OPTIONAL - CLEAN UP)
  */
 const deleteQrCodeFile = async (verificationToken) => {
-    try {
-        const fileName = `qr_${verificationToken}.png`;
-        const filePath = path.join(__dirname, '../uploads/qr-codes', fileName);
-
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            console.log(`🗑️ [qrCodeGenerator] Deleted old QR: ${fileName}`);
-        }
-    } catch (err) {
-        console.error('❌ Failed to delete QR code file:', err);
-    }
+    // Với Cloudinary, việc xóa QR code cũ có thể được xử lý qua public_id nếu cần.
+    // Tạm thời để trống vì QR code thường không cần xóa ngay lập tức.
 };
 
 module.exports = {

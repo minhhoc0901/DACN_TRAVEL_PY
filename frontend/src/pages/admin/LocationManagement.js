@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
@@ -6,6 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import '../../styles/admin/LocationManagement.css';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { CONFIG } from '../../config';
 import LocationList from '../../components/admin/Location/LocationList';
 import AddLocationModal from '../../components/admin/Location/AddLocationModal';
 import EditLocationModal from '../../components/admin/Location/EditLocationModal';
@@ -86,6 +86,7 @@ const LocationManagement = () => {
   const [formData, setFormData] = useState(initialFormData);
 
   const fetchLocations = useCallback(async () => {
+    setLoading(true);
     try {
       const currentToken = getToken();
       
@@ -94,7 +95,7 @@ const LocationManagement = () => {
         return;
       }
       
-      const response = await axios.get('http://localhost:5000/api/locations', {
+      const response = await axios.get(`${CONFIG.API_API_URL}/locations`, {
         headers: {
           'Authorization': `Bearer ${currentToken}`
         }
@@ -117,7 +118,6 @@ const LocationManagement = () => {
     fetchLocations();
   }, [fetchLocations]);
 
-  // useEffect để tải danh sách khách sạn khi component được mount
   useEffect(() => {
     const fetchHotels = async () => {
       try {
@@ -131,7 +131,6 @@ const LocationManagement = () => {
     fetchHotels();
   }, []);
 
-  // LOCK BODY SCROLL KHI MODAL MỞ
   useEffect(() => {
     if (showAddModal || showEditModal) {
       const scrollY = window.scrollY;
@@ -160,12 +159,10 @@ const LocationManagement = () => {
             return;
         }
 
-        // Hiển thị loading
         toast.info('Đang thêm địa điểm...');
 
         const locationFormData = new FormData();
 
-        // Thêm các trường cơ bản
         locationFormData.append('name', formData.name);
         locationFormData.append('type', formData.type);
         locationFormData.append('description', formData.description);
@@ -179,13 +176,11 @@ const LocationManagement = () => {
         locationFormData.append('ticket_price', formData.ticket_price);
         locationFormData.append('tip', formData.tip);
 
-        // Thêm arrays dưới dạng JSON strings
         locationFormData.append('bestTimes', JSON.stringify(formData.bestTimes));
         locationFormData.append('travelMethods', JSON.stringify(formData.travelMethods));
         locationFormData.append('tips', JSON.stringify(formData.tips));
         locationFormData.append('nearby', JSON.stringify(formData.nearby));
 
-        // Thêm experiences và cuisines
         locationFormData.append('experiences', JSON.stringify(
             formData.experiences.map(exp => ({
                 text: exp.text
@@ -197,7 +192,6 @@ const LocationManagement = () => {
             }))
         ));
 
-        // Upload ảnh chính
         if (formData.images.introduction instanceof File) {
             locationFormData.append('introductionImage', formData.images.introduction);
         }
@@ -205,14 +199,12 @@ const LocationManagement = () => {
             locationFormData.append('architectureImage', formData.images.architecture);
         }
 
-        // Upload ảnh experiences
         formData.experiences.forEach((exp, index) => {
             if (exp.image instanceof File) {
                 locationFormData.append(`experienceImage_${index}`, exp.image);
             }
         });
 
-        // Upload ảnh cuisines
         formData.cuisines.forEach((cuisine, index) => {
             if (cuisine.image instanceof File) {
                 locationFormData.append(`cuisineImage_${index}`, cuisine.image);
@@ -221,15 +213,8 @@ const LocationManagement = () => {
 
         locationFormData.append('hotel_ids', JSON.stringify(formData.hotel_ids || []));
 
-
-
-
-        console.log('Sending data:', {
-            formData: Object.fromEntries(locationFormData.entries())
-        });
-
         const response = await axios.post(
-            'http://localhost:5000/api/locations',
+            `${CONFIG.API_API_URL}/locations`,
             locationFormData,
             {
                 headers: {
@@ -255,7 +240,7 @@ const LocationManagement = () => {
     }
 };
 
-const handleEditLocation = async (e, locationFormData) => { // Nhận FormData đã được chuẩn bị
+const handleEditLocation = async (e, locationFormData) => {
   e.preventDefault();
   try {
     const currentToken = getToken();
@@ -267,11 +252,10 @@ const handleEditLocation = async (e, locationFormData) => { // Nhận FormData �
     toast.info('Đang cập nhật địa điểm...');
     
     const locationId = selectedLocation.id;
-    console.log('Sending update data for location ID:', locationId);
 
     const response = await axios.put(
-      `http://localhost:5000/api/locations/${locationId}`,
-      locationFormData, // Gửi trực tiếp FormData đã nhận
+      `${CONFIG.API_API_URL}/locations/${locationId}`,
+      locationFormData,
       {
         headers: {
           'Authorization': `Bearer ${currentToken}`,
@@ -312,7 +296,7 @@ const handleEditLocation = async (e, locationFormData) => { // Nhận FormData �
         return;
       }
 
-      await axios.delete(`http://localhost:5000/api/locations/${id}`, {
+      await axios.delete(`${CONFIG.API_API_URL}/locations/${id}`, {
         headers: {
           'Authorization': `Bearer ${currentToken}`
         }
@@ -357,7 +341,7 @@ const handleEditLocation = async (e, locationFormData) => { // Nhận FormData �
                     return;
                 }
   
-                const response = await axios.get('http://localhost:5000/api/locations/search', {
+                const response = await axios.get(`${CONFIG.API_API_URL}/locations/search`, {
                     params: { keyword: keyword.trim() },
                     headers: {
                         'Authorization': `Bearer ${currentToken}`
@@ -384,12 +368,15 @@ const handleEditLocation = async (e, locationFormData) => { // Nhận FormData �
     
   
 
-  if (loading) return <div className="loading-state">Đang tải...</div>;
-  if (error) return <div className="error-state">Lỗi: {error}</div>;
-
   return (
     <>
-      <div className="location-management">
+      <ToastContainer />
+      {loading ? (
+        <div className="loading-state">Đang tải...</div>
+      ) : error ? (
+        <div className="error-state">Lỗi: {error}</div>
+      ) : (
+        <div className="location-management">
         <div className="header-wrapper">
           <h1 className="page-title">Quản lý địa điểm</h1>
           <div className="search-bar">
@@ -477,7 +464,7 @@ const handleEditLocation = async (e, locationFormData) => { // Nhận FormData �
         availableHotels={availableHotels} // 
       />
       </div>
-      <ToastContainer />
+      )}
     </>
   );
 };

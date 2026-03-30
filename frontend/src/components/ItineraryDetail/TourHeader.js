@@ -1,14 +1,12 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 import '../../styles/itineraryCSS/TourHeader.css';
 
 const TourHeader = ({ tour }) => {
   if (!tour) return null;
 
-  const placeholderImage = 'https://via.placeholder.com/1200x500?text=Tour+Image';
-  const imageUrl = tour.image && tour.image.startsWith('/') 
-                   ? `http://localhost:5000${tour.image}` 
-                   : (tour.image || placeholderImage);
+  const imageUrl = getDisplayImageUrl(tour.image);
 
   return (
     <section className="tour-header-section">

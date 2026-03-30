@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../styles/itineraryCSS/ReviewsList.css';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 
 const ReviewsList = ({ reviews }) => {
   if (!reviews || reviews.length === 0) {
@@ -12,7 +13,7 @@ const ReviewsList = ({ reviews }) => {
         <div key={review.id} className="review-item">
           <div className="review-author-info">
             <img 
-              src={review.user_avatar ? `http://localhost:5000${review.user_avatar}` : 'https://via.placeholder.com/50?text=User'} 
+              src={getDisplayImageUrl(review.user_avatar)} 
               alt={review.username || 'User'} 
               className="reviewer-avatar"
             />
@@ -40,7 +41,7 @@ const ReviewsList = ({ reviews }) => {
               {review.images.map((imageUrl, imgIndex) => (
                 <div key={imgIndex} className="review-image-item">
                   <img 
-                    src={`http://localhost:5000${imageUrl}`} 
+                    src={getDisplayImageUrl(imageUrl)} 
                     alt={`Hình ảnh đánh giá ${imgIndex + 1} cho review ${review.id}`}
                     className="review-gallery-image"
                     // onClick={() => {/* Open lightbox or larger preview */}}

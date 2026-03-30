@@ -5,6 +5,7 @@ const Notification = require('../models/Notification');
 const NOTIFICATION_TYPES = require('../constants/notificationTypes');
 const NotificationService = require('../utils/notificationService');
 const { pool } = require('../config/db');
+const { uploadToCloudinary, removeFromCloudinary, getPublicIdFromUrl } = require('../utils/cloudinaryHelper');
 const { 
   createTour, 
   getAllTours, 
@@ -117,17 +118,14 @@ exports.createTour = async (req, res) => {
         message: 'Missing required fields: destination, departure_from, duration, description' 
       });
     }
-    // Xử lý file ảnh nếu có
+    // --- CLOUDINARY UPLOAD ---
     if (req.files && req.files.image) {
       const file = req.files.image;
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(__dirname, '../uploads/tours', fileName);
-      
-      await file.mv(uploadPath);
-      tourData.image = `/uploads/tours/${fileName}`;
+      const cloudResult = await uploadToCloudinary(file.data, 'tours');
+      tourData.image = cloudResult.url;
     } else {
       // Nếu không có ảnh, sử dụng ảnh mặc định
-      tourData.image = '/uploads/tours/default-tour.jpg';
+      tourData.image = 'https://res.cloudinary.com/dapsnr3xi/image/upload/v1711786000/travel_phuyen/tours/default-tour.jpg'; // Cần tạo ảnh mặc định trên Cloudinary
     }
 
     // Parse các trường dạng mảng từ chuỗi JSON
@@ -500,13 +498,18 @@ exports.updateTour = async (req, res) => {
         });
       }
 
-      const fileName = `${Date.now()}-${file.name}`;
-      const uploadPath = path.join(__dirname, '../uploads/tours', fileName);
+      // --- CLOUDINARY UPLOAD ---
+      // Lấy thông tin tour hiện tại để xóa ảnh cũ
+      const currentTour = await Tour.getTourById(tourId);
+      if (currentTour && currentTour.image && currentTour.image.includes('cloudinary')) {
+        const oldPublicId = getPublicIdFromUrl(currentTour.image);
+        if (oldPublicId) await removeFromCloudinary(oldPublicId);
+      }
+
+      const cloudResult = await uploadToCloudinary(file.data, 'tours');
+      tourData.image = cloudResult.url;
       
-      await file.mv(uploadPath);
-      tourData.image = `/uploads/tours/${fileName}`;
-      
-      console.log('[updateTour] New image uploaded:', tourData.image);
+      console.log('[updateTour] New image uploaded to Cloudinary:', tourData.image);
     } else {
       // ✅ Nếu không có file mới, GIỮ NGUYÊN ảnh cũ bằng cách xóa field image
       // Backend sẽ không update field image trong database
@@ -659,51 +662,25 @@ exports.getToursByLocation = async (req, res) => {
  */
 exports.getTourImages = async (req, res) => {
   try {
-    const uploadsDir = path.join(__dirname, '../uploads/tours'); // Đường dẫn tới thư mục uploads/tours
+    // Thay vì quét thư mục local, ta lấy tất cả ảnh tour từ Database
+    const [rows] = await pool.query('SELECT DISTINCT image FROM tours WHERE image IS NOT NULL');
     
-    // Đảm bảo thư mục tồn tại
-    if (!fs.existsSync(uploadsDir)) {
-      fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
-    // Đọc tất cả file trong thư mục
-    const files = fs.readdirSync(uploadsDir);
-    
-    // Lọc chỉ lấy các file hình ảnh
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-    const imageFiles = files.filter(file => {
-      const ext = path.extname(file).toLowerCase();
-      return imageExtensions.includes(ext);
-    });
-    
-    // Tạo đường dẫn đầy đủ cho mỗi file
-    const images = imageFiles.map(file => {
-      try {
-        const stats = fs.statSync(path.join(uploadsDir, file));
-        return {
-          name: file,
-          url: `/uploads/tours/${file}`, // Đường dẫn URL tới file
-          size: stats.size, // kích thước tính bằng byte
-          createdAt: stats.birthtime, // ngày tạo file
-        };
-      } catch (err) {
-        return {
-          name: file,
-          url: `/uploads/tours/${file}`,
-          error: 'Không thể đọc thông tin file'
-        };
-      }
-    });
+    // Tạo cấu trúc dữ liệu tương thích
+    const images = rows.map(row => ({
+      name: row.image.split('/').pop(),
+      url: row.image,
+      createdAt: new Date(),
+    }));
     
     res.status(200).json({
       success: true,
       images: images
     });
   } catch (error) {
-    console.error('Error fetching tour images:', error);
+    console.error('Error fetching tour images from DB:', error);
     res.status(500).json({
       success: false,
-      message: 'Lỗi khi lấy danh sách ảnh',
+      message: 'Lỗi khi lấy danh sách ảnh từ DB',
       error: error.message
     });
   }
@@ -745,26 +722,15 @@ exports.uploadTourImage = async (req, res) => {
       });
     }
     
-    // Tạo thư mục nếu chưa tồn tại
-    const uploadDir = path.join(__dirname, '../uploads/tours');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    // Tạo tên file duy nhất để tránh trùng lặp
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const fileName = `tour-${uniqueSuffix}.${fileExt}`;
-    const uploadPath = path.join(uploadDir, fileName);
-    
-    // Upload file
-    await tourImage.mv(uploadPath);
+    // --- CLOUDINARY UPLOAD ---
+    const cloudResult = await uploadToCloudinary(tourImage.data, 'tours');
     
     // Trả về thông tin file đã upload
     res.status(200).json({
       success: true,
-      message: 'Upload thành công',
-      imageUrl: `/uploads/tours/${fileName}`,
-      fileName: fileName,
+      message: 'Upload lên Cloudinary thành công',
+      imageUrl: cloudResult.url,
+      public_id: cloudResult.public_id,
       size: tourImage.size
     });
   } catch (error) {
@@ -969,6 +935,12 @@ exports.approveTour = async (req, res) => {
     console.error('[TourController] Error approving tour:', error);
     res.status(500).json({ success: false, message: 'Lỗi server khi duyệt tour' });
   }
+};
+
+const handleFileUpload = async (file, type, locationId) => {
+  // --- CLOUDINARY UPLOAD ---
+  const cloudResult = await uploadToCloudinary(file.data, 'locations');
+  return cloudResult.url;
 };
 
 exports.rejectTour = async (req, res) => {

@@ -1,70 +1,84 @@
-# Getting Started with Create React App
+# 🌍 Travel & Tour E-Commerce Ecosystem (Fullstack Project)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Dự án **Travel & Tour Management System** là một nền tảng thương mại điện tử du lịch toàn diện, được xây dựng với mục tiêu giải quyết các bài toán thực tế của ngành lữ hành. Dự án tích hợp **Trí tuệ nhân tạo (AI)**, hệ thống **Fintech riêng biệt (Ví điện tử)** và mô hình **Kinh tế đóng góp (UGC)**.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## 🚀 Điểm Sáng Chiến Lược (Strategic Highlights)
 
-### `npm start`
+- **Hệ sinh thái Fintech nội bộ**: Tự xây dựng logic Ví điện tử (Wallet), xử lý nạp/rút và tranh chấp tiền tệ với cơ chế Row-level locking trong MySQL.
+- **Trí tuệ nhân tạo (Generative AI)**: Tích hợp Google Gemini AI để tự động hóa quy trình tư vấn và hỗ trợ khách hàng 24/7.
+- **Mô hình Marketplace (UGC)**: Hệ thống cho phép người dùng đăng tải nội dung (Tour) và quy trình Admin phê duyệt chặt chẽ, mở rộng quy mô kinh doanh không giới hạn.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📊 Bảng Tổng Hợp Chi Tiết Tính Năng
 
-### `npm test`
+| Module | Tính Năng & Chi Tiết Kỹ Thuật | Điểm Nhấn (Tech Highlight) |
+| :--- | :--- | :--- |
+| **Hệ thống Ví (Credit)** | Nạp tiền, Thanh toán nội bộ, Yêu cầu rút tiền, Lịch sử giao dịch chi tiết. | Chống lỗi tranh chấp (Race Condition) bằng `FOR UPDATE` trong Transaction. |
+| **Đặt chỗ (Booking)** | Quy trình đặt tour đa bước, Quản lý tồn kho chỗ trống (Slots) theo thời gian thực. | Tự động hoàn trả slots khi đơn hàng quá hạn thanh toán (Cron Jobs). |
+| **Hoàn trả (Refund)** | Chính sách hoàn tiền thông minh (Smart Refund) dựa trên thời gian hủy thực tế (Phần trăm hoàn phí tự động). | Quy trình Admin phê duyệt rút tiền và hoàn tiền đa tầng. |
+| **AI Support** | Chatbot tư vấn hành trình cá nhân hóa sử dụng Google Gemini AI SDK. | Xử lý ngôn ngữ tự nhiên, phản hồi thông tin địa điểm chính xác. |
+| **Hòa đơn & QR** | Xuất hóa đơn PDF chuyên nghiệp, Tích hợp QR Code để xác thực tính hợp lệ của đơn hàng. | Sử dụng `PDFKit` và `QRCode` để số hóa quy trình quản lý hóa đơn. |
+| **Real-time** | Chat trực tiếp Admin-User, Thông báo đẩy (Push Notifications) về trạng thái booking/duyệt bài. | Kiến trúc hướng sự kiện (Event-driven) trên `Socket.IO`. |
+| **Cộng tác viên** | User tạo Tour mới (trạng thái Pending), Admin duyệt bài (Approve/Reject) và quản lý nội dung. | Hệ thống quản lý trạng thái bài đăng (State Pattern) hiệu quả. |
+| **Quản trị (Admin)** | Dashboard BI sâu: Thống kê doanh thu 12 tháng, Top Tour, Quản lý tài chính và người dùng. | Biểu đồ trực quan với `Chart.js` và quản lý lọc dữ liệu nâng cao. |
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🛠️ Công Nghệ Sử Dụng (Tech Stack)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### Backend (Micro-monolith Architecture)
+- **Engine**: Node.js & Express Framework.
+- **Database**: MySQL với Sequelize ORM (Đảm bảo tính toàn vẹn dữ liệu qua Database Transactions).
+- **Core Libraries**: `Socket.IO` (Real-time), `Node-cron` (Automation), `PDFKit` (Invoicing), `VNPAY SDK` (Payment).
+- **AI Integration**: `@google/generative-ai` (Gemini SDK).
+- **Security**: JWT Authentication, Bcrypt Password Hashing, Joi Schema Validation.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Frontend (Component-based UI)
+- **Core**: React 19 (Latest Version), React Router Dom v7.
+- **Themes & UI**: Material UI (MUI), Bootstrap 5, Framer Motion (Animations), AOS (Scroll Animation).
+- **Interactive**: Leaflet (Maps Integration), React-chartjs-2 (Business Statistics).
+- **State Management**: React Hooks & Context API.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 📁 Cấu Trúc Dự Án (Architecture)
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+├── backend/                # Server-side logic
+│   ├── config/             # Cấu hình môi trường & Database
+│   ├── controllers/        # Xử lý Logic nghiệp vụ (Booking, AI, Credit, v.v.)
+│   ├── models/             # Định nghĩa Schema & Relationships (MySQL)
+│   ├── routes/             # API Endpoints (Auth, Tours, Payments, v.v.)
+│   └── utils/              # Third-party Services (Mail, AI, PDF, QR...)
+├── frontend/               # Client-side (React)
+│   ├── src/pages/          # Dynamic Page Routing (Admin & User)
+│   ├── src/components/     # Modular UI & Reusable Components
+│   └── src/services/       # API Integration Layer
+└── README.md
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+## 🛡️ Điểm Nhấn Kỹ Thuật (Technical Excellence)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+1. **Hiệu năng & Tối ưu**: Kết hợp Cache Service và tối ưu câu lệnh SQL (Indexing) để xử lý lượng dữ liệu tour lớn.
+2. **Bảo mật**: Validate dữ liệu chặt chẽ cả 2 đầu (Frontend & Backend), tích hợp Metadata Sanitize chống tấn công XSS.
+3. **UX Responsive**: Giao diện hiển thị hoàn hảo trên mọi thiết bị (Mobile, Tablet, Desktop) với hệ thống Layout linh hoạt.
+4. **Tự động hóa**: Hệ thống Cron Jobs vận hành ngầm để quản lý trạng thái đơn hàng và các chiến dịch khuyến mãi.
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## ⚙️ Hướng Dẫn Cài Đặt
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 1. Yêu cầu
+- Node.js >= 18.x
+- MySQL Server
 
-### Code Splitting
+### 2. Cài đặt chi tiết
+- Tham khảo hướng dẫn trong thư mục `backend` và `frontend` để cấu hình biến môi trường (`.env`) và khởi chạy dự án.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+---
+*Dự án được hoàn thiện với sự chú trọng cao vào hiệu năng, bảo mật và trải nghiệm người dùng thực tế.*

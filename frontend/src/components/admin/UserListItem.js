@@ -1,4 +1,5 @@
 import React, { memo } from 'react';
+import { getDisplayImageUrl } from '../../utils/imageUtils';
 
 const UserListItem = memo(({ 
     user, 
@@ -16,7 +17,7 @@ const UserListItem = memo(({
         <li className={isSelected ? 'active' : ''} onClick={() => onSelect(user)}>
             <div className="user-avatar">
                 {userAvatar ? (
-                    <img src={`http://localhost:5000${userAvatar}`} alt={userName} />
+                    <img src={getDisplayImageUrl(userAvatar)} alt={userName} />
                 ) : (
                     <div className="avatar-placeholder">
                         {userName.charAt(0).toUpperCase()}

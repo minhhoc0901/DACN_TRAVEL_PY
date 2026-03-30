@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../../contexts/AuthContext';
 import AdminSidebar from './AdminSidebar';
+import AdminHeader from './AdminHeader';
 import '../../../styles/admin/AdminLayout.css';
 
 const AdminLayout = () => {
@@ -10,7 +11,6 @@ const AdminLayout = () => {
 
   const toggleSidebar = () => setIsSidebarCollapsed(!isSidebarCollapsed);
 
-  // ✅ Loading state
   if (loading) {
     return (
       <div className="admin-loading">
@@ -20,7 +20,6 @@ const AdminLayout = () => {
     );
   }
 
-  // ✅ Redirect nếu không phải admin
   if (!user || user.role !== 'admin') {
     return <Navigate to="/" replace />;
   }
@@ -29,9 +28,9 @@ const AdminLayout = () => {
     <div className="admin-wrapper">
       <AdminSidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
       
-      {/* ===== MAIN CONTENT ===== */}
       <div className={`admin-main ${isSidebarCollapsed ? 'expanded' : ''}`}>
-        {/* ===== CONTENT AREA ===== */}
+        <AdminHeader activePageName="" />
+        
         <div className="admin-content">
           <Outlet />
         </div>

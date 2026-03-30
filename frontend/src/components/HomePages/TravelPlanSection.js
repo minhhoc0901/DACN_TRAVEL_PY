@@ -148,7 +148,7 @@ const TravelPlanSection = () => {
                 >
                     <Link to="/itinerary-planner" className="btn-get-started">
                         <i className="bi bi-stars"></i>
-                        <span>Tạo lịch trình AI</span>
+                        <span>Gợi ý lịch trình thông minh</span>
                         <i className="bi bi-arrow-right"></i>
                     </Link>
                     <Link to="/plan" className="btn-create-custom">

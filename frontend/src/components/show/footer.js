@@ -77,7 +77,8 @@ const Footer = () => {
                                         <Link to="/" className="footer-logo">
                                             <div className="logo-text-wrap">
                                                 <div className="logo-icon-wrap">
-                                                    <img src="/logo1.png" alt="Phú Yên Travel Logo" />                                                </div>
+                                                    <img src={process.env.PUBLIC_URL + '/logo1.png'} alt="Phú Yên Travel Logo" />
+                                                </div>
                                                 <div className="logo-text">PHÚ YÊN</div>
                                             </div>
                                         </Link>
@@ -126,7 +127,7 @@ const Footer = () => {
                                         <li><Link to="/locations">Địa điểm</Link></li>
                                         <li><Link to="/tours">Tours du lịch</Link></li>
                                         <li><Link to="/plan">Lập kế hoạch</Link></li>
-                                        <li><Link to="/itinerary-planner">Lịch trình AI</Link></li>
+                                        <li><Link to="/itinerary-planner">Gợi ý lịch trình thông minh</Link></li>
                                         <li><Link to="/about">Giới thiệu</Link></li>
                                         <li><Link to="/contact">Liên hệ</Link></li>
                                     </ul>
