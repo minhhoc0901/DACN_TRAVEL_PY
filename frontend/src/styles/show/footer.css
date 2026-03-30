@@ -448,15 +448,15 @@
 
 /* Thêm CSS cho ảnh logo và chữ trong footer */
 .footer-widget.about-widget .footer-logo .logo-icon-wrap img {
-  height: 50px; 
+  height: 50px;
   width: auto;
   display: block;
 }
 
 .footer-widget.about-widget .footer-logo .logo-text {
-  font-size: 1.5rem; 
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--footer-heading-color, #ffffff); 
+  color: var(--footer-heading-color, #ffffff);
   line-height: 1.2;
 }
 
@@ -465,24 +465,24 @@
     .cta-container {
         padding: 30px;
     }
-    
+
     .cta-title {
         font-size: 24px;
     }
-    
+
     .btn-cta {
         padding: 10px 25px;
     }
-    
+
     .footer-features {
         padding-top: 30px;
         margin-top: 30px;
     }
-    
+
     .footer-main {
         padding: 60px 0 30px;
     }
-    
+
     .feature-icon {
         width: 50px;
         height: 50px;
@@ -494,33 +494,33 @@
     .footer-cta {
         padding: 20px 0;
     }
-    
+
     .cta-container {
         padding: 25px;
         text-align: center;
     }
-    
+
     .btn-cta {
         margin-top: 15px;
     }
-    
+
     .footer-main {
         padding: 50px 0 20px;
     }
-    
+
     .widget-title {
         font-size: 16px;
     }
-    
+
     .footer-links-bottom {
         justify-content: center;
         margin-top: 15px;
     }
-    
+
     .copyright {
         text-align: center;
     }
-    
+
     .back-to-top {
         bottom: 20px;
         right: 20px;
@@ -534,17 +534,17 @@
     .footer-widgets .col-6 {
         width: 100%;
     }
-    
+
     .feature-item {
         margin-bottom: 20px;
     }
-    
+
     .feature-icon {
         width: 45px;
         height: 45px;
         font-size: 18px;
     }
-    
+
     .feature-item h5 {
         font-size: 15px;
     }

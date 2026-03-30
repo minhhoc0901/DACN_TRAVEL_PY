@@ -40,7 +40,9 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: url('../../assets/images/background_PY_1.jpg') center/cover;
+    background-image: url('../../assets/images/background_PY_1.jpg');
+    background-position: center;
+    background-size: cover;
     opacity: 0.1;
 }
 
