@@ -3,7 +3,7 @@ const { pool }  = require('../config/db');
 class Promotion {
     static async getByCodeForUpdate(code, conn) {
         const [rows] = await conn.query(
-            `SELECT * FROM Promotions 
+            `SELECT * FROM promotions 
              WHERE code=? AND is_active=1 
                AND NOW() BETWEEN start_date AND end_date
              FOR UPDATE`,
@@ -14,7 +14,7 @@ class Promotion {
 
     static async incrementUsage(id, conn) {
         await conn.query(
-            `UPDATE Promotions 
+            `UPDATE promotions 
              SET usage_count = usage_count + 1 
              WHERE id=? AND (max_usage IS NULL OR usage_count < max_usage)`,
             [id]
@@ -23,7 +23,7 @@ class Promotion {
 
     static async listActive() {
         const [rows] = await pool.query(
-            `SELECT * FROM Promotions 
+            `SELECT * FROM promotions 
              WHERE is_active=1 AND NOW() BETWEEN start_date AND end_date
              ORDER BY end_date ASC`
         );
@@ -31,17 +31,17 @@ class Promotion {
     }
 
     static async listAll() {
-        const [rows] = await pool.query(`SELECT * FROM Promotions ORDER BY id DESC`);
+        const [rows] = await pool.query(`SELECT * FROM promotions ORDER BY id DESC`);
         return rows;
     }
 
     static async findById(id) {
-        const [rows] = await pool.query(`SELECT * FROM Promotions WHERE id=? LIMIT 1`, [id]);
+        const [rows] = await pool.query(`SELECT * FROM promotions WHERE id=? LIMIT 1`, [id]);
         return rows[0] || null;
     }
 
     static async findByCode(code) {
-        const [rows] = await pool.query(`SELECT * FROM Promotions WHERE code=? LIMIT 1`, [code]);
+        const [rows] = await pool.query(`SELECT * FROM promotions WHERE code=? LIMIT 1`, [code]);
         return rows[0] || null;
     }
 
@@ -51,7 +51,7 @@ class Promotion {
             start_date, end_date, max_usage, is_active
         } = data;
         const [res] = await pool.query(
-            `INSERT INTO Promotions
+            `INSERT INTO promotions
              (code, description, discount_type, discount_value, start_date, end_date, max_usage, is_active)
              VALUES (?,?,?,?,?,?,?,?)`,
             [code, description || null, discount_type, discount_value, start_date, end_date, max_usage || null, is_active ?? true]
@@ -65,7 +65,7 @@ class Promotion {
             start_date, end_date, max_usage, is_active
         } = data;
         await pool.query(
-            `UPDATE Promotions SET
+            `UPDATE promotions SET
              code=?, description=?, discount_type=?, discount_value=?, start_date=?, end_date=?,
              max_usage=?, is_active=? WHERE id=?`,
             [code, description || null, discount_type, discount_value, start_date, end_date,
@@ -75,7 +75,7 @@ class Promotion {
     }
 
     static async remove(id) {
-        await pool.query(`DELETE FROM Promotions WHERE id=?`, [id]);
+        await pool.query(`DELETE FROM promotions WHERE id=?`, [id]);
     }
     static async findByCode(code) {
         const [rows] = await pool.query(
@@ -93,7 +93,7 @@ class Promotion {
     static async markExpiredPromotions() {
         try {
             const [result] = await pool.query(`
-                UPDATE Promotions 
+                UPDATE promotions 
                 SET is_active = 0 
                 WHERE is_active = 1 
                   AND end_date < NOW()
@@ -105,7 +105,7 @@ class Promotion {
 
             return result.affectedRows;
         } catch (error) {
-            console.error('[Promotions] Error marking expired promotions:', error);
+            console.error('[promotions] Error marking expired promotions:', error);
             throw error;
         }
     }
@@ -116,7 +116,7 @@ class Promotion {
     static async activateScheduledPromotions() {
         try {
             const [result] = await pool.query(`
-                UPDATE Promotions 
+                UPDATE promotions 
                 SET is_active = 1 
                 WHERE is_active = 0 
                   AND start_date <= NOW()
@@ -129,7 +129,7 @@ class Promotion {
 
             return result.affectedRows;
         } catch (error) {
-            console.error('[Promotions] Error activating promotions:', error);
+            console.error('[promotions] Error activating promotions:', error);
             throw error;
         }
     }

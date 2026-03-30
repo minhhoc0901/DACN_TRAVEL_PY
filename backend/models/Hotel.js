@@ -11,7 +11,7 @@ class Hotel {
             `SELECT id, name, address, latitude, longitude, phone, email, 
                     website, rating, price_range, description, image, 
                     created_at, updated_at 
-             FROM Hotels 
+             FROM hotels 
              ORDER BY name ASC`
         );
         return rows;
@@ -24,7 +24,7 @@ class Hotel {
      */
     static async findById(id) {
         const [rows] = await pool.query(
-            `SELECT * FROM Hotels WHERE id = ? LIMIT 1`,
+            `SELECT * FROM hotels WHERE id = ? LIMIT 1`,
             [id]
         );
         return rows[0] || null;
@@ -51,7 +51,7 @@ class Hotel {
         } = data;
 
         const [result] = await pool.query(
-            `INSERT INTO Hotels 
+            `INSERT INTO hotels 
              (name, address, latitude, longitude, phone, email, website, 
               rating, price_range, description, image) 
              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,

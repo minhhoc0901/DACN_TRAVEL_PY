@@ -194,7 +194,7 @@ class Payment {
   }
    static async markCancelled(txnRef) {
         const [result] = await pool.query(
-            "UPDATE Payments SET payment_status = 'failed' WHERE vnp_TxnRef = ? AND payment_status = 'pending'",
+            "UPDATE payments SET payment_status = 'failed' WHERE vnp_TxnRef = ? AND payment_status = 'pending'",
             [txnRef]
         );
         return result.affectedRows > 0;

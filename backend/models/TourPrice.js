@@ -4,20 +4,20 @@ class TourPrice {
     static async listByTour(tourId) {
         const [rows] = await pool.query(
             `SELECT id, tour_id, price_type, price, sale_price
-             FROM Tour_Prices WHERE tour_id=? ORDER BY price_type`, [tourId]);
+             FROM tour_prices WHERE tour_id=? ORDER BY price_type`, [tourId]);
         return rows;
     }
 
     static async findById(id) {
         const [rows] = await pool.query(
             `SELECT id, tour_id, price_type, price, sale_price
-             FROM Tour_Prices WHERE id=? LIMIT 1`, [id]);
+             FROM tour_prices WHERE id=? LIMIT 1`, [id]);
         return rows[0] || null;
     }
 
     static async create({ tour_id, price_type, price, sale_price }) {
         const [res] = await pool.query(
-            `INSERT INTO Tour_Prices (tour_id, price_type, price, sale_price)
+            `INSERT INTO tour_prices (tour_id, price_type, price, sale_price)
              VALUES (?,?,?,?)`,
             [tour_id, price_type, price, sale_price || null]
         );
@@ -26,7 +26,7 @@ class TourPrice {
 
     static async update(id, { price_type, price, sale_price }) {
         await pool.query(
-            `UPDATE Tour_Prices
+            `UPDATE tour_prices
              SET price_type=?, price=?, sale_price=?
              WHERE id=?`,
             [price_type, price, sale_price || null, id]
@@ -35,13 +35,13 @@ class TourPrice {
     }
 
     static async remove(id) {
-        await pool.query(`DELETE FROM Tour_Prices WHERE id=?`, [id]);
+        await pool.query(`DELETE FROM tour_prices WHERE id=?`, [id]);
     }
     
     static async listAll() {
         const [rows] = await pool.query(
             `SELECT id, tour_id, price_type, price, sale_price
-             FROM Tour_Prices ORDER BY id`);
+             FROM tour_prices ORDER BY id`);
         return rows;
     }
 }

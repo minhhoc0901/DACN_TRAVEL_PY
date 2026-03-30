@@ -19,7 +19,7 @@ class User {
       const hashedPassword = await bcrypt.hash(this.password, salt);
 
       const [result] = await connection.execute(
-        'INSERT INTO Users (username, full_name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (username, full_name, email, phone, password_hash, role) VALUES (?, ?, ?, ?, ?, ?)',
         [this.username, this.fullName, this.email, this.phone, hashedPassword, this.role]
       );
 
@@ -42,7 +42,7 @@ class User {
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.execute(
-          'SELECT * FROM Users WHERE email = ?',
+          'SELECT * FROM users WHERE email = ?',
           [email]
         );
 
@@ -62,7 +62,7 @@ class User {
       try {
         // Đảm bảo câu SQL có lấy trường 'avatar'
         const [rows] = await connection.execute(
-          'SELECT id, username, full_name, email, phone, role, password_hash, created_at, avatar FROM Users WHERE username = ?',
+          'SELECT id, username, full_name, email, phone, role, password_hash, created_at, avatar FROM users WHERE username = ?',
           [username]
         );
         return rows.length ? rows[0] : null;
@@ -80,7 +80,7 @@ class User {
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.execute(
-          'SELECT id, username, full_name, email, phone, role, password_hash, created_at, avatar FROM Users WHERE id = ?', // Thêm password_hash
+          'SELECT id, username, full_name, email, phone, role, password_hash, created_at, avatar FROM users WHERE id = ?', // Thêm password_hash
           [id]
         );
 
@@ -99,7 +99,7 @@ class User {
       const connection = await pool.getConnection();
       try {
         const [rows] = await connection.execute(
-          'SELECT id, username, full_name, email, phone, role, created_at FROM Users'
+          'SELECT id, username, full_name, email, phone, role, created_at FROM users'
         );
 
         return rows;
@@ -161,7 +161,7 @@ class User {
         }
 
         values.push(id);
-        const query = `UPDATE Users SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+        const query = `UPDATE users SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
         const [result] = await connection.execute(query, values);
 
         return result.affectedRows > 0;
@@ -179,7 +179,7 @@ class User {
       const connection = await pool.getConnection();
       try {
         const [result] = await connection.execute(
-          'DELETE FROM Users WHERE id = ?',
+          'DELETE FROM users WHERE id = ?',
           [id]
         );
 

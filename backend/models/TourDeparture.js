@@ -7,7 +7,7 @@ class TourDeparture {
     static async listByTour(tourId) {
         const [rows] = await pool.query(
             `SELECT id, tour_id, departure_date, end_date, capacity, slots_booked, status 
-             FROM Tour_Departures WHERE tour_id = ? ORDER BY departure_date DESC`,
+             FROM tour_departures WHERE tour_id = ? ORDER BY departure_date DESC`,
             [tourId]
         );
         return rows;
@@ -19,7 +19,7 @@ class TourDeparture {
      */
     static async findById(id, connection = pool) {
         const [rows] = await connection.query(
-            `SELECT * FROM Tour_Departures WHERE id = ? LIMIT 1`,
+            `SELECT * FROM tour_departures WHERE id = ? LIMIT 1`,
             [id]
         );
         return rows[0] || null;
@@ -53,7 +53,7 @@ class TourDeparture {
 
         // ✅ Insert với đầy đủ thông tin
         const [result] = await pool.query(
-            `INSERT INTO Tour_Departures 
+            `INSERT INTO tour_departures 
              (tour_id, departure_date, duration, end_date, capacity, status) 
              VALUES (?, ?, ?, ?, ?, ?)`,
             [tour_id, departure_date, duration, end_date, capacity, status]
@@ -84,7 +84,7 @@ class TourDeparture {
         }
 
         await pool.query(
-            `UPDATE Tour_Departures 
+            `UPDATE tour_departures 
              SET departure_date = ?, end_date = ?, capacity = ?, status = ? 
              WHERE id = ?`,
             [departure_date, end_date, capacity, status, id]
@@ -97,7 +97,7 @@ class TourDeparture {
      * Xóa một lịch khởi hành
      */
     static async remove(id) {
-        const [result] = await pool.query(`DELETE FROM Tour_Departures WHERE id = ?`, [id]);
+        const [result] = await pool.query(`DELETE FROM tour_departures WHERE id = ?`, [id]);
         return result.affectedRows > 0;
     }
 
@@ -113,7 +113,7 @@ class TourDeparture {
         
         const [rows] = await connection.execute(
             `SELECT id, capacity, slots_booked, status 
-             FROM Tour_Departures 
+             FROM tour_departures 
              WHERE id = ? AND status = 'OPEN' 
              FOR UPDATE`,
             [departureId]
@@ -130,7 +130,7 @@ class TourDeparture {
     static async increaseSlotsBooked(departureId, quantity, connection) {
         if (!connection) throw new Error("Hàm này phải được gọi trong một transaction.");
         await connection.execute(
-            `UPDATE Tour_Departures SET slots_booked = slots_booked + ? WHERE id = ?`,
+            `UPDATE tour_departures SET slots_booked = slots_booked + ? WHERE id = ?`,
             [quantity, departureId]
         );
     }
@@ -145,7 +145,7 @@ class TourDeparture {
         if (slotsToRestore <= 0) return; // Không làm gì nếu không có chỗ nào để hoàn trả
 
         const sql = `
-            UPDATE Tour_Departures 
+            UPDATE tour_departures 
             SET slots_booked = GREATEST(0, slots_booked - ?) 
             WHERE id = ?
         `;
@@ -162,7 +162,7 @@ class TourDeparture {
                 id, 
                 departure_date, 
                 (capacity - slots_booked) AS slots_available 
-             FROM Tour_Departures 
+             FROM tour_departures 
              WHERE tour_id = ? AND status = 'OPEN' AND departure_date >= CURDATE()
              ORDER BY departure_date ASC`,
             [tourId]

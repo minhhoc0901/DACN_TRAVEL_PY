@@ -4,7 +4,7 @@ class BookingDetail {
     static async bulkInsert(conn, bookingId, items) {
         for (const it of items) {
             await conn.query(
-                `INSERT INTO Booking_Details
+                `INSERT INTO booking_details
                  (booking_id, price_type, quantity, unit_price, subtotal)
                  VALUES (?,?,?,?,?)`,
                 [bookingId, it.price_type, it.quantity, it.unit_price, it.subtotal]

@@ -18,8 +18,8 @@ async function searchLocations(keyword) {
         l.latitude,
         l.longitude,
         ld.introduction
-      FROM Locations l
-      LEFT JOIN LocationDetails ld ON l.id = ld.location_id
+      FROM locations l
+      LEFT JOIN locationdetails ld ON l.id = ld.location_id
       WHERE LOWER(l.name) LIKE LOWER(?)
       ORDER BY l.name ASC
     `;
@@ -34,7 +34,7 @@ async function searchLocations(keyword) {
 
 
 /**
- * Thêm một địa điểm mới vào các bảng Locations, LocationDetails và TravelInfo
+ * Thêm một địa điểm mới vào các bảng locations, locationdetails và travelinfo
  * @param {Object} data - Dữ liệu địa điểm (name, type, description, latitude, longitude,...)
  * @returns {Number} - ID của địa điểm vừa tạo
  */
@@ -44,10 +44,10 @@ async function createLocation(data) {
   try {
     await connection.beginTransaction();
 
-    // 1. Insert into Locations
+    // 1. Insert into locations
     const [locationResult] = await connection.execute(
       `
-            INSERT INTO Locations (name, type, description, latitude, longitude)
+            INSERT INTO locations (name, type, description, latitude, longitude)
             VALUES (?, ?, ?, ?, ?)
         `,
       [
@@ -61,10 +61,10 @@ async function createLocation(data) {
 
     const locationId = locationResult.insertId;
 
-    // 2. Insert LocationDetails
+    // 2. Insert locationdetails
     await connection.execute(
       `
-            INSERT INTO LocationDetails 
+            INSERT INTO locationdetails 
             (location_id, subtitle, introduction, why_visit_architecture_title, 
              why_visit_architecture_text, why_visit_culture)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -79,16 +79,16 @@ async function createLocation(data) {
       ]
     );
 
-    // 3. Insert TravelInfo
+    // 3. Insert travelinfo
     await connection.execute(
       `
-            INSERT INTO TravelInfo (location_id, ticket_price, tip)
+            INSERT INTO travelinfo (location_id, ticket_price, tip)
             VALUES (?, ?, ?)
         `,
       [locationId, data.ticket_price || "", data.tip || ""]
     );
 
-    // 4. Insert BestTimes
+    // 4. Insert besttimes
     if (Array.isArray(data.bestTimes) && data.bestTimes.length > 0) {
       const bestTimesValues = data.bestTimes
         .filter((time) => time && time.trim())
@@ -97,7 +97,7 @@ async function createLocation(data) {
       if (bestTimesValues.length > 0) {
         await connection.query(
           `
-                    INSERT INTO BestTimes (location_id, time_description) 
+                    INSERT INTO besttimes (location_id, time_description) 
                     VALUES ?
                 `,
           [bestTimesValues]
@@ -105,13 +105,13 @@ async function createLocation(data) {
       }
     }
 
-    // 5. Insert TravelMethods
+    // 5. Insert travelmethods
     if (data.travelMethods) {
       if (Array.isArray(data.travelMethods.fromTuyHoa)) {
         for (const method of data.travelMethods.fromTuyHoa) {
           if (method && method.trim()) {
             await connection.execute(
-              "INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)",
+              "INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, ?, ?)",
               [locationId, "fromTuyHoa", method]
             );
           }
@@ -122,7 +122,7 @@ async function createLocation(data) {
         for (const method of data.travelMethods.fromElsewhere) {
           if (method && method.trim()) {
             await connection.execute(
-              "INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)",
+              "INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, ?, ?)",
               [locationId, "fromElsewhere", method]
             );
           }
@@ -130,13 +130,13 @@ async function createLocation(data) {
       }
     }
 
-    // 6. Insert Experiences
+    // 6. Insert experiences
     const experienceIds = [];
     if (Array.isArray(data.experiences)) {
       for (const exp of data.experiences) {
         if (exp && (exp.text || exp.hasImage)) {
           const [result] = await connection.execute(
-            "INSERT INTO Experiences (location_id, description) VALUES (?, ?)",
+            "INSERT INTO experiences (location_id, description) VALUES (?, ?)",
             [locationId, (exp.text || "").trim()]
           );
           experienceIds.push(result.insertId);
@@ -146,13 +146,13 @@ async function createLocation(data) {
       }
     }
 
-    // 7. Insert Cuisines
+    // 7. Insert cuisines
     const cuisineIds = [];
     if (Array.isArray(data.cuisines)) {
       for (const cuisine of data.cuisines) {
         if (cuisine && (cuisine.text || cuisine.hasImage)) {
           const [result] = await connection.execute(
-            "INSERT INTO Cuisines (location_id, description) VALUES (?, ?)",
+            "INSERT INTO cuisines (location_id, description) VALUES (?, ?)",
             [locationId, (cuisine.text || "").trim()]
           );
           cuisineIds.push(result.insertId);
@@ -162,7 +162,7 @@ async function createLocation(data) {
       }
     }
 
-    // 8. Insert Tips
+    // 8. Insert tips
     if (Array.isArray(data.tips)) {
       const tipsValues = data.tips
         .filter((tip) => tip && tip.trim())
@@ -171,7 +171,7 @@ async function createLocation(data) {
       if (tipsValues.length > 0) {
         await connection.query(
           `
-                    INSERT INTO Tips (location_id, description) 
+                    INSERT INTO tips (location_id, description) 
                     VALUES ?
                 `,
           [tipsValues]
@@ -179,24 +179,24 @@ async function createLocation(data) {
       }
     }
 
-    // 9. Insert NearbyLocations
+    // 9. Insert Nearbylocations
     if (Array.isArray(data.nearby)) {
       for (const nearbyId of data.nearby) {
         if (nearbyId) {
           await connection.execute(
-            "INSERT INTO NearbyLocations (location_id, nearby_location_id) VALUES (?, ?)",
+            "INSERT INTO Nearbylocations (location_id, nearby_location_id) VALUES (?, ?)",
             [locationId, nearbyId]
           );
         }
       }
     }
 
-    // ✅ 10. THÊM MỚI: Insert vào bảng LocationHotels
+    // ✅ 10. THÊM MỚI: Insert vào bảng locationhotels
     if (Array.isArray(data.hotel_ids) && data.hotel_ids.length > 0) {
       const hotelValues = data.hotel_ids.map((hotelId) => [locationId, hotelId]);
       if (hotelValues.length > 0) {
         await connection.query(
-          `INSERT INTO LocationHotels (location_id, hotel_id) VALUES ?`,
+          `INSERT INTO locationhotels (location_id, hotel_id) VALUES ?`,
           [hotelValues]
         );
       }
@@ -219,8 +219,8 @@ async function createLocation(data) {
 async function getNearbyHotels(locationId) {
   const query = `
         SELECT h.id, h.name, h.address, h.latitude, h.longitude, h.rating, h.website
-        FROM LocationHotels lh
-        JOIN Hotels h ON lh.hotel_id = h.id
+        FROM locationhotels lh
+        JOIN hotels h ON lh.hotel_id = h.id
         WHERE lh.location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -247,9 +247,9 @@ async function getBasicLocations() {
             ld.why_visit_culture,
             ti.ticket_price,
             ti.tip
-        FROM Locations l
-        LEFT JOIN LocationDetails ld ON l.id = ld.location_id
-        LEFT JOIN TravelInfo ti ON l.id = ti.location_id;
+        FROM locations l
+        LEFT JOIN locationdetails ld ON l.id = ld.location_id
+        LEFT JOIN travelinfo ti ON l.id = ti.location_id;
     `;
   const [rows] = await pool.execute(query);
   return rows;
@@ -276,9 +276,9 @@ async function getBasicLocationById(locationId) {
             ld.why_visit_culture,
             ti.ticket_price,
             ti.tip
-        FROM Locations l
-        LEFT JOIN LocationDetails ld ON l.id = ld.location_id
-        LEFT JOIN TravelInfo ti ON l.id = ti.location_id
+        FROM locations l
+        LEFT JOIN locationdetails ld ON l.id = ld.location_id
+        LEFT JOIN travelinfo ti ON l.id = ti.location_id
         WHERE l.id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -326,9 +326,9 @@ async function updateLocation(locationId, data) {
       hotel_ids: safeJSONParse(data.hotel_ids, []),
     };
 
-    // 3. Cập nhật bảng chính `Locations`
+    // 3. Cập nhật bảng chính `locations`
     await connection.execute(
-      `UPDATE Locations 
+      `UPDATE locations 
        SET name = ?, type = ?, description = ?, latitude = ?, longitude = ?
        WHERE id = ?`,
       [
@@ -341,35 +341,35 @@ async function updateLocation(locationId, data) {
       ]
     );
 
-    // 4. Cập nhật hoặc Thêm mới (UPSERT) vào `LocationDetails`
-    const [detailsCheck] = await connection.execute('SELECT location_id FROM LocationDetails WHERE location_id = ?', [locationId]);
+    // 4. Cập nhật hoặc Thêm mới (UPSERT) vào `locationdetails`
+    const [detailsCheck] = await connection.execute('SELECT location_id FROM locationdetails WHERE location_id = ?', [locationId]);
     if (detailsCheck.length > 0) {
       await connection.execute(
-        `UPDATE LocationDetails SET subtitle = ?, introduction = ?, why_visit_architecture_title = ?, why_visit_architecture_text = ?, why_visit_culture = ? WHERE location_id = ?`,
+        `UPDATE locationdetails SET subtitle = ?, introduction = ?, why_visit_architecture_title = ?, why_visit_architecture_text = ?, why_visit_culture = ? WHERE location_id = ?`,
         [parsedData.subtitle || '', parsedData.introduction || '', parsedData.why_visit_architecture_title || '', parsedData.why_visit_architecture_text || '', parsedData.why_visit_culture || '', locationId]
       );
     } else {
       await connection.execute(
-        `INSERT INTO LocationDetails (location_id, subtitle, introduction, why_visit_architecture_title, why_visit_architecture_text, why_visit_culture) VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO locationdetails (location_id, subtitle, introduction, why_visit_architecture_title, why_visit_architecture_text, why_visit_culture) VALUES (?, ?, ?, ?, ?, ?)`,
         [locationId, parsedData.subtitle || '', parsedData.introduction || '', parsedData.why_visit_architecture_title || '', parsedData.why_visit_architecture_text || '', parsedData.why_visit_culture || '']
       );
     }
 
-    // 5. Cập nhật hoặc Thêm mới (UPSERT) vào `TravelInfo`
-    const [travelInfoCheck] = await connection.execute('SELECT location_id FROM TravelInfo WHERE location_id = ?', [locationId]);
+    // 5. Cập nhật hoặc Thêm mới (UPSERT) vào `travelinfo`
+    const [travelInfoCheck] = await connection.execute('SELECT location_id FROM travelinfo WHERE location_id = ?', [locationId]);
     if (travelInfoCheck.length > 0) {
-      await connection.execute(`UPDATE TravelInfo SET ticket_price = ?, tip = ? WHERE location_id = ?`, [parsedData.ticket_price || '', parsedData.tip || '', locationId]);
+      await connection.execute(`UPDATE travelinfo SET ticket_price = ?, tip = ? WHERE location_id = ?`, [parsedData.ticket_price || '', parsedData.tip || '', locationId]);
     } else {
-      await connection.execute(`INSERT INTO TravelInfo (location_id, ticket_price, tip) VALUES (?, ?, ?)`, [locationId, parsedData.ticket_price || '', parsedData.tip || '']);
+      await connection.execute(`INSERT INTO travelinfo (location_id, ticket_price, tip) VALUES (?, ?, ?)`, [locationId, parsedData.ticket_price || '', parsedData.tip || '']);
     }
 
     // 6. Cập nhật các bảng liên quan
     // --- Các bảng đơn giản: Xóa và Thêm lại ---
     const simpleTables = {
-      'BestTimes': { data: parsedData.bestTimes, columns: ['location_id', 'time_description'] },
-      'Tips': { data: parsedData.tips, columns: ['location_id', 'description'] },
-      'NearbyLocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
-      'LocationHotels': { data: parsedData.hotel_ids, columns: ['location_id', 'hotel_id'] }
+      'besttimes': { data: parsedData.bestTimes, columns: ['location_id', 'time_description'] },
+      'tips': { data: parsedData.tips, columns: ['location_id', 'description'] },
+      'Nearbylocations': { data: parsedData.nearby, columns: ['location_id', 'nearby_location_id'] },
+      'locationhotels': { data: parsedData.hotel_ids, columns: ['location_id', 'hotel_id'] }
     };
 
     for (const [tableName, config] of Object.entries(simpleTables)) {
@@ -384,25 +384,25 @@ async function updateLocation(locationId, data) {
       }
     }
 
-    // --- Xử lý riêng TravelMethods (Xóa và Thêm lại) ---
-    await connection.execute(`DELETE FROM TravelMethods WHERE location_id = ?`, [locationId]);
+    // --- Xử lý riêng getTravelMethods (Xóa và Thêm lại) ---
+    await connection.execute(`DELETE FROM travelmethods WHERE location_id = ?`, [locationId]);
     const { fromTuyHoa = [], fromElsewhere = [] } = parsedData.travelMethods;
     if (Array.isArray(fromTuyHoa)) {
       for (const method of fromTuyHoa) {
         if (method && typeof method === 'string' && method.trim()) {
-          await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromTuyHoa', method.trim()]);
+          await connection.execute('INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromTuyHoa', method.trim()]);
         }
       }
     }
     if (Array.isArray(fromElsewhere)) {
       for (const method of fromElsewhere) {
         if (method && typeof method === 'string' && method.trim()) {
-          await connection.execute('INSERT INTO TravelMethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromElsewhere', method.trim()]);
+          await connection.execute('INSERT INTO travelmethods (location_id, method_type, description) VALUES (?, ?, ?)', [locationId, 'fromElsewhere', method.trim()]);
         }
       }
     }
 
-    // --- logic SYNC cho Experiences và Cuisines (Để bảo toàn ID và Ảnh) ---
+    // --- logic SYNC cho experiences và cuisines (Để bảo toàn ID và Ảnh) ---
     const syncRelatedTable = async (tableName, items) => {
       const currentItemIds = [];
       for (const item of items) {
@@ -429,7 +429,7 @@ async function updateLocation(locationId, data) {
       }
 
       // Xóa các mục cũ không còn trong danh sách mới
-      // Trước khi xóa, lý tưởng nhất là xóa ảnh trên Cloudinary, nhưng để đơn giản ta giữ record trong Location_Images (hoặc xóa sau)
+      // Trước khi xóa, lý tưởng nhất là xóa ảnh trên Cloudinary, nhưng để đơn giản ta giữ record trong location_images (hoặc xóa sau)
       if (currentItemIds.length > 0) {
         await connection.query(
           `DELETE FROM ${tableName} WHERE location_id = ? AND id NOT IN (?)`,
@@ -440,8 +440,8 @@ async function updateLocation(locationId, data) {
       }
     };
 
-    if (parsedData.experiences) await syncRelatedTable('Experiences', parsedData.experiences);
-    if (parsedData.cuisines) await syncRelatedTable('Cuisines', parsedData.cuisines);
+    if (parsedData.experiences) await syncRelatedTable('experiences', parsedData.experiences);
+    if (parsedData.cuisines) await syncRelatedTable('cuisines', parsedData.cuisines);
 
     await connection.commit();
     console.log(`[updateLocation] Giao dịch thành công cho địa điểm ID: ${locationId}`);
@@ -485,16 +485,16 @@ async function deleteLocation(locationId) {
       // "Ratings",
       // "User_Uploads",
       // "Comments",
-      "LocationDetails",
-      "TravelInfo",
-      "BestTimes",
-      "TravelMethods",
-      "Experiences",
-      "Cuisines",
-      "Tips",
-      "NearbyLocations",
-      "Location_Images",
-      "LocationHotels",
+      "locationdetails",
+      "travelinfo",
+      "besttimes",
+      "travelmethods",
+      "experiences",
+      "cuisines",
+      "tips",
+      "Nearbylocations",
+      "location_images",
+      "locationhotels",
     ];
 
     // Xóa từ các bảng liên quan
@@ -504,14 +504,14 @@ async function deleteLocation(locationId) {
       ]);
     }
 
-    // Xóa từ bảng Tour_Locations nếu có liên kết với tours
+    // Xóa từ bảng Tour_locations nếu có liên kết với tours
     await connection.execute(
-      "DELETE FROM Tour_Locations WHERE location_id = ?",
+      "DELETE FROM Tour_locations WHERE location_id = ?",
       [locationId]
     );
 
-    // Cuối cùng xóa từ bảng Locations
-    await connection.execute("DELETE FROM Locations WHERE id = ?", [
+    // Cuối cùng xóa từ bảng locations
+    await connection.execute("DELETE FROM locations WHERE id = ?", [
       locationId,
     ]);
 
@@ -539,7 +539,7 @@ async function deleteLocation(locationId) {
 async function getImage(locationId, imageType, referenceId = null) {
   let query = `
         SELECT image_url 
-        FROM Location_Images 
+        FROM location_images 
         WHERE location_id = ? AND image_type = ?
     `;
   const params = [locationId, imageType];
@@ -572,7 +572,7 @@ async function getImage(locationId, imageType, referenceId = null) {
 async function getBestTimes(locationId) {
   const query = `
     SELECT time_description
-    FROM BestTimes
+    FROM besttimes
     WHERE location_id = ?;
   `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -584,7 +584,7 @@ async function getBestTimes(locationId) {
 async function getTips(locationId) {
   const query = `
     SELECT description
-    FROM Tips
+    FROM tips
     WHERE location_id = ?;
   `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -601,7 +601,7 @@ async function getTips(locationId) {
 async function getTravelMethods(locationId) {
   const query = `
         SELECT method_type, description
-        FROM TravelMethods
+        FROM travelmethods
         WHERE location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -625,7 +625,7 @@ async function getTravelMethods(locationId) {
 async function getExperiences(locationId) {
   const query = `
       SELECT e.id, e.description
-      FROM Experiences e
+      FROM experiences e
       WHERE e.location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -645,7 +645,7 @@ async function getExperiences(locationId) {
 async function getCuisines(locationId) {
   const query = `
         SELECT c.id, c.description
-        FROM Cuisines c
+        FROM cuisines c
         WHERE c.location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -667,8 +667,8 @@ async function getCuisines(locationId) {
 // async function getNearbyLocations(locationId) {
 //   const query = `
 //         SELECT l2.name
-//         FROM NearbyLocations nl
-//         JOIN Locations l2 ON nl.nearby_location_id = l2.id
+//         FROM Nearbylocations nl
+//         JOIN locations l2 ON nl.nearby_location_id = l2.id
 //         WHERE nl.location_id = ?;
 //     `;
 //   const [rows] = await pool.execute(query, [locationId]);
@@ -678,8 +678,8 @@ async function getCuisines(locationId) {
 async function getNearbyLocations(locationId) {
   const query = `
       SELECT nl.nearby_location_id as id, l2.name
-      FROM NearbyLocations nl
-      JOIN Locations l2 ON nl.nearby_location_id = l2.id
+      FROM Nearbylocations nl
+      JOIN locations l2 ON nl.nearby_location_id = l2.id
       WHERE nl.location_id = ?;
   `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -713,7 +713,7 @@ async function getNearbyLocations(locationId) {
 //   const query = `
 //         SELECT c.id, c.comment_text, c.created_at, u.username
 //         FROM Comments c
-//         JOIN Users u ON c.user_id = u.id
+//         JOIN users u ON c.user_id = u.id
 //         WHERE c.location_id = ?;
 //     `;
 //   const [rows] = await pool.execute(query, [locationId]);
@@ -729,7 +729,7 @@ async function getNearbyLocations(locationId) {
 //   const query = `
 //         SELECT image_url, uploaded_at, u.username
 //         FROM User_Uploads uu
-//         JOIN Users u ON uu.user_id = u.id
+//         JOIN users u ON uu.user_id = u.id
 //         WHERE uu.location_id = ?;
 //     `;
 //   const [rows] = await pool.execute(query, [locationId]);
@@ -744,8 +744,8 @@ async function getNearbyLocations(locationId) {
 async function getNearbyHotels(locationId) {
   const query = `
         SELECT h.id, h.name, h.address, h.latitude, h.longitude, h.rating, h.website
-        FROM LocationHotels lh
-        JOIN Hotels h ON lh.hotel_id = h.id
+        FROM locationhotels lh
+        JOIN hotels h ON lh.hotel_id = h.id
         WHERE lh.location_id = ?;
     `;
   const [rows] = await pool.execute(query, [locationId]);
@@ -772,7 +772,7 @@ async function composeLocation(loc) {
     // ratings,
     // comments,
     // userUploads,
-    nearbyHotels,
+    nearbyhotels,
   ] = await Promise.all([
     getImage(loc.id, "introduction"),
     getImage(loc.id, "architecture"),
@@ -789,10 +789,10 @@ async function composeLocation(loc) {
   ]);
 
   // Đảm bảo các mảng được định dạng đúng
-  const formattedBestTimes = Array.isArray(bestTimes) ? bestTimes : [];
-  const formattedTips = Array.isArray(tips) ? tips : [];
-  const formattedExperiences = Array.isArray(experiences) ? experiences : [];
-  const formattedCuisines = Array.isArray(cuisines) ? cuisines : [];
+  const formattedbesttimes = Array.isArray(bestTimes) ? bestTimes : [];
+  const formattedtips = Array.isArray(tips) ? tips : [];
+  const formattedexperiences = Array.isArray(experiences) ? experiences : [];
+  const formattedcuisines = Array.isArray(cuisines) ? cuisines : [];
   const formattedNearby = Array.isArray(nearby) ? nearby : [];
 
   return {
@@ -817,21 +817,21 @@ async function composeLocation(loc) {
       },
       culture: loc.why_visit_culture,
     },
-    bestTimes: formattedBestTimes,
+    bestTimes: formattedbesttimes,
     travelMethods,
     travelInfo: {
       ticketPrice: loc.ticket_price,
       tip: loc.tip,
     },
-    experiences: formattedExperiences,
-    cuisines: formattedCuisines,
-    tips: formattedTips,
+    experiences: formattedexperiences,
+    cuisines: formattedcuisines,
+    tips: formattedtips,
     nearby: formattedNearby,
     // averageRating: ratings.averageRating,
     // ratingCount: ratings.ratingCount,
     // comments,
     // userUploads,
-    nearbyHotels,
+    nearbyhotels,
   };
 }
 
@@ -862,7 +862,7 @@ async function getLocationById(locationId) {
 
 async function getLocationByName(name) {
   const query = `
-      SELECT * FROM Locations WHERE name = ?;
+      SELECT * FROM locations WHERE name = ?;
     `;
   const [rows] = await pool.execute(query, [name]);
   return rows[0] || null;
@@ -875,9 +875,9 @@ async function updateBasicInfo(locationId, data) {
   try {
     await connection.beginTransaction();
 
-    // Cập nhật bảng Locations
+    // Cập nhật bảng locations
     await connection.execute(
-      `UPDATE Locations SET 
+      `UPDATE locations SET 
                 name = ?, 
                 type = ?, 
                 description = ?, 
@@ -887,9 +887,9 @@ async function updateBasicInfo(locationId, data) {
       [name, type, description, latitude, longitude, locationId]
     );
 
-    // Cập nhật subtitle trong LocationDetails
+    // Cập nhật subtitle trong locationdetails
     await connection.execute(
-      `UPDATE LocationDetails SET subtitle = ? WHERE location_id = ?`,
+      `UPDATE locationdetails SET subtitle = ? WHERE location_id = ?`,
       [subtitle, locationId]
     );
 
@@ -917,9 +917,9 @@ async function updateTravelInfo(locationId, data) {
   try {
     await connection.beginTransaction();
 
-    // Cập nhật LocationDetails
+    // Cập nhật locationdetails
     await connection.execute(
-      `UPDATE LocationDetails SET 
+      `UPDATE locationdetails SET 
                 introduction = ?, 
                 why_visit_architecture_title = ?, 
                 why_visit_architecture_text = ?, 
@@ -934,9 +934,9 @@ async function updateTravelInfo(locationId, data) {
       ]
     );
 
-    // Cập nhật TravelInfo
+    // Cập nhật travelinfo
     await connection.execute(
-      `UPDATE TravelInfo SET ticket_price = ?, tip = ? WHERE location_id = ?`,
+      `UPDATE travelinfo SET ticket_price = ?, tip = ? WHERE location_id = ?`,
       [ticket_price, tip, locationId]
     );
 
@@ -955,16 +955,16 @@ async function updateBestTimes(locationId, bestTimes) {
   try {
     await connection.beginTransaction();
 
-    // Xóa tất cả BestTimes hiện tại
-    await connection.execute(`DELETE FROM BestTimes WHERE location_id = ?`, [
+    // Xóa tất cả besttimes hiện tại
+    await connection.execute(`DELETE FROM besttimes WHERE location_id = ?`, [
       locationId,
     ]);
 
-    // Thêm BestTimes mới
+    // Thêm besttimes mới
     for (const time of bestTimes) {
       if (time && time.trim() !== "") {
         await connection.execute(
-          `INSERT INTO BestTimes (location_id, time_description) VALUES (?, ?)`,
+          `INSERT INTO besttimes (location_id, time_description) VALUES (?, ?)`,
           [locationId, time]
         );
       }
@@ -985,16 +985,16 @@ async function updateTips(locationId, tips) {
   try {
     await connection.beginTransaction();
 
-    // Xóa tất cả Tips hiện tại
-    await connection.execute(`DELETE FROM Tips WHERE location_id = ?`, [
+    // Xóa tất cả tips hiện tại
+    await connection.execute(`DELETE FROM tips WHERE location_id = ?`, [
       locationId,
     ]);
 
-    // Thêm Tips mới
+    // Thêm tips mới
     for (const tip of tips) {
       if (tip && tip.trim() !== "") {
         await connection.execute(
-          `INSERT INTO Tips (location_id, description) VALUES (?, ?)`,
+          `INSERT INTO tips (location_id, description) VALUES (?, ?)`,
           [locationId, tip]
         );
       }

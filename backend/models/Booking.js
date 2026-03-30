@@ -24,7 +24,7 @@ class Booking {
     const verificationToken = crypto.randomBytes(20).toString('hex');
 
     const [res] = await conn.query(
-      `INSERT INTO Bookings
+      `INSERT INTO bookings
              (user_id, tour_id, tour_departure_id, original_amount, final_amount, discount_amount,
               promotion_id, contact_name, contact_email, contact_phone, special_requests, verification_token)
              VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`,
@@ -47,13 +47,13 @@ class Booking {
   }
 
   static async findById(id) {
-    const [rows] = await pool.query(`SELECT * FROM Bookings WHERE id=?`, [id]);
+    const [rows] = await pool.query(`SELECT * FROM bookings WHERE id=?`, [id]);
     return rows[0] || null;
   }
 
   static async updateStatus(bookingId, status, connection = pool) {
     await connection.execute(
-      `UPDATE Bookings SET status = ? WHERE id = ?`,
+      `UPDATE bookings SET status = ? WHERE id = ?`,
       [status, bookingId]
     );
   }
@@ -186,7 +186,7 @@ class Booking {
      */
   static async findByIdForUpdate(bookingId, userId, connection) {
     const [rows] = await connection.execute(
-      `SELECT * FROM Bookings WHERE id = ? AND user_id = ? FOR UPDATE`,
+      `SELECT * FROM bookings WHERE id = ? AND user_id = ? FOR UPDATE`,
       [bookingId, userId]
     );
 
@@ -212,7 +212,7 @@ class Booking {
 
   static async hideCancelledBooking(bookingId, userId) {
         const sql = `
-            UPDATE Bookings 
+            UPDATE bookings 
             SET is_hidden = 1 
             WHERE id = ? AND user_id = ? AND status = 'cancelled'
         `;
@@ -241,11 +241,11 @@ class Booking {
           latest_payment.payment_status,
           latest_payment.payment_method,
           latest_payment.paid_at
-        FROM Bookings b
-        LEFT JOIN Tours t ON b.tour_id = t.id
-        LEFT JOIN Users u ON b.user_id = u.id
-        LEFT JOIN Tour_Departures d ON b.tour_departure_id = d.id
-        LEFT JOIN Promotions p ON b.promotion_id = p.id
+        FROM bookings b
+        LEFT JOIN tours t ON b.tour_id = t.id
+        LEFT JOIN users u ON b.user_id = u.id
+        LEFT JOIN tour_departures d ON b.tour_departure_id = d.id
+        LEFT JOIN promotions p ON b.promotion_id = p.id
         LEFT JOIN 
         (
           -- Subquery này dùng để lấy bản ghi thanh toán gần nhất cho mỗi booking
@@ -274,7 +274,7 @@ class Booking {
       // Lấy các chi tiết của đơn hàng (số lượng người lớn, trẻ em...)
       const [details] = await conn.query(
         `
-        SELECT * FROM Booking_Details WHERE booking_id = ?
+        SELECT * FROM booking_details WHERE booking_id = ?
         `,
         [id]
       );
@@ -294,7 +294,7 @@ class Booking {
     const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
     const [expiredBookings] = await pool.query(
       `SELECT b.id, b.user_id, b.tour_departure_id, SUM(bd.quantity) as total_slots
-       FROM Bookings b
+       FROM bookings b
        JOIN booking_details bd ON b.id = bd.booking_id
        WHERE b.status = 'pending_payment' AND b.created_at < ?
        GROUP BY b.id, b.user_id, b.tour_departure_id`,
@@ -355,7 +355,7 @@ class Booking {
   // Tìm booking bằng token xác thực
   static async findByVerificationToken(token) {
         // Dùng lại hàm findByPk để lấy đầy đủ thông tin
-        const [rows] = await pool.query(`SELECT id FROM Bookings WHERE verification_token = ?`, [token]);
+        const [rows] = await pool.query(`SELECT id FROM bookings WHERE verification_token = ?`, [token]);
         if (rows.length === 0) {
             return null;
         }
@@ -550,7 +550,7 @@ class Booking {
       WHERE b.is_hidden = 0 ${dateCondition}
     `, params);
 
-    const [topTours] = await pool.query(`
+    const [toptours] = await pool.query(`
       SELECT 
         t.destination,
         COUNT(b.id) as booking_count,
@@ -605,7 +605,7 @@ class Booking {
       total_paid: paymentStats[0].total_paid || 0,
       successful_payments: paymentStats[0].successful_payments || 0,
       failed_payments: paymentStats[0].failed_payments || 0,
-      top_tours: topTours,
+      top_tours: toptours,
       recent_bookings: recentBookings,
       daily_stats: dailyStats
     };

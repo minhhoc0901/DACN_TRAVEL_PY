@@ -5,7 +5,7 @@ const { pool } = require('../config/db');
 // -------------------
 
 /**
- * Thêm một tour mới vào các bảng Tours và các bảng liên quan
+ * Thêm một tour mới vào các bảng tours và các bảng liên quan
  * @param {Object} data - Dữ liệu tour (destination, image, departure_from, duration, description, highlights, schedule, includes, excludes, notes, locations)
  * @returns {Number} - ID của tour vừa tạo
  */
@@ -21,9 +21,9 @@ async function createTour(data) {
     includes,
     excludes,
     notes,
-    locations, 
-    user_id, 
-    status = 'pending', 
+    locations,
+    user_id,
+    status = 'pending',
   } = data;
 
   // Bắt đầu transaction
@@ -31,9 +31,9 @@ async function createTour(data) {
   try {
     await connection.beginTransaction();
 
-    // Thêm vào bảng Tours với trường status và user_id
+    // Thêm vào bảng tours với trường status và user_id
     const tourQuery = `
-      INSERT INTO Tours (destination, image, departure_from, duration, description, user_id, status)
+      INSERT INTO tours (destination, image, departure_from, duration, description, user_id, status)
       VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
     const [tourResult] = await connection.execute(tourQuery, [
@@ -47,20 +47,20 @@ async function createTour(data) {
     ]);
     const tourId = tourResult.insertId;
 
-    // Thêm vào bảng Tour_Highlights
+    // Thêm vào bảng tour_highlights
     if (highlights && Array.isArray(highlights) && highlights.length > 0) {
       const highlightValues = highlights.map(highlight => [tourId, highlight]);
       const highlightQuery = `
-        INSERT INTO Tour_Highlights (tour_id, highlight) VALUES ?
+        INSERT INTO tour_highlights (tour_id, highlight) VALUES ?
       `;
       await connection.query(highlightQuery, [highlightValues]);
     }
 
-    // Thêm vào bảng Tour_Schedule và Schedule_Activities
+    // Thêm vào bảng tour_schedule và schedule_activities
     if (schedule && Array.isArray(schedule) && schedule.length > 0) {
       for (const sched of schedule) {
         const scheduleQuery = `
-          INSERT INTO Tour_Schedule (tour_id, day, title) VALUES (?, ?, ?);
+          INSERT INTO tour_schedule (tour_id, day, title) VALUES (?, ?, ?);
         `;
         const [scheduleResult] = await connection.execute(scheduleQuery, [
           tourId,
@@ -72,7 +72,7 @@ async function createTour(data) {
         if (sched.activities && Array.isArray(sched.activities) && sched.activities.length > 0) {
           const activityValues = sched.activities.map(activity => [scheduleId, activity]);
           const activityQuery = `
-            INSERT INTO Schedule_Activities (schedule_id, activity) VALUES ?
+            INSERT INTO schedule_activities (schedule_id, activity) VALUES ?
           `;
           await connection.query(activityQuery, [activityValues]);
         }
@@ -81,7 +81,7 @@ async function createTour(data) {
         if (sched.locations && Array.isArray(sched.locations) && sched.locations.length > 0) {
           for (const locationId of sched.locations) {
             const locationQuery = `
-              INSERT INTO Tour_Locations (tour_id, location_id, schedule_id) 
+              INSERT INTO tour_locations (tour_id, location_id, schedule_id) 
               VALUES (?, ?, ?);
             `;
             await connection.execute(locationQuery, [tourId, locationId, scheduleId]);
@@ -90,29 +90,29 @@ async function createTour(data) {
       }
     }
 
-    // Thêm vào bảng Tour_Includes
+    // Thêm vào bảng tour_includes
     if (includes && Array.isArray(includes) && includes.length > 0) {
       const includeValues = includes.map(include => [tourId, include]);
       const includeQuery = `
-        INSERT INTO Tour_Includes (tour_id, description) VALUES ?
+        INSERT INTO tour_includes (tour_id, description) VALUES ?
       `;
       await connection.query(includeQuery, [includeValues]);
     }
 
-    // Thêm vào bảng Tour_Excludes
+    // Thêm vào bảng tour_excludes
     if (excludes && Array.isArray(excludes) && excludes.length > 0) {
       const excludeValues = excludes.map(exclude => [tourId, exclude]);
       const excludeQuery = `
-        INSERT INTO Tour_Excludes (tour_id, description) VALUES ?
+        INSERT INTO tour_excludes (tour_id, description) VALUES ?
       `;
       await connection.query(excludeQuery, [excludeValues]);
     }
 
-    // Thêm vào bảng Tour_Notes
+    // Thêm vào bảng tour_notes
     if (notes && Array.isArray(notes) && notes.length > 0) {
       const noteValues = notes.map(note => [tourId, note]);
       const noteQuery = `
-        INSERT INTO Tour_Notes (tour_id, description) VALUES ?
+        INSERT INTO tour_notes (tour_id, description) VALUES ?
       `;
       await connection.query(noteQuery, [noteValues]);
     }
@@ -133,140 +133,6 @@ async function createTour(data) {
  * @param {Number} userId - ID của người dùng để lấy tour của họ (tùy chọn)
  * @returns {Array} - Danh sách tour với thông tin cơ bản
  */
-// async function getBasicTours(includeAllStatuses = false, userId = null, includeInactive = false) {
-//   let query = `
-//     SELECT 
-//       t.id,
-//       t.destination,
-//       t.image,
-//       t.departure_from,
-//       t.duration,
-//       t.description,
-//       t.is_active,
-//       COALESCE(t.status, 'pending') as status,
-//       t.user_id,
-//       t.created_at,
-//       t.updated_at,
-//       u.full_name,
-//       u.username,
-//       u.avatar AS user_avatar, 
-//       (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM Tour_Highlights WHERE tour_id = t.id) AS highlights,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Includes WHERE tour_id = t.id) AS includes,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Excludes WHERE tour_id = t.id) AS excludes,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Notes WHERE tour_id = t.id) AS notes
-//     FROM Tours t
-//     LEFT JOIN Users u ON t.user_id = u.id
-//     WHERE 1=1
-//   `;
-  
-//   const params = [];
-
-//   //  CHỈ LẤY TOUR ĐANG HOẠT ĐỘNG (TRỪ KHI ADMIN YÊU CẦU)
-//   if (!includeInactive) {
-//     query += " AND t.is_active = 'TRUE' ";
-//   }
-
-//   // Lọc theo trạng thái nếu không yêu cầu tất cả
-//   if (!includeAllStatuses) {
-//     query += " AND t.status = 'approved'";
-//   }
-  
-//   // Lọc theo user_id nếu được cung cấp
-//   if (userId) {
-//     query += " AND t.user_id = ?";
-//     params.push(userId);
-//   }
-  
-//   // Thêm sắp xếp theo thời gian tạo
-//   query += " ORDER BY t.created_at DESC";
-
-//   const [rows] = await pool.execute(query, params);
-
-//   return rows.map(row => ({
-//     ...row,
-//     status: row.status || 'pending',
-//     username: row.username || '',
-//     full_name: row.full_name || '',
-//     user_avatar: row.user_avatar || null,
-//     highlights: row.highlights ? row.highlights.split('||') : [],
-//     includes: row.includes ? row.includes.split('||') : [],
-//     excludes: row.excludes ? row.excludes.split('||') : [],
-//     notes: row.notes ? row.notes.split('||') : [],
-//   }));
-// }
-// async function getBasicTours(includeAllStatuses = false, userId = null, includeInactive = false) {
-//   let query = `
-//     SELECT 
-//       t.id,
-//       t.destination,
-//       t.image,
-//       t.departure_from,
-//       t.duration,
-//       t.description,
-//       t.is_active,
-//       COALESCE(t.status, 'pending') as status,
-//       t.user_id,
-//       t.created_at,
-//       t.updated_at,
-//       u.full_name,
-//       u.username,
-//       u.avatar AS user_avatar, 
-//       (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM Tour_Highlights WHERE tour_id = t.id) AS highlights,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Includes WHERE tour_id = t.id) AS includes,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Excludes WHERE tour_id = t.id) AS excludes,
-//       (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Notes WHERE tour_id = t.id) AS notes
-//     FROM Tours t
-//     LEFT JOIN Users u ON t.user_id = u.id
-//   `;
-  
-//   const whereClauses = [];
-//   const params = [];
-
-//   // 1. Lọc theo trạng thái hoạt động (is_active)
-//   // ✅ QUAN TRỌNG: Chỉ lọc is_active = TRUE khi KHÔNG yêu cầu bao gồm tour đã ẩn
-//   if (!includeInactive) {
-//     whereClauses.push('t.is_active = TRUE');
-//   }
-
-//   // 2. Lọc theo trạng thái duyệt (status)
-//   if (!includeAllStatuses) {
-//     whereClauses.push("t.status = 'approved'");
-//   }
-  
-//   // 3. Lọc theo người dùng
-//   if (userId) {
-//     whereClauses.push("t.user_id = ?");
-//     params.push(userId);
-//   }
-  
-//   // Nối các điều kiện lọc vào câu query
-//   if (whereClauses.length > 0) {
-//     query += ' WHERE ' + whereClauses.join(' AND ');
-//   }
-  
-//   // 4. Thêm sắp xếp
-//   query += " ORDER BY t.created_at DESC";
-
-//   console.log('[getBasicTours] Query:', query);
-//   console.log('[getBasicTours] Params:', params);
-
-//   const [rows] = await pool.execute(query, params);
-
-//   console.log(`[getBasicTours] Trả về ${rows.length} tours`);
-
-//   return rows.map(row => ({
-//     ...row,
-//     is_active: row.is_active === 1 || row.is_active === true, // Đảm bảo trả về boolean
-//     status: row.status || 'pending',
-//     username: row.username || '',
-//     full_name: row.full_name || '',
-//     user_avatar: row.user_avatar || null,
-//     highlights: row.highlights ? row.highlights.split('||') : [],
-//     includes: row.includes ? row.includes.split('||') : [],
-//     excludes: row.excludes ? row.excludes.split('||') : [],
-//     notes: row.notes ? row.notes.split('||') : [],
-//   }));
-// }
 async function getBasicTours(includeAllStatuses = false, userId = null, includeInactive = false) {
   let query = `
     SELECT 
@@ -284,14 +150,14 @@ async function getBasicTours(includeAllStatuses = false, userId = null, includeI
       u.full_name,
       u.username,
       u.avatar AS user_avatar, 
-      (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM Tour_Highlights WHERE tour_id = t.id) AS highlights,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Includes WHERE tour_id = t.id) AS includes,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Excludes WHERE tour_id = t.id) AS excludes,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Notes WHERE tour_id = t.id) AS notes
-    FROM Tours t
-    LEFT JOIN Users u ON t.user_id = u.id
+      (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM tour_highlights WHERE tour_id = t.id) AS highlights,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_includes WHERE tour_id = t.id) AS includes,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_excludes WHERE tour_id = t.id) AS excludes,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_notes WHERE tour_id = t.id) AS notes
+    FROM tours t
+    LEFT JOIN users u ON t.user_id = u.id
   `;
-  
+
   const whereClauses = [];
   const params = [];
 
@@ -313,19 +179,19 @@ async function getBasicTours(includeAllStatuses = false, userId = null, includeI
   } else {
     console.log('[getBasicTours] ❌ NOT filtering by status (includeAllStatuses = true)');
   }
-  
+
   // 3. Lọc theo người dùng
   if (userId) {
     whereClauses.push("t.user_id = ?");
     params.push(userId);
     console.log('[getBasicTours] ✅ Adding filter: user_id =', userId);
   }
-  
+
   // Nối các điều kiện lọc vào câu query
   if (whereClauses.length > 0) {
     query += ' WHERE ' + whereClauses.join(' AND ');
   }
-  
+
   // 4. Thêm sắp xếp
   query += " ORDER BY t.created_at DESC";
 
@@ -335,7 +201,7 @@ async function getBasicTours(includeAllStatuses = false, userId = null, includeI
   const [rows] = await pool.execute(query, params);
 
   console.log(`[getBasicTours] ✅ Returned ${rows.length} tours`);
-  
+
   // ✅ Log chi tiết 2 tour đầu tiên
   if (rows.length > 0) {
     console.log('[getBasicTours] Sample tours:', rows.slice(0, 2).map(r => ({
@@ -379,12 +245,12 @@ async function getBasicTourById(tourId) {
       t.created_at,
       u.full_name,
       u.username,
-      (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM Tour_Highlights WHERE tour_id = t.id) AS highlights,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Includes WHERE tour_id = t.id) AS includes,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Excludes WHERE tour_id = t.id) AS excludes,
-      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM Tour_Notes WHERE tour_id = t.id) AS notes
-    FROM Tours t
-    LEFT JOIN Users u ON t.user_id = u.id
+      (SELECT GROUP_CONCAT(highlight SEPARATOR '||') FROM tour_highlights WHERE tour_id = t.id) AS highlights,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_includes WHERE tour_id = t.id) AS includes,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_excludes WHERE tour_id = t.id) AS excludes,
+      (SELECT GROUP_CONCAT(description SEPARATOR '||') FROM tour_notes WHERE tour_id = t.id) AS notes
+    FROM tours t
+    LEFT JOIN users u ON t.user_id = u.id
     WHERE t.id = ?;
   `;
   const [rows] = await pool.execute(query, [tourId]);
@@ -412,14 +278,14 @@ async function getSchedule(tourId) {
       ts.day, 
       ts.title, 
       (SELECT GROUP_CONCAT(activity SEPARATOR '||') 
-       FROM Schedule_Activities 
+       FROM schedule_activities 
        WHERE schedule_id = ts.id) AS activities
-    FROM Tour_Schedule ts
+    FROM tour_schedule ts
     WHERE ts.tour_id = ?
     ORDER BY ts.day;
   `;
   const [scheduleRows] = await pool.execute(scheduleQuery, [tourId]);
-  
+
   // Lấy thông tin địa điểm cho mỗi lịch trình
   const schedules = [];
   for (const sched of scheduleRows) {
@@ -431,12 +297,12 @@ async function getSchedule(tourId) {
         l.description,
         l.latitude,
         l.longitude
-      FROM Locations l
-      JOIN Tour_Locations tl ON l.id = tl.location_id
+      FROM locations l
+      JOIN tour_locations tl ON l.id = tl.location_id
       WHERE tl.tour_id = ? AND tl.schedule_id = ?;
     `;
     const [locationRows] = await pool.execute(locationQuery, [tourId, sched.id]);
-    
+
     schedules.push({
       id: sched.id,
       day: sched.day,
@@ -445,7 +311,7 @@ async function getSchedule(tourId) {
       locations: locationRows || []
     });
   }
-  
+
   return schedules;
 }
 
@@ -495,7 +361,7 @@ async function updateTour(tourId, data) {
       params.push(data.status);
     }
 
-    
+
     // Update timestamp
     updateFields.push('updated_at = CURRENT_TIMESTAMP');
 
@@ -504,10 +370,10 @@ async function updateTour(tourId, data) {
 
     // Execute update only if there are fields to update
     if (updateFields.length > 1) { // > 1 vì luôn có updated_at
-      const tourQuery = `UPDATE Tours SET ${updateFields.join(', ')} WHERE id = ?`;
+      const tourQuery = `UPDATE tours SET ${updateFields.join(', ')} WHERE id = ?`;
       console.log('[Tour.updateTour] Query:', tourQuery);
       console.log('[Tour.updateTour] Params:', params);
-      
+
       await connection.execute(tourQuery, params);
     }
 
@@ -536,7 +402,7 @@ async function updateTour(tourId, data) {
       await updateTourNotes(connection, tourId, data.notes);
     }
 
-    
+
 
     await connection.commit();
     console.log('[Tour.updateTour] Update successful for tour:', tourId);
@@ -562,13 +428,13 @@ async function updateTourStatus(tourId, status) {
     if (!['pending', 'approved', 'rejected'].includes(status)) {
       throw new Error('Trạng thái không hợp lệ. Phải là "pending", "approved", hoặc "rejected"');
     }
-    
+
     const query = `
-      UPDATE Tours
+      UPDATE tours
       SET status = ?
       WHERE id = ?
     `;
-    
+
     const [result] = await pool.execute(query, [status, tourId]);
     return result.affectedRows > 0;
   } catch (error) {
@@ -584,7 +450,7 @@ async function updateTourStatus(tourId, status) {
  */
 async function approveTour(tourId) {
   try {
-    const query = `UPDATE Tours SET status = 'approved' WHERE id = ?`;
+    const query = `UPDATE tours SET status = 'approved' WHERE id = ?`;
     const [result] = await pool.execute(query, [tourId]);
     return result.affectedRows > 0;
   } catch (error) {
@@ -600,7 +466,7 @@ async function approveTour(tourId) {
  */
 async function rejectTour(tourId) {
   try {
-    const query = `UPDATE Tours SET status = 'rejected' WHERE id = ?`;
+    const query = `UPDATE tours SET status = 'rejected' WHERE id = ?`;
     const [result] = await pool.execute(query, [tourId]);
     return result.affectedRows > 0;
   } catch (error) {
@@ -617,15 +483,15 @@ async function rejectTour(tourId) {
  */
 async function updateTourHighlights(connection, tourId, highlights) {
   // Xóa highlights cũ
-  await connection.execute('DELETE FROM Tour_Highlights WHERE tour_id = ?', [tourId]);
-  
+  await connection.execute('DELETE FROM tour_highlights WHERE tour_id = ?', [tourId]);
+
   // Thêm highlights mới
   if (highlights && Array.isArray(highlights) && highlights.length > 0) {
     const filteredHighlights = highlights.filter(h => h && h.trim());
     if (filteredHighlights.length > 0) {
       const highlightValues = filteredHighlights.map(highlight => [tourId, highlight]);
       const highlightQuery = `
-        INSERT INTO Tour_Highlights (tour_id, highlight) VALUES ?
+        INSERT INTO tour_highlights (tour_id, highlight) VALUES ?
       `;
       await connection.query(highlightQuery, [highlightValues]);
     }
@@ -641,7 +507,7 @@ async function updateTourHighlights(connection, tourId, highlights) {
 async function updateTourSchedule(connection, tourId, schedule) {
   // Lấy danh sách ID của các schedule cũ thuộc tour này
   const [oldSchedules] = await connection.execute(
-    'SELECT id FROM Tour_Schedule WHERE tour_id = ?', 
+    'SELECT id FROM tour_schedule WHERE tour_id = ?',
     [tourId]
   );
   const oldScheduleIds = oldSchedules.map(s => s.id);
@@ -650,53 +516,53 @@ async function updateTourSchedule(connection, tourId, schedule) {
   if (oldScheduleIds.length > 0) {
     // Xóa các activities liên quan
     await connection.query(
-      'DELETE FROM Schedule_Activities WHERE schedule_id IN (?)', 
+      'DELETE FROM schedule_activities WHERE schedule_id IN (?)',
       [oldScheduleIds]
     );
     // Xóa các locations liên quan
     await connection.query(
-      'DELETE FROM Tour_Locations WHERE schedule_id IN (?)', 
+      'DELETE FROM tour_locations WHERE schedule_id IN (?)',
       [oldScheduleIds]
     );
     // Xóa chính các schedule cũ
     await connection.query(
-      'DELETE FROM Tour_Schedule WHERE id IN (?)', 
+      'DELETE FROM tour_schedule WHERE id IN (?)',
       [oldScheduleIds]
     );
   }
-  
+
   // Thêm schedule mới
   if (schedule && Array.isArray(schedule) && schedule.length > 0) {
     for (const sched of schedule) {
       // Bỏ qua nếu thiếu thông tin cơ bản
       if (!sched.day || !sched.title) continue;
-      
-      // Thêm vào bảng Tour_Schedule
+
+      // Thêm vào bảng tour_schedule
       const [scheduleResult] = await connection.execute(
-        'INSERT INTO Tour_Schedule (tour_id, day, title) VALUES (?, ?, ?)',
+        'INSERT INTO tour_schedule (tour_id, day, title) VALUES (?, ?, ?)',
         [tourId, sched.day, sched.title]
       );
       const scheduleId = scheduleResult.insertId;
-      
+
       // Thêm activities mới (nếu có)
       if (sched.activities && Array.isArray(sched.activities)) {
         const filteredActivities = sched.activities.filter(a => a && a.trim());
         if (filteredActivities.length > 0) {
           const activityValues = filteredActivities.map(activity => [scheduleId, activity]);
           await connection.query(
-            'INSERT INTO Schedule_Activities (schedule_id, activity) VALUES ?', 
+            'INSERT INTO schedule_activities (schedule_id, activity) VALUES ?',
             [activityValues]
           );
         }
       }
-      
+
       // Thêm locations mới (nếu có)
       if (sched.locations && Array.isArray(sched.locations)) {
         const filteredLocations = sched.locations.filter(locId => locId);
         if (filteredLocations.length > 0) {
           const locationValues = filteredLocations.map(locationId => [tourId, locationId, scheduleId]);
           await connection.query(
-            'INSERT INTO Tour_Locations (tour_id, location_id, schedule_id) VALUES ?', 
+            'INSERT INTO tour_locations (tour_id, location_id, schedule_id) VALUES ?',
             [locationValues]
           );
         }
@@ -712,14 +578,14 @@ async function updateTourSchedule(connection, tourId, schedule) {
  * @param {Array} includes - Danh sách includes mới
  */
 async function updateTourIncludes(connection, tourId, includes) {
-  await connection.execute('DELETE FROM Tour_Includes WHERE tour_id = ?', [tourId]);
-  
+  await connection.execute('DELETE FROM tour_includes WHERE tour_id = ?', [tourId]);
+
   if (includes && Array.isArray(includes) && includes.length > 0) {
     const filteredIncludes = includes.filter(i => i && i.trim());
     if (filteredIncludes.length > 0) {
       const includeValues = filteredIncludes.map(include => [tourId, include]);
       const includeQuery = `
-        INSERT INTO Tour_Includes (tour_id, description) VALUES ?
+        INSERT INTO tour_includes (tour_id, description) VALUES ?
       `;
       await connection.query(includeQuery, [includeValues]);
     }
@@ -733,14 +599,14 @@ async function updateTourIncludes(connection, tourId, includes) {
  * @param {Array} excludes - Danh sách excludes mới
  */
 async function updateTourExcludes(connection, tourId, excludes) {
-  await connection.execute('DELETE FROM Tour_Excludes WHERE tour_id = ?', [tourId]);
-  
+  await connection.execute('DELETE FROM tour_excludes WHERE tour_id = ?', [tourId]);
+
   if (excludes && Array.isArray(excludes) && excludes.length > 0) {
     const filteredExcludes = excludes.filter(e => e && e.trim());
     if (filteredExcludes.length > 0) {
       const excludeValues = filteredExcludes.map(exclude => [tourId, exclude]);
       const excludeQuery = `
-        INSERT INTO Tour_Excludes (tour_id, description) VALUES ?
+        INSERT INTO tour_excludes (tour_id, description) VALUES ?
       `;
       await connection.query(excludeQuery, [excludeValues]);
     }
@@ -754,14 +620,14 @@ async function updateTourExcludes(connection, tourId, excludes) {
  * @param {Array} notes - Danh sách notes mới
  */
 async function updateTourNotes(connection, tourId, notes) {
-  await connection.execute('DELETE FROM Tour_Notes WHERE tour_id = ?', [tourId]);
-  
+  await connection.execute('DELETE FROM tour_notes WHERE tour_id = ?', [tourId]);
+
   if (notes && Array.isArray(notes) && notes.length > 0) {
     const filteredNotes = notes.filter(n => n && n.trim());
     if (filteredNotes.length > 0) {
       const noteValues = filteredNotes.map(note => [tourId, note]);
       const noteQuery = `
-        INSERT INTO Tour_Notes (tour_id, description) VALUES ?
+        INSERT INTO tour_notes (tour_id, description) VALUES ?
       `;
       await connection.query(noteQuery, [noteValues]);
     }
@@ -780,21 +646,21 @@ async function deleteTour(tourId) {
     await connection.beginTransaction();
 
     // Xóa dữ liệu liên quan trước
-    await connection.execute('DELETE FROM Tour_Highlights WHERE tour_id = ?', [tourId]);
-    await connection.execute('DELETE FROM Tour_Locations WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_highlights WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_locations WHERE tour_id = ?', [tourId]);
     await connection.execute(
-      'DELETE FROM Schedule_Activities WHERE schedule_id IN (SELECT id FROM Tour_Schedule WHERE tour_id = ?)', 
+      'DELETE FROM schedule_activities WHERE schedule_id IN (SELECT id FROM tour_schedule WHERE tour_id = ?)',
       [tourId]
     );
-    await connection.execute('DELETE FROM Tour_Schedule WHERE tour_id = ?', [tourId]);
-    await connection.execute('DELETE FROM Tour_Includes WHERE tour_id = ?', [tourId]);
-    await connection.execute('DELETE FROM Tour_Excludes WHERE tour_id = ?', [tourId]);
-    await connection.execute('DELETE FROM Tour_Notes WHERE tour_id = ?', [tourId]);
-    await connection.execute('DELETE FROM Reviews WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_schedule WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_includes WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_excludes WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM tour_notes WHERE tour_id = ?', [tourId]);
+    await connection.execute('DELETE FROM reviews WHERE tour_id = ?', [tourId]);
 
-    // Xóa tour từ bảng Tours
-    const [result] = await connection.execute('DELETE FROM Tours WHERE id = ?', [tourId]);
-    
+    // Xóa tour từ bảng tours
+    const [result] = await connection.execute('DELETE FROM tours WHERE id = ?', [tourId]);
+
     await connection.commit();
     return result.affectedRows > 0;
   } catch (error) {
@@ -816,7 +682,7 @@ async function hideTour(tourId) {
   try {
     // ✅ CẬP NHẬT: Vừa ẩn tour (is_active = FALSE) vừa đặt status = 'rejected'
     const [result] = await connection.execute(
-      'UPDATE Tours SET is_active = FALSE, status = ? WHERE id = ?',
+      'UPDATE tours SET is_active = FALSE, status = ? WHERE id = ?',
       ['rejected', tourId]
     );
     return result.affectedRows > 0;
@@ -837,25 +703,25 @@ async function hideTour(tourId) {
 async function getToursByLocation(locationId, approvedOnly = true) {
   let query = `
     SELECT DISTINCT t.*
-    FROM Tours t
-    JOIN Tour_Locations tl ON t.id = tl.tour_id
+    FROM tours t
+    JOIN tour_locations tl ON t.id = tl.tour_id
     WHERE tl.location_id = ? AND t.is_active = TRUE
   `;
-  
+
   const params = [locationId];
-  
+
   if (approvedOnly) {
     query += " AND t.status = 'approved'";
   }
-  
+
   const [rows] = await pool.execute(query, params);
   const tours = [];
-  
+
   for (const tour of rows) {
     const fullTour = await composeTour({ id: tour.id });
     tours.push(fullTour);
   }
-  
+
   return tours;
 }
 
@@ -868,19 +734,19 @@ async function getToursByStatus(status) {
   try {
     const query = `
       SELECT *
-      FROM Tours
+      FROM tours
       WHERE status = ?
       ORDER BY created_at DESC
     `;
-    
+
     const [rows] = await pool.execute(query, [status]);
     const tours = [];
-    
+
     for (const tour of rows) {
       const fullTour = await composeTour({ id: tour.id });
       tours.push(fullTour);
     }
-    
+
     return tours;
   } catch (error) {
     console.error('Lỗi khi lấy danh sách tour theo trạng thái:', error);
@@ -897,12 +763,12 @@ async function getToursByUser(userId) {
   try {
     const basicTours = await getBasicTours(true, userId);
     const tours = [];
-    
+
     for (const tour of basicTours) {
       const fullTour = await composeTour(tour);
       tours.push(fullTour);
     }
-    
+
     return tours;
   } catch (error) {
     console.error('Lỗi khi lấy danh sách tour của người dùng:', error);
@@ -934,8 +800,8 @@ async function composeTour(tour) {
       l.description,
       l.latitude,
       l.longitude
-    FROM Locations l
-    JOIN Tour_Locations tl ON l.id = tl.location_id
+    FROM locations l
+    JOIN tour_locations tl ON l.id = tl.location_id
     WHERE tl.tour_id = ?;
   `;
   const [locations] = await pool.execute(locationQuery, [tour.id]);
@@ -952,7 +818,7 @@ async function composeTour(tour) {
     user_id: tour.user_id,
     username: tour.username,
     full_name: tour.full_name,
-    user_avatar: tour.user_avatar, 
+    user_avatar: tour.user_avatar,
     updated_at: tour.updated_at,
     created_at: tour.created_at,
     highlights: tour.highlights,
@@ -992,7 +858,7 @@ async function getTourById(tourId) {
 // 🔹 Tìm kiếm tour theo từ khóa (destination, description)
 async function searchTours(keyword) {
   const q = `%${keyword}%`;
-  
+
   // Truy vấn chỉ để tìm kiếm và JOIN lấy thông tin user
   const [rows] = await pool.execute(
     `
@@ -1001,9 +867,9 @@ async function searchTours(keyword) {
       u.full_name, 
       u.avatar as user_avatar
     FROM 
-      Tours t
+      tours t
     LEFT JOIN 
-      Users u ON t.user_id = u.id
+      users u ON t.user_id = u.id
     WHERE 
       t.destination LIKE ? OR 
       t.description LIKE ? OR 
@@ -1014,7 +880,7 @@ async function searchTours(keyword) {
     `,
     [q, q, q]
   );
-  
+
   return rows;
 }
 
@@ -1024,73 +890,73 @@ async function searchTours(keyword) {
  * Lấy danh sách tours đã được duyệt để bán
  */
 async function getApprovedToursForSale(options = {}) {
-    try {
-        const { 
-            page = 1, 
-            limit = 12, 
-            destination, 
-            price_min, 
-            price_max, 
-            duration, 
-            sort_by = 'latest' 
-        } = options;
-        
-        const offset = (page - 1) * limit;
-        
-        // Build WHERE clause
-        let whereConditions = ["t.status = 'approved'", "u.role = 'admin'","t.is_active = TRUE"]; // Thêm điều kiện lọc theo role
-        let params = [];
-        
-        if (destination) {
-            whereConditions.push('t.destination LIKE ?');
-            params.push(`%${destination}%`);
-        }
-        
-        if (duration) {
-            whereConditions.push('t.duration LIKE ?');
-            params.push(`%${duration}%`);
-        }
-        
-        // Price filter sẽ được áp dụng sau khi JOIN với Tour_Prices
-        let priceFilter = '';
-        if (price_min || price_max) {
-            if (price_min && price_max) {
-                priceFilter = 'HAVING min_price >= ? AND min_price <= ?';
-                params.push(price_min, price_max);
-            } else if (price_min) {
-                priceFilter = 'HAVING min_price >= ?';
-                params.push(price_min);
-            } else if (price_max) {
-                priceFilter = 'HAVING min_price <= ?';
-                params.push(price_max);
-            }
-        }
-        
-        // Build ORDER BY clause
-        let orderBy = '';
-        switch (sort_by) {
-            case 'price_low':
-                orderBy = 'ORDER BY min_price ASC';
-                break;
-            case 'price_high':
-                orderBy = 'ORDER BY min_price DESC';
-                break;
-            case 'rating':
-                orderBy = 'ORDER BY avg_rating DESC, review_count DESC';
-                break;
-            case 'popular':
-                orderBy = 'ORDER BY review_count DESC, avg_rating DESC';
-                break;
-            case 'latest':
-            default:
-                orderBy = 'ORDER BY latest_update DESC';
-                break;
-        }
-        
-        const whereClause = whereConditions.join(' AND ');
-        
-        // Main query - sửa lại cho đúng với schema
-        const query = `
+  try {
+    const {
+      page = 1,
+      limit = 12,
+      destination,
+      price_min,
+      price_max,
+      duration,
+      sort_by = 'latest'
+    } = options;
+
+    const offset = (page - 1) * limit;
+
+    // Build WHERE clause
+    let whereConditions = ["t.status = 'approved'", "u.role = 'admin'", "t.is_active = TRUE"]; // Thêm điều kiện lọc theo role
+    let params = [];
+
+    if (destination) {
+      whereConditions.push('t.destination LIKE ?');
+      params.push(`%${destination}%`);
+    }
+
+    if (duration) {
+      whereConditions.push('t.duration LIKE ?');
+      params.push(`%${duration}%`);
+    }
+
+    // Price filter sẽ được áp dụng sau khi JOIN với Tour_Prices
+    let priceFilter = '';
+    if (price_min || price_max) {
+      if (price_min && price_max) {
+        priceFilter = 'HAVING min_price >= ? AND min_price <= ?';
+        params.push(price_min, price_max);
+      } else if (price_min) {
+        priceFilter = 'HAVING min_price >= ?';
+        params.push(price_min);
+      } else if (price_max) {
+        priceFilter = 'HAVING min_price <= ?';
+        params.push(price_max);
+      }
+    }
+
+    // Build ORDER BY clause
+    let orderBy = '';
+    switch (sort_by) {
+      case 'price_low':
+        orderBy = 'ORDER BY min_price ASC';
+        break;
+      case 'price_high':
+        orderBy = 'ORDER BY min_price DESC';
+        break;
+      case 'rating':
+        orderBy = 'ORDER BY avg_rating DESC, review_count DESC';
+        break;
+      case 'popular':
+        orderBy = 'ORDER BY review_count DESC, avg_rating DESC';
+        break;
+      case 'latest':
+      default:
+        orderBy = 'ORDER BY latest_update DESC';
+        break;
+    }
+
+    const whereClause = whereConditions.join(' AND ');
+
+    // Main query - sửa lại cho đúng với schema
+    const query = `
             SELECT 
                 t.id,
                 t.destination as title,  -- Sử dụng destination làm title
@@ -1119,7 +985,7 @@ async function getApprovedToursForSale(options = {}) {
                 -- Check if has sale price
                 COUNT(CASE WHEN tp.sale_price IS NOT NULL AND tp.sale_price > 0 THEN 1 END) > 0 as has_sale,
                 
-                -- Review statistics từ Reviews
+                -- Review statistics từ reviews
                 COALESCE(r.avg_rating, 0) as avg_rating,
                 COALESCE(r.review_count, 0) as review_count,
                 
@@ -1127,62 +993,62 @@ async function getApprovedToursForSale(options = {}) {
                 u.full_name as creator_name,
                 u.username as creator_username
                 
-            FROM Tours t
+            FROM tours t
             LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
             LEFT JOIN (
                 SELECT 
                     tour_id,
                     AVG(rating) as avg_rating,
                     COUNT(*) as review_count
-                FROM Reviews 
+                FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
-            LEFT JOIN Users u ON t.user_id = u.id
+            LEFT JOIN users u ON t.user_id = u.id
             WHERE ${whereClause}
             GROUP BY t.id
             ${priceFilter}
             ${orderBy}
             LIMIT ? OFFSET ?
         `;
-        
-        params.push(limit, offset);
-        
-        const [tours] = await pool.query(query, params);
-        
-        // Get total count
-        const countQuery = `
+
+    params.push(limit, offset);
+
+    const [tours] = await pool.query(query, params);
+
+    // Get total count
+    const countQuery = `
             SELECT COUNT(DISTINCT t.id) as total
             FROM Tours t
             LEFT JOIN Users u ON t.user_id = u.id
             WHERE ${whereClause}
         `;
-        
-        const countParams = params.slice(0, -2); // Remove limit and offset
-        const [countResult] = await pool.query(countQuery, countParams);
-        
-        return {
-            tours: tours.map(tour => ({
-                ...tour,
-                avg_rating: parseFloat(tour.avg_rating),
-                min_price: parseFloat(tour.min_price),
-                max_price: parseFloat(tour.max_price),
-                has_promotion: false // Tạm thời false vì chưa có bảng promotion_tours
-            })),
-            total: countResult[0].total
-        };
-        
-    } catch (error) {
-        console.error('[Tour][getApprovedToursForSale] Error:', error);
-        throw error;
-    }
+
+    const countParams = params.slice(0, -2); // Remove limit and offset
+    const [countResult] = await pool.query(countQuery, countParams);
+
+    return {
+      tours: tours.map(tour => ({
+        ...tour,
+        avg_rating: parseFloat(tour.avg_rating),
+        min_price: parseFloat(tour.min_price),
+        max_price: parseFloat(tour.max_price),
+        has_promotion: false // Tạm thời false vì chưa có bảng promotion_tours
+      })),
+      total: countResult[0].total
+    };
+
+  } catch (error) {
+    console.error('[Tour][getApprovedToursForSale] Error:', error);
+    throw error;
+  }
 }
 
 /**
  * Lấy chi tiết tour để hiển thị cho khách hàng
  */
 async function getTourDetailForSale(tourId) {
-    try {
-        const query = `
+  try {
+    const query = `
             SELECT 
                 t.*,
                 GREATEST(t.created_at, IFNULL(t.updated_at, t.created_at)) as latest_update,
@@ -1202,40 +1068,40 @@ async function getTourDetailForSale(tourId) {
                     tour_id,
                     AVG(rating) as avg_rating,
                     COUNT(*) as review_count
-                FROM Reviews 
+                FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
             LEFT JOIN Users u ON t.user_id = u.id
             WHERE t.id = ? AND t.status = 'approved' AND t.is_active = TRUE AND u.role = 'admin' 
         `;
-        
-        const [tours] = await pool.query(query, [tourId]);
-        
-        if (!tours.length) return null;
-        
-        const tour = tours[0];
-        
-        // Chỉ lấy prices - bỏ phần additionalData
-        const prices = await getTourPrices(tourId);
-        
-        return {
-            ...tour,
-            avg_rating: parseFloat(tour.avg_rating),
-            prices
-        };
-        
-    } catch (error) {
-        console.error('[Tour][getTourDetailForSale] Error:', error);
-        throw error;
-    }
+
+    const [tours] = await pool.query(query, [tourId]);
+
+    if (!tours.length) return null;
+
+    const tour = tours[0];
+
+    // Chỉ lấy prices - bỏ phần additionalData
+    const prices = await getTourPrices(tourId);
+
+    return {
+      ...tour,
+      avg_rating: parseFloat(tour.avg_rating),
+      prices
+    };
+
+  } catch (error) {
+    console.error('[Tour][getTourDetailForSale] Error:', error);
+    throw error;
+  }
 }
 
 /**
  * Lấy giá tour từ Tour_Prices
  */
 async function getTourPrices(tourId) {
-    try {
-        const [prices] = await pool.query(`
+  try {
+    const [prices] = await pool.query(`
             SELECT 
                 id,
                 price_type,
@@ -1255,27 +1121,27 @@ async function getTourPrices(tourId) {
             WHERE tour_id = ?
             ORDER BY price ASC
         `, [tourId]);
-        
-        return prices.map(price => ({
-            ...price,
-            price: parseFloat(price.price),
-            sale_price: price.sale_price ? parseFloat(price.sale_price) : null,
-            final_price: parseFloat(price.final_price),
-            discount_percent: parseInt(price.discount_percent)
-        }));
-        
-    } catch (error) {
-        console.error('[Tour][getTourPrices] Error:', error);
-        throw error;
-    }
+
+    return prices.map(price => ({
+      ...price,
+      price: parseFloat(price.price),
+      sale_price: price.sale_price ? parseFloat(price.sale_price) : null,
+      final_price: parseFloat(price.final_price),
+      discount_percent: parseInt(price.discount_percent)
+    }));
+
+  } catch (error) {
+    console.error('[Tour][getTourPrices] Error:', error);
+    throw error;
+  }
 }
 
 /**
  * Lấy tours nổi bật (rating cao, nhiều review)
  */
 async function getFeaturedTours(limit = 8) {
-    try {
-        const query = `
+  try {
+    const query = `
             SELECT 
                 t.id,
                 t.destination as title,
@@ -1304,7 +1170,7 @@ async function getFeaturedTours(limit = 8) {
                     tour_id,
                     AVG(rating) as avg_rating,
                     COUNT(*) as review_count
-                FROM Reviews 
+                FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
             WHERE t.status = 'approved' AND u.role = 'admin'
@@ -1313,19 +1179,19 @@ async function getFeaturedTours(limit = 8) {
             ORDER BY (avg_rating * 0.7 + (review_count / 10) * 0.3) DESC
             LIMIT ?
         `;
-        
-        const [tours] = await pool.query(query, [limit]);
-        
-        return tours.map(tour => ({
-            ...tour,
-            avg_rating: parseFloat(tour.avg_rating),
-            min_price: parseFloat(tour.min_price)
-        }));
-        
-    } catch (error) {
-        console.error('[Tour][getFeaturedTours] Error:', error);
-        throw error;
-    }
+
+    const [tours] = await pool.query(query, [limit]);
+
+    return tours.map(tour => ({
+      ...tour,
+      avg_rating: parseFloat(tour.avg_rating),
+      min_price: parseFloat(tour.min_price)
+    }));
+
+  } catch (error) {
+    console.error('[Tour][getFeaturedTours] Error:', error);
+    throw error;
+  }
 }
 
 /**
@@ -1335,25 +1201,25 @@ async function getFeaturedTours(limit = 8) {
  * @returns {Promise<Array>} - Danh sách các tour tìm thấy
  */
 async function getToursByLocationIds(locationIds, limit = 5) {
-    if (!locationIds || locationIds.length === 0) {
-        console.log('[Tour][getToursByLocationIds] No location IDs provided');
-        return [];
+  if (!locationIds || locationIds.length === 0) {
+    console.log('[Tour][getToursByLocationIds] No location IDs provided');
+    return [];
+  }
+
+  try {
+    // Validate và clean location IDs
+    const validLocationIds = locationIds
+      .filter(id => id != null && !isNaN(id))
+      .map(id => parseInt(id));
+
+    if (validLocationIds.length === 0) {
+      console.log('[Tour][getToursByLocationIds] No valid location IDs');
+      return [];
     }
 
-    try {
-        // Validate và clean location IDs
-        const validLocationIds = locationIds
-            .filter(id => id != null && !isNaN(id))
-            .map(id => parseInt(id));
+    const placeholders = validLocationIds.map(() => '?').join(',');
 
-        if (validLocationIds.length === 0) {
-            console.log('[Tour][getToursByLocationIds] No valid location IDs');
-            return [];
-        }
-
-        const placeholders = validLocationIds.map(() => '?').join(',');
-        
-        const query = `
+    const query = `
             SELECT 
                 t.id,
                 t.destination as title,
@@ -1391,14 +1257,14 @@ async function getToursByLocationIds(locationIds, limit = 5) {
                 u.username as creator_username
                 
             FROM Tours t
-            INNER JOIN Tour_Locations tl ON t.id = tl.tour_id
+            INNER JOIN Tour_locations tl ON t.id = tl.tour_id
             LEFT JOIN Tour_Prices tp ON t.id = tp.tour_id
             LEFT JOIN (
                 SELECT 
                     tour_id,
                     AVG(rating) as avg_rating,
                     COUNT(*) as review_count
-                FROM Reviews 
+                FROM reviews 
                 GROUP BY tour_id
             ) r ON t.id = r.tour_id
             LEFT JOIN Users u ON t.user_id = u.id
@@ -1411,41 +1277,41 @@ async function getToursByLocationIds(locationIds, limit = 5) {
             LIMIT ?
         `;
 
-        console.log('[Tour][getToursByLocationIds] Location IDs:', validLocationIds);
-        console.log('[Tour][getToursByLocationIds] Limit:', limit);
-        
-        const params = [...validLocationIds, parseInt(limit)];
-        const [tours] = await pool.query(query, params);
-        
-        console.log('[Tour][getToursByLocationIds] Found tours:', tours.length);
-        
-        // Format giống hệt getApprovedToursForSale
-        return tours.map(tour => ({
-            id: tour.id,
-            title: tour.title,
-            destination: tour.destination,
-            departure_from: tour.departure_from,
-            duration: tour.duration,
-            description: tour.description,
-            image: tour.image,
-            created_at: tour.created_at,
-            updated_at: tour.updated_at,
-            latest_update: tour.latest_update,
-            min_price: parseFloat(tour.min_price || 0),
-            max_price: parseFloat(tour.max_price || 0),
-            has_sale: tour.has_sale ? 1 : 0,
-            avg_rating: parseFloat(tour.avg_rating || 0),
-            review_count: parseInt(tour.review_count || 0),
-            creator_name: tour.creator_name || 'Không rõ',
-            creator_username: tour.creator_username,
-            has_promotion: false // Giống như getApprovedToursForSale
-        }));
+    console.log('[Tour][getToursByLocationIds] Location IDs:', validLocationIds);
+    console.log('[Tour][getToursByLocationIds] Limit:', limit);
 
-    } catch (error) {
-        console.error('[Tour][getToursByLocationIds] Error:', error);
-        console.error('[Tour][getToursByLocationIds] Stack:', error.stack);
-        throw error;
-    }
+    const params = [...validLocationIds, parseInt(limit)];
+    const [tours] = await pool.query(query, params);
+
+    console.log('[Tour][getToursByLocationIds] Found tours:', tours.length);
+
+    // Format giống hệt getApprovedToursForSale
+    return tours.map(tour => ({
+      id: tour.id,
+      title: tour.title,
+      destination: tour.destination,
+      departure_from: tour.departure_from,
+      duration: tour.duration,
+      description: tour.description,
+      image: tour.image,
+      created_at: tour.created_at,
+      updated_at: tour.updated_at,
+      latest_update: tour.latest_update,
+      min_price: parseFloat(tour.min_price || 0),
+      max_price: parseFloat(tour.max_price || 0),
+      has_sale: tour.has_sale ? 1 : 0,
+      avg_rating: parseFloat(tour.avg_rating || 0),
+      review_count: parseInt(tour.review_count || 0),
+      creator_name: tour.creator_name || 'Không rõ',
+      creator_username: tour.creator_username,
+      has_promotion: false // Giống như getApprovedToursForSale
+    }));
+
+  } catch (error) {
+    console.error('[Tour][getToursByLocationIds] Error:', error);
+    console.error('[Tour][getToursByLocationIds] Stack:', error.stack);
+    throw error;
+  }
 }
 
 /**
@@ -1471,16 +1337,16 @@ async function restoreTour(tourId) {
 }
 
 
-module.exports = { 
-  createTour, 
-  getAllTours, 
-  getTourById, 
-  updateTour, 
+module.exports = {
+  createTour,
+  getAllTours,
+  getTourById,
+  updateTour,
   deleteTour,
   getToursByLocation,
   updateTourStatus,
-  approveTour, 
-  rejectTour, 
+  approveTour,
+  rejectTour,
   getToursByStatus,
   getToursByUser,
   searchTours,
